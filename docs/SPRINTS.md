@@ -91,15 +91,15 @@
 
 ### Objective
 
-> "An authenticated user can create a report with evidence and the system automatically filters illegal content **before storing anything**."
+> "An authenticated user can create a report with evidence and the system automatically filters illegal content — **rejected files never reach Cloudinary storage.**"
 
 ### User Stories
 
 | ID | Story | Points | Acceptance Criteria |
 |---|---|---|---|
 | **US-006** | As a user, I can create an anonymous report with title, description, category, and mandatory evidence. | 8 | Form validates all fields. Backend rejects if no evidence attached. Report stored with `token_id` only (no user reference). |
-| **US-007** | As a user, I can attach evidence files (images, PDFs, videos) and the system strips ALL metadata before storing. | 8 | Upload JPG with EXIF → download from Cloudinary → verify zero EXIF data. Same for PDF author info. Files renamed to UUID. |
-| **US-008** | As the system, illegal content (CSAM, drugs, weapons) is automatically blocked and NEVER stored. | 10 | Test with known-bad text → rejected. Test with NSFW image → rejected. Verify Cloudinary folder is empty after rejection. Forensic log entry created. If suspected CSAM detected, mandatory NCMEC CyberTipline report triggered. |
+| **US-007** | As a user, I can attach evidence files (images, PDFs, videos) or paste an external video link (YouTube/Drive), and the system strips ALL metadata **client-side in the browser** before upload. Server rejects files with residual metadata. | 8 | Upload JPG with EXIF → client-side piexifjs strips it → upload → server validates zero EXIF. Server rejects file with residual EXIF (422). Same for PDF author info via pdf-lib in browser. Files renamed to UUID. External video links stored as `evidence.type = 'external_link'`. |
+| **US-008** | As the system, illegal content (CSAM, drugs, weapons) is automatically blocked — **rejected files NEVER uploaded to Cloudinary.** Report record marked REJECTED for audit trail. | 10 | Test with known-bad text → rejected. Test with NSFW image → rejected. Verify rejected file NOT in Cloudinary. Report record exists in DB with status `REJECTED`. Forensic log entry created. If suspected CSAM detected, mandatory NCMEC CyberTipline report triggered. |
 | **US-009** | As a visitor, I can see a feed of approved publications with category/date/faculty filters. | 5 | Feed loads in <2s. Cursor-based pagination works. Filters by category, faculty, date range. Only `Published` status reports visible. |
 | **US-010** | As a user, I can search reports by keywords and get relevant results in <500ms. | 5 | GIN index on `search_vector`. Search ranks by relevance. Response time <500ms with 10K+ records. |
 | **US-011** | As a user, I can view the complete status history of my report. | 3 | Status timeline shows all state transitions with relative timestamps. |
@@ -129,12 +129,12 @@
 | # | Criterion |
 |---|---|
 | 1 | Cannot submit report without evidence (frontend AND backend block) |
-| 2 | Downloaded evidence from Cloudinary has zero EXIF metadata (automated test) |
+| 2 | Evidence metadata stripped **client-side** (piexifjs/pdf-lib in browser). Server rejects files with residual EXIF/metadata (422 error, automated test) |
 | 3 | Text containing drug sale keywords is auto-rejected (automated test) |
 | 4 | NSFW image is auto-rejected and NOT in Cloudinary (automated test) |
 | 5 | Feed loads in <2 seconds on 4G simulation |
 | 6 | Search returns results in <500ms with 10K+ records (load test) |
-| 7 | All evidence accessed via Cloudinary signed URLs only (no public access) |
+| 7 | All evidence delivered via **Cloudflare CDN proxy** (Worker caches Cloudinary signed URLs at edge). No direct Cloudinary access from browser. |
 | 8 | Moderation pipeline integration tests at 100% pass rate |
 
 ### Delivers: **v0.2 Alpha Funcional**
@@ -171,7 +171,7 @@
 | Moderation endpoints: `PATCH /reports/:id/moderate` with role validation + audit | Backend | 5 | Verify JWT has moderator role. Verify moderator's faculty ≠ report's faculty. Log action to `moderation_log`. Update report status. Notify reporter. |
 | Anti-faculty-conflict detection + auto-reassignment | Backend | 5 | Compare `moderator.faculty` with `report.faculty`. On conflict: hide report from queue, reassign to next available moderator. Log reassignment. |
 | Comments CRUD with AI auto-filter | Backend | 5 | `POST /comments`, `GET /comments?report_id=X`, `DELETE /comments/:id` (author only). Workers AI filter before storage. 2-level nesting via `parent_id`. |
-| Voting system: 1 vote/user, atomic counter | Backend | 3 | `POST /reports/:id/vote`. `UNIQUE(report_id, token_id)` constraint. Atomic `INCREMENT` on `reports.votes`. Return new count. |
+| Voting system: 1 vote/user, transactional counter | Backend | 3 | `POST /reports/:id/vote`. `UNIQUE(report_id, token_id)` constraint. Increment `reports.votes` **in same transaction** as `votes` table INSERT (decrement on DELETE). Return new count. |
 | Collaborative reports: `POST /reports/:id/support` | Backend | 5 | Accept description + optional evidence. Same metadata stripping pipeline. Public counter increment. Individual supporter tokens not exposed. |
 | Citizen reports: `POST /reports/:id/flag` | Backend | 3 | Accept category + optional description. Count flags per report. Threshold (configurable) triggers status change to `Under Review`. |
 | In-app notifications table + polling | Backend | 5 | `notifications` table. Insert on state change, new support, moderator action. `GET /notifications` endpoint with pagination. Mark as read. No personal data in payload. |
