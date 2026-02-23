@@ -49,7 +49,7 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 | Technology | Role | Why This Choice |
 |---|---|---|
 | **Neon PostgreSQL** (serverless) | Primary database | Serverless autoscaling, sleeps when idle, native full-text search, DB branching for dev/staging/prod. 500MB free. **No CC required.** |
-| **Cloudinary** | Evidence file storage | 25 credits/month free (1 credit = 1GB storage OR 1GB bandwidth OR 1K transforms — shared pool). **NO credit card.** Served through **Cloudflare CDN proxy** to minimize bandwidth credits. |
+| **Cloudinary** | Evidence file storage | 25 credits/month free (1 credit = 1GB storage OR 1GB bandwidth OR 1K transforms — shared pool). **NO credit card.** Served through **Cloudflare CDN proxy** to minimize bandwidth credits. Long videos → external YouTube/Google Drive links (0 credits). |
 | **Cloudflare KV** | Distributed cache | Global key-value store, microsecond reads, 100K reads/day + 1K writes/day free. Used with write batching. **No CC.** |
 | **Cloudflare Queues** | Task queues | Publication delay (anti-timing), async moderation pipeline, automatic retry. **No CC.** |
 
@@ -76,14 +76,14 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 | Metric | Target | Free Tier Strategy |
 |---|---|---|
 | Registered users | 50,000 in 4 months | Clerk: 50K MRU free. Hits exact limit at month 4 — upgrade with funding in month 5. |
-| Daily active users | 10,000 DAU (month 4) | Aggressive ISR/SSG caching reduces actual function invocations from ~200K to **~25K/day** (80%+ cache hit rate). Fits within 100K/day shared Workers+Pages limit. |
+| Daily active users | 10,000 DAU (month 4) | Aggressive ISR/SSG caching reduces actual function invocations from ~200K to **~45K/day** (80%+ cache hit rate). Fits within 100K/day shared Workers+Pages limit. |
 | Peak concurrency | ~275 simultaneous (11am weekday) | University traffic pattern: <2% of DAU at any moment. ISR serves cached pages, only writes hit live functions. |
 | Daily publications | 500–1,000 reports/day + 3,750 comments + 7,500 votes | **Client-side compression** (images ≤200KB WebP, video clips ≤10sec/500KB) keeps Cloudinary at ~22 of 25 credits in month 4. |
 | API response time | < 200ms (P95) | Workers edge + Neon pgBouncer + ISR cache. Read paths served from Cloudflare CDN. |
 | Page load (first, 4G) | < 2 seconds | Cloudflare Pages global CDN + Next.js SSR/ISR |
 | Page load (cached) | < 500ms | ISR pages cached at 300+ Cloudflare edge locations |
 | Full-text search | < 500ms with 90K records | GIN indexes on Neon (search_vector). DB ~430MB/500MB by month 4 — tight but feasible with TOAST compression. |
-| Evidence upload limit | 5MB/file after client compression | Client-side: images → WebP ≤200KB, videos → 10sec ≤500KB, audio → 60sec ≤300KB, PDFs ≤ 2MB. Originals never reach server. |
+| Evidence upload limit | 5MB/file after client compression | Client-side: images → WebP ≤200KB, videos → 10sec ≤500KB, audio → 60sec ≤300KB, PDFs ≤ 2MB. Longer videos → external YouTube/Drive link (0 Cloudinary credits). Originals never reach server. |
 | Cloudinary month 4 | ~22 of 25 credits used | Storage ~18GB + CDN-proxied bandwidth ~4 credits + 0 transforms (all client-side). |
 | Neon month 4 | ~430 of 500MB used | ~90K reports + ~450K comments + 50K users + indexes. TOAST compresses long text automatically. |
 | LCP (Lighthouse) | < 2.5 seconds on simulated 4G | Static ISR pages + Cloudflare CDN = fast LCP globally. |
