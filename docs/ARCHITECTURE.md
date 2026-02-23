@@ -72,15 +72,15 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 
 | Layer | Technology | Responsibility | Deploy Location | Free Tier |
 |---|---|---|---|---|
-| **CDN / Edge** | Cloudflare Network | DDoS protection, WAF, SSL termination, edge caching | Cloudflare global | Unlimited |
-| **Frontend** | Next.js 15 (App Router) | SSR/SSG, responsive UI, client-side state, auth integration | Vercel | 100GB bandwidth/mo. No CC. |
-| **API Gateway** | Cloudflare Workers | Request routing, rate limiting, CORS, auth verification | Cloudflare edge | 100K req/day. No CC. |
-| **Backend** | Hono.js on Workers | Business logic, validation, orchestration | Cloudflare edge | 100K req/day. No CC. |
+| **CDN / Edge** | Cloudflare Network | DDoS protection, WAF, SSL termination, edge caching, **CDN proxy for Cloudinary media** | Cloudflare global | Unlimited bandwidth. |
+| **Frontend** | Next.js 15 (App Router) | SSR/ISR/SSG, responsive UI, client-side state, auth integration | **Cloudflare Pages** | **Unlimited bandwidth.** No CC. |
+| **API Gateway** | Cloudflare Pages Functions | Request routing, rate limiting, CORS, auth verification | Cloudflare edge | 100K req/day (shared with Workers). No CC. |
+| **Backend** | Hono.js on Workers | Write operations, AI orchestration, queue consumers | Cloudflare edge | 100K req/day (shared with Pages). No CC. |
 | **Authentication** | Clerk.dev | User management, JWT RS256, roles, webhooks | Clerk infrastructure | 50K MRU. No CC. |
 | **Database** | Neon PostgreSQL 16 | Persistent data, full-text search, relational integrity | AWS us-east-1 (Neon) | 500MB storage. No CC. |
-| **Cache** | Cloudflare KV | Session cache, feed cache, rate limit counters | Cloudflare edge | 100K reads/day. No CC. |
+| **Cache** | Cloudflare KV | Rate limit counters, config cache (write-batched) | Cloudflare edge | 100K reads/day, 1K writes/day. No CC. |
 | **Queue** | Cloudflare Queues | Async moderation pipeline, publication delay | Cloudflare | 1M messages/mo. No CC. |
-| **File Storage** | Cloudinary | Evidence files (images, PDFs, videos) | Cloudinary CDN | 25 credits/mo. **No CC.** |
+| **File Storage** | Cloudinary + **Cloudflare CDN proxy** | Evidence files. Client-compressed, CDN-cached. | Cloudinary + CF edge | 25 credits/mo (~22 used). **No CC.** |
 | **AI Moderation** | Workers AI | Content safety analysis (text + images) | Cloudflare edge | 10K neurons/day. No CC. |
 
 ---
@@ -95,8 +95,10 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 | **Language** | TypeScript in strict mode — catches type errors at compile time |
 | **Styling** | Tailwind CSS — utility-first, no CSS file proliferation |
 | **Validation** | Zod schemas shared between frontend and backend |
-| **Deploy** | Vercel — auto-deploy on push, preview environments per branch |
-| **Why Next.js 15** | SSR for SEO + performance, React Server Components reduce client JS, App Router modern patterns, massive ecosystem, Vercel free tier |
+| **Deploy** | **Cloudflare Pages** — unlimited bandwidth, auto-deploy on push, preview environments per branch. **No CC.** |
+| **Why Next.js 15** | SSR for SEO + performance, React Server Components reduce client JS, App Router modern patterns, massive ecosystem |
+| **ISR Strategy** | Feed and report pages use **Incremental Static Regeneration** (60s revalidation for feed, on-demand for reports). 80%+ of page views served from Cloudflare CDN cache — **no function invocation required.** This is how 10K DAU fits in 100K req/day. |
+| **Client-Side Processing** | Browser handles media compression (Canvas API → WebP ≤200KB), EXIF stripping (piexifjs), PDF metadata removal (pdf-lib). Zero server-side transforms = zero Cloudinary transformation credits. |
 
 ### 4.2 Backend: Hono.js on Cloudflare Workers
 
@@ -127,6 +129,8 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 | **Use Cases** | Feed cache, session data, rate limit counters |
 | **Free Tier** | 1GB storage, 100K reads/day, 1K writes/day |
 
+> **KV Write Batching Strategy:** At 10K DAU with 750+ reports/day + comments + votes, naive cache invalidation would exceed 1K writes/day. Solution: aggregate invalidation — a Worker batches multiple cache-busting events into a single KV write every 30 seconds via a Durable Object or Queue. Feed cache is handled by ISR (not KV), so KV writes are primarily rate limit counters + config = ~300-500 writes/day.
+
 ### 4.5 File Storage: Cloudinary (Primary)
 
 | Aspect | Detail |
@@ -137,7 +141,8 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 | **Free Tier** | 25 credits/month. 1 credit = 1GB storage OR 1GB bandwidth OR 1,000 transformations (credits are shared across all usage types). **No CC.** |
 | **Why Cloudinary over R2** | Cloudflare R2 requires credit card verification even for the free tier. For a student project with $0 budget and no payment methods, this is a hard blocker. Cloudinary provides similar functionality (signed URLs, CDN, transformations) with zero CC requirement. |
 | **SDK** | Official Node.js SDK (`cloudinary` npm package) for upload, transform, and signed URL generation |
-| **Metadata Stripping** | Built-in: use `flags: 'strip_profile'` on upload to automatically remove EXIF/GPS/device metadata from images |
+| **Metadata Stripping** | **Client-side primary:** piexifjs strips EXIF from images in the browser. pdf-lib strips PDF metadata in the browser. Server-side `strip_profile` is a **fallback** only, not the default path, preserving transformation credits. |
+| **CDN Proxy** | A Cloudflare Worker proxies all Cloudinary URLs through the Cloudflare Cache API (24h TTL). Repeat views of the same file are served from Cloudflare edge (free, unlimited bandwidth) instead of Cloudinary CDN (which costs bandwidth credits). Cache hit rate ~90%+. **This reduces Cloudinary bandwidth from ~240 credits/month to ~4 credits/month.** |
 
 > **Optional Upgrade:** If any team member can provide a credit card for verification (Cloudflare does NOT charge), Cloudflare R2 can be added as a secondary/replacement storage with S3-compatible API, zero egress fees, and 10GB free. The hexagonal architecture allows swapping storage adapters without changing domain logic.
 
@@ -294,16 +299,21 @@ POST /webhooks/clerk → Verify Svix signature
 
 ### 6.4 Factory Pattern (Evidence Processing)
 
-Different file types need different processing pipelines:
+Different file types need different processing pipelines. **Client-side compression and metadata stripping are mandatory** to stay within Cloudinary's 25 credits/month at 10K DAU scale.
 
-| Evidence Type | Processing Pipeline |
-|---|---|
-| **Image** (JPG, PNG) | Validate magic number → Workers AI (Llama 3.2 Vision) NSFW check → pHash duplicate/known-bad detection → Rename to UUID → Upload to Cloudinary with `flags: 'strip_profile'` (strips ALL EXIF/GPS/device metadata on upload) |
-| **Video** (MP4, WEBM) | Validate magic number → Workers AI frame analysis → Rename to UUID → Upload to Cloudinary with `resource_type: 'video'` (Cloudinary strips container metadata on transcode) |
-| **Audio** (MP3) | Validate magic number → Rename to UUID → Upload to Cloudinary with `resource_type: 'video'` (handles audio; strips ID3 tags) |
-| **Document** (PDF) | Validate magic number → pdf-lib strips author/creation date/program in-Worker (pure JS, no native deps) → Workers AI (Llama Guard 3) text extraction + analysis → Rename to UUID → Upload to Cloudinary |
+| Evidence Type | Client-Side (Browser) | Server-Side (Worker) |
+|---|---|---|
+| **Image** (JPG, PNG) | Canvas API resizes to ≤1920px → exports as WebP ≤200KB. **piexifjs** strips ALL EXIF/GPS/device metadata. | Validate magic number → Workers AI (Llama 3.2 Vision) NSFW check → pHash duplicate detection → Rename to UUID → Upload to Cloudinary (`resource_type: 'image'`). **Fallback:** if EXIF detected post-upload, apply `strip_profile` (rare, saves transform credits). |
+| **Video** (MP4, ≤10 sec) | MediaRecorder API records/re-encodes to ≤10 seconds, ≤500KB. Longer videos → user pastes YouTube/Google Drive link instead. | Validate magic number → Workers AI frame analysis → Rename to UUID → Upload to Cloudinary (`resource_type: 'video'`). |
+| **Audio** (MP3, ≤60 sec) | MediaRecorder API limits to 60 seconds, ≤300KB. | Validate magic number → Rename to UUID → Upload to Cloudinary (`resource_type: 'video'`). |
+| **Document** (PDF, ≤2MB) | **pdf-lib** (pure JS) strips author, creation date, program in browser. | Validate magic number → Workers AI (Llama Guard 3) text extraction + analysis → Rename to UUID → Upload to Cloudinary. |
+| **External Video Link** | User pastes YouTube/Drive URL. Frontend embeds player. | Worker validates URL format + reachability. Stored as `evidence.type = 'external_link'` in DB. No Cloudinary credits used. |
 
-> **⚠️ Why no Sharp/ffmpeg?** Cloudflare Workers are V8 isolates with NO file system, NO native binary execution, and NO Node.js C++ addons. Sharp requires `libvips` (C library) and ffmpeg is a compiled binary — both are **architecturally impossible** in Workers. Instead, we use **Cloudinary's server-side transformations** for image/video metadata stripping and **pdf-lib** (pure JavaScript) for PDF metadata removal. This is not a limitation — Cloudinary's `strip_profile` flag is more reliable than Sharp for EXIF stripping because it handles all image formats uniformly.
+> **⚠️ Why client-side processing?** At 750+ reports/day (80% with media = 18,000 files/month), using Cloudinary server-side transformations (`strip_profile`, resize, transcode) would cost **~18 credits/month in transforms alone**, leaving only 7 credits for storage+bandwidth. By doing ALL compression and metadata stripping in the browser, we spend **0 transform credits** and reduce file sizes by 80%+, extending storage credits dramatically.
+>
+> **Security note:** Client-side EXIF stripping can be bypassed by a malicious user. The server validates uploaded files and rejects any with EXIF data intact (returns 422 with instructions to re-upload). This is a defense-in-depth approach — the client does the work, the server enforces the rule.
+>
+> **Why no Sharp/ffmpeg?** Cloudflare Workers are V8 isolates with NO file system, NO native binary execution. Sharp requires `libvips` (C library) and ffmpeg is a compiled binary — both architecturally impossible in Workers. Client-side processing is not just a cost optimization — it's the only viable approach.
 
 ### 6.5 Middleware Chain
 
@@ -320,15 +330,16 @@ Different file types need different processing pipelines:
 
 ### 6.6 Strangler Fig Pattern (Future Migrations)
 
-When a free tier is exceeded, we can progressively replace services **with other free alternatives**:
+When a free tier is exceeded (or at month 5 with funding), we can progressively upgrade services:
 
-| Current Service | Potential Free Replacement | Trigger |
-|---|---|---|
-| Clerk.dev (50K MRU) | Jose JWT library + custom HMAC auth | > 50K MRU or if zero-knowledge auth required |
-| Cloudflare KV (100K reads/day) | Redis (Upstash free tier, no CC) | > 100K reads/day |
-| Neon PostgreSQL (500MB) | Supabase (500MB free, no CC) or self-hosted Postgres | > 500MB data |
-| Cloudinary (25 credits/mo) | Cloudflare R2 (10GB free, requires CC) or UploadThing (2GB free, no CC) | > 25 credits/month |
-| Sentry.io (1 user) | GlitchTip (open-source, self-hosted) or Vercel error tracking | > 1 user needing access |
+| Current Service | Funded Upgrade (Month 5+) | Trigger | Est. Cost |
+|---|---|---|---|
+| Clerk.dev (50K MRU) | Clerk Pro ($25 base + $0.02/MRU beyond 10K) or custom Jose JWT + HMAC auth | Month 4: hits 50K ceiling | $25-$825/mo |
+| Cloudinary (25 credits) | Cloudflare R2 (10GB free, requires CC, $0 egress) | Storage + bandwidth credits exhausted | $0 (just CC) |
+| Pages+Workers (100K req/day) | Workers Paid ($5/mo + $0.50/M req) | >100K function invocations/day | $5-$10/mo |
+| Neon PostgreSQL (500MB) | Neon Launch ($19/mo, 10GB) | >500MB data | $19/mo |
+| Cloudflare KV (1K writes/day) | Workers KV Paid (included in Workers Paid) | >1K writes/day | Included |
+| Sentry.io (1 user) | Sentry Team ($26/mo, 5 users) | >1 user needing access | $26/mo |
 
 The hexagonal architecture makes this possible: swap the adapter, keep the domain logic. **No service change requires rewriting business logic.**
 

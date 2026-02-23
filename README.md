@@ -33,7 +33,7 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 ### Frontend
 | Technology | Role | Why This Choice |
 |---|---|---|
-| **Next.js 15** (App Router) | Frontend framework | SSR for SEO on public reports, React Server Components reduce client JS, file-based routing, native Vercel deploy |
+| **Next.js 15** (App Router) | Frontend framework | SSR for SEO on public reports, React Server Components reduce client JS, file-based routing, deployed on **Cloudflare Pages** (unlimited bandwidth) |
 | **TypeScript** (strict mode) | Language | Shared types frontend↔backend, autocompletion for 15+ devs, eliminates entire class of bugs |
 | **Tailwind CSS** | Styling | Utility-first eliminates CSS naming conflicts in large teams, purged CSS < 10KB in production |
 | **Zod** | Validation | Type-safe runtime validation, same schemas shared between frontend and backend |
@@ -41,17 +41,17 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 ### Backend
 | Technology | Role | Why This Choice |
 |---|---|---|
-| **Cloudflare Workers** | Runtime/hosting | Edge computing on 300+ global locations, 0ms cold start, 100K req/day free, no server to maintain |
+| **Cloudflare Workers** | Backend runtime | Edge computing on 300+ global locations, 0ms cold start, 100K req/day free (shared with Pages Functions). Used for write operations, AI, queues. No CC. |
 | **Hono.js** | Backend framework | Ultra-lightweight (<15KB), edge-native, TypeScript-first, Express-like API for easy team onboarding |
 | **Drizzle ORM** | Database ORM | Native prepared statements (SQL injection proof), versioned migrations, better perf than Prisma |
 
 ### Data & Storage
 | Technology | Role | Why This Choice |
 |---|---|---|
-| **Neon PostgreSQL** (serverless) | Primary database | Serverless autoscaling, sleeps when idle (perfect for university project), native full-text search, unlimited free projects, DB branching for dev/staging/prod. **No CC required.** |
-| **Cloudinary** | Evidence file storage (primary) | 25 credits/month free (1 credit = 1GB storage OR 1GB bandwidth OR 1K transformations — shared pool, NOT 25GB). **NO credit card required**, signed URLs, built-in image/video transformations for metadata stripping, CDN delivery, SDK for Node.js |
-| **Cloudflare KV** | Distributed cache | Global key-value store, microsecond latency, 100K reads/day free. **No CC required.** |
-| **Cloudflare Queues** | Task queues | Publication delay (anti-timing correlation), async moderation pipeline, automatic retry on failure. **No CC required.** |
+| **Neon PostgreSQL** (serverless) | Primary database | Serverless autoscaling, sleeps when idle, native full-text search, DB branching for dev/staging/prod. 500MB free. **No CC required.** |
+| **Cloudinary** | Evidence file storage | 25 credits/month free (1 credit = 1GB storage OR 1GB bandwidth OR 1K transforms — shared pool). **NO credit card.** Served through **Cloudflare CDN proxy** to minimize bandwidth credits. |
+| **Cloudflare KV** | Distributed cache | Global key-value store, microsecond reads, 100K reads/day + 1K writes/day free. Used with write batching. **No CC.** |
+| **Cloudflare Queues** | Task queues | Publication delay (anti-timing), async moderation pipeline, automatic retry. **No CC.** |
 
 ### Auth, Security & AI
 | Technology | Role | Why This Choice |
@@ -62,33 +62,68 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 ### DevOps & Monitoring
 | Technology | Role | Why This Choice |
 |---|---|---|
-| **Resend.com** | Transactional email | Email verification on registration, 3,000/month free |
-| **Sentry.io** | Error monitoring | Real-time error tracking with stack traces (configured to exclude personal data), 5K errors/month free, 1 user (DevOps lead monitors, shares via Discord). **No CC required.** |
-| **GitHub Actions** | CI/CD | Lint + type-check + tests on every PR; auto-deploy staging on push to `develop`; manual approval for production |
-| **Vercel** | Frontend hosting | Auto-deploy on push, preview deployments per branch, 100GB bandwidth/month |
+| **Resend.com** | Critical admin email only | Clerk handles auth emails (verification, reset). Resend only for admin alerts. 3,000/month free. All user notifications are in-app (notification bell). |
+| **Sentry.io** | Error monitoring | Real-time error tracking (excludes personal data), 5K errors/month free, 1 user. **No CC required.** |
+| **GitHub Actions** | CI/CD | Lint + type-check + tests on every PR; auto-deploy staging on `develop`; manual approval for production |
+| **Cloudflare Pages** | Frontend hosting | **Unlimited bandwidth** (free), auto-deploy on push, preview deployments per branch. Replaces Vercel (which caps at 100GB/month). **No CC.** |
 
 ---
 
-## System Capacity Targets
+## System Capacity Targets (4-Month Free Phase)
 
-| Metric | Target | Free Tier Reality |
+**Scenario:** 50K registered accounts over 4 months, ~10K DAU by month 4, ~750 reports/day with 80% media.
+
+| Metric | Target | Free Tier Strategy |
 |---|---|---|
-| Registered users | Up to 50,000 | Clerk: 50K MRU free (no CC). Beyond → migrate to custom auth |
-| Daily active users | 200–500 | Cloudflare Workers: 100K req/day ≈ 200–500 DAU (at ~50–100 API calls/user/session) |
-| Peak concurrency | 50–100 simultaneous users | 100K req/day ÷ 1440 min = ~69 req/min avg. Burst capacity higher but sustained concurrency limited. |
-| Daily publications | 10–50 reports/day + comments | Cloudinary: ~25 credits/mo limits to ~300–500 evidence files/month total |
-| API response time | < 200ms (P95 under normal load) | Achievable — Workers edge + Neon pgBouncer |
-| Page load (first, 4G) | < 2 seconds | Achievable — Vercel CDN + Next.js SSR |
-| Page load (cached) | < 500ms | Achievable |
-| Full-text search | < 500ms with 10K records | GIN indexes on Neon; 500MB storage limits total records to ~10K–50K |
-| Evidence upload (50MB) | < 30 seconds | Cloudinary free: 25 credits/mo (≈1 credit per GB of storage or bandwidth — NOT 25GB) |
-| LCP (Lighthouse) | < 2.5 seconds on simulated 4G | Achievable with proper optimization |
-| Lighthouse scores | ≥ 85 (Performance, Accessibility, Best Practices) | Achievable |
-| Annual uptime | 99.5% (max 43h downtime/year) | Dependent on Cloudflare/Vercel/Neon uptime (all >99.9%) |
-| RTO (Recovery Time) | < 2 hours | Neon branching enables fast recovery |
-| RPO (Data Loss) | Max 1 hour of lost data | Neon automatic backups |
+| Registered users | 50,000 in 4 months | Clerk: 50K MRU free. Hits exact limit at month 4 — upgrade with funding in month 5. |
+| Daily active users | 10,000 DAU (month 4) | Aggressive ISR/SSG caching reduces actual function invocations from ~200K to **~25K/day** (80%+ cache hit rate). Fits within 100K/day shared Workers+Pages limit. |
+| Peak concurrency | ~275 simultaneous (11am weekday) | University traffic pattern: <2% of DAU at any moment. ISR serves cached pages, only writes hit live functions. |
+| Daily publications | 500–1,000 reports/day + 3,750 comments + 7,500 votes | **Client-side compression** (images ≤200KB WebP, video clips ≤10sec/500KB) keeps Cloudinary at ~22 of 25 credits in month 4. |
+| API response time | < 200ms (P95) | Workers edge + Neon pgBouncer + ISR cache. Read paths served from Cloudflare CDN. |
+| Page load (first, 4G) | < 2 seconds | Cloudflare Pages global CDN + Next.js SSR/ISR |
+| Page load (cached) | < 500ms | ISR pages cached at 300+ Cloudflare edge locations |
+| Full-text search | < 500ms with 90K records | GIN indexes on Neon (search_vector). DB ~430MB/500MB by month 4 — tight but feasible with TOAST compression. |
+| Evidence upload limit | 5MB/file after client compression | Client-side: images → WebP ≤200KB, videos → 10sec ≤500KB, audio → 60sec ≤300KB, PDFs ≤ 2MB. Originals never reach server. |
+| Cloudinary month 4 | ~22 of 25 credits used | Storage ~18GB + CDN-proxied bandwidth ~4 credits + 0 transforms (all client-side). |
+| Neon month 4 | ~430 of 500MB used | ~90K reports + ~450K comments + 50K users + indexes. TOAST compresses long text automatically. |
+| LCP (Lighthouse) | < 2.5 seconds on simulated 4G | Static ISR pages + Cloudflare CDN = fast LCP globally. |
+| Annual uptime | 99.5% (max 43h downtime/year) | Cloudflare/Neon/Clerk all >99.9% uptime SLAs. |
+| RTO / RPO | < 2 hours / max 1 hour | Neon branching + automatic backups. |
 
-> **100% Free — Zero Credit Card Required.** Every service was selected for generous free tiers with NO payment method. These targets are realistic for a university project. When limits are reached, hexagonal architecture enables service-by-service migration to free alternatives (see Strangler Fig Pattern in Architecture doc). **First bottleneck:** Cloudinary (25 credits/mo) → then Workers (100K req/day) → then Neon (500MB).
+### How 10K DAU Fits in 100K req/day (Caching Strategy)
+
+```
+Without caching:  10K DAU × 20 req/session = 200K req/day  → ❌ Exceeds 100K
+With ISR caching:  80% reads served from CDN cache
+  Dynamic requests: 10K × 20 × 0.20 = 40K
+  + Queue/AI workers: ~3K
+  + ISR revalidation: ~2.5K
+  TOTAL function invocations: ~45K/day  → ✅ Within 100K
+```
+
+### How 18K Files/Month Fits in 25 Cloudinary Credits
+
+```
+Client-side compression eliminates server transforms (0 credits):
+  Images:  browser Canvas API → WebP ≤200KB + EXIF stripped via piexifjs
+  Videos:  browser MediaRecorder → 10sec ≤500KB (longer → external YouTube/Drive link)
+  Audio:   browser MediaRecorder → 60sec ≤300KB
+  PDFs:    browser pdf-lib → metadata stripped + ≤2MB
+
+Cloudflare CDN proxy eliminates most bandwidth credits:
+  Worker proxies Cloudinary URLs → Cloudflare Cache API (24h TTL)
+  First access: hits Cloudinary (counts as bandwidth)
+  Repeat access: served from Cloudflare edge (FREE, unlimited)
+  Cache hit rate: ~90%+ for popular content
+
+Month 4 credit breakdown:
+  Storage:     ~18GB cumulative = 18 credits
+  Bandwidth:   ~4GB (only cache misses reach Cloudinary) = 4 credits
+  Transforms:  0 (all client-side)
+  TOTAL:       ~22 credits / 25 limit ✅
+```
+
+> **100% Free for 4 Months — Zero Credit Card Required.** Every service selected for generous free tiers with NO payment method. After month 4 with funding: upgrade Clerk ($25+), add Cloudflare R2 for storage ($0 with CC), scale Workers ($5). Hexagonal architecture enables service-by-service upgrades without rewriting business logic.
 
 ---
 
@@ -101,9 +136,9 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 └───────────────┬──────────────────┬───────────────────────┘
                 │                  │
      ┌──────────▼──────┐  ┌───────▼─────────────┐
-     │     VERCEL       │  │  CLOUDFLARE WORKERS  │
-     │  Next.js 15 SSR  │  │  Hono.js REST API    │
-     │  (Frontend)      │  │  (Backend)           │
+     │ CLOUDFLARE PAGES │  │  CLOUDFLARE WORKERS  │
+     │  Next.js 15 ISR  │  │  Hono.js REST API    │
+     │  (Frontend+CDN)  │  │  (Backend+AI+Queues) │
      └──────────┬──────┘  └───────┬─────────────┘
                 │                  │
      ┌──────────▼──────┐          │

@@ -160,11 +160,13 @@ Step 2: Workers AI analyzes content (text + images)
          → Illegal content → REJECT, log attempt, NEVER store
          → Clean content → proceed
 
-Step 3: Metadata stripping (Cloudinary + pdf-lib)
-         → Images: Cloudinary `strip_profile` flag removes GPS, device, author, timestamps on upload
-         → PDFs: pdf-lib (pure JS, runs in Workers) strips author, program, creation date before upload
-         → Videos: Cloudinary video transformations strip container metadata on upload
-         → Note: Sharp/ffmpeg CANNOT run in Workers (V8 isolates). Cloudinary handles media processing.
+Step 3: Metadata stripping (**client-side primary** + server validation)
+         → Images: **piexifjs** in browser strips ALL EXIF/GPS/device data, Canvas API compresses to WebP ≤200KB
+         → PDFs: **pdf-lib** in browser strips author, program, creation date
+         → Videos: MediaRecorder API re-encodes to ≤10sec/500KB (strips container metadata)
+         → Audio: MediaRecorder API compresses to ≤60sec/300KB
+         → **Server fallback:** Worker validates uploaded file has no residual EXIF/metadata. If found, rejects with 422 (not auto-fixed, to save Cloudinary transform credits).
+         → Note: Sharp/ffmpeg CANNOT run in Workers (V8 isolates). Client-side processing is the primary path.
 
 Step 4: Files renamed to UUID v4
          → Original filename NEVER stored
@@ -220,13 +222,14 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 | Control | Configuration |
 |---|---|
 | **Pre-analysis** | Workers AI scans content BEFORE storage in Cloudinary |
-| **EXIF Stripping** | Cloudinary `flags: 'strip_profile'` removes ALL image metadata (GPS, device, author, timestamp) on upload |
-| **PDF Metadata** | pdf-lib removes author, creation program, creation date, modification date |
-| **Video Metadata** | Cloudinary video transformation pipeline strips embedded metadata, container info on upload |
+| **EXIF Stripping** | **Primary:** piexifjs strips ALL image metadata in browser (GPS, device, author, timestamp). **Fallback:** server rejects files with residual EXIF (422 error). Cloudinary `strip_profile` reserved for funded phase. |
+| **PDF Metadata** | **Primary:** pdf-lib strips author, creation program, dates in browser. **Server validates** no metadata remains. |
+| **Video Metadata** | MediaRecorder API re-encodes in browser, stripping container metadata. Server validates format. |
+| **Client Compression** | **Mandatory before upload:** Images → WebP ≤200KB, Video → ≤10sec/500KB, Audio → ≤60sec/300KB, PDF → ≤2MB. Server rejects oversized files. |
 | **File Naming** | Original filename NEVER stored. Replaced with UUID v4. |
 | **Type Verification** | Magic number (file header bytes), not file extension |
-| **Size Limit** | 50MB per file, 200MB per report |
-| **Access** | Signed URLs with time-limited authentication tokens. Cloudinary authenticated delivery mode. |
+| **Size Limit** | 5MB per file (post-compression), 20MB per report |
+| **Access** | Signed URLs with time-limited authentication tokens via **Cloudflare CDN proxy** (Cloudinary files cached at edge). |
 
 ### 4.5 Operational Security
 

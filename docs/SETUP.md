@@ -14,11 +14,11 @@ MAME runs entirely on free-tier services. Total cost: **$0 USD**.
 |---|---|---|---|---|
 | 1 | GitHub | Source code, CI/CD, project management | Unlimited public repos, 2000 CI min/mo | **NO** |
 | 2 | Neon.tech | PostgreSQL database (serverless) | 500MB storage, branching, pgBouncer | **NO** |
-| 3 | Cloudflare | Workers (backend), KV (cache), AI, Queues | 100K req/day, Workers AI | **NO** |
+| 3 | Cloudflare | Pages (frontend), Workers (backend), KV (cache), AI, Queues | **Unlimited bandwidth** (Pages), 100K req/day (functions), Workers AI | **NO** |
 | 4 | Clerk.dev | Authentication, JWT, roles | 50,000 MRU (Monthly Retained Users) | **NO** |
-| 5 | Vercel | Frontend hosting (Next.js) | 100GB bandwidth/mo | **NO** |
-| 6 | Resend.com | Transactional email | 3,000 emails/month | **NO** |
-| 7 | Cloudinary | **PRIMARY evidence file storage** | 25 credits/mo (1 credit = 1GB storage OR 1GB bandwidth OR 1K transforms — shared). **No CC.** | **NO** |
+| 5 | Cloudflare Pages | Frontend hosting (Next.js) — replaces Vercel | **Unlimited bandwidth**, 500 builds/mo | **NO** |
+| 6 | Resend.com | Admin-only email (Clerk handles auth emails) | 3,000 emails/month | **NO** |
+| 7 | Cloudinary + CDN proxy | Evidence file storage + Cloudflare CDN cache | 25 credits/mo (~22 used at scale). **No CC.** | **NO** |
 | 8 | Sentry.io | Error monitoring | 5,000 errors/month, 1 user | **NO** |
 
 > **✅ ZERO CREDIT CARD REQUIRED.** Every service above works with NO payment method. This was a hard design requirement.
@@ -373,15 +373,19 @@ Free tier: 50,000 MRU (no credit card required)
 
 ---
 
-## Service 5 — Vercel (Frontend Hosting)
+## Service 5 — Cloudflare Pages (Frontend Hosting)
+
+> **Cloudflare Pages replaces Vercel** because Pages offers **unlimited bandwidth** on the free tier (vs. Vercel's 100GB/month cap). At 10K DAU, the frontend would consume ~600GB/month of bandwidth — 6x Vercel's limit. Pages handles this at $0.
 
 ### Setup Steps
 
-1. **Login** at [vercel.com](https://vercel.com) with GitHub
-2. **Create project:**
-   - Add New → Project
-   - Import: Select `mame-app` repository from `mame-foro` organization
-   - Framework: **Next.js** (auto-detected)
+1. **Login** at [dash.cloudflare.com](https://dash.cloudflare.com) (same account as Workers)
+2. **Create Pages project:**
+   - Workers & Pages → Create application → Pages → Connect to Git
+   - Select `mame-app` repository from `mame-foro` organization
+   - Framework preset: **Next.js**
+   - Build command: `npx @cloudflare/next-on-pages`
+   - Build output directory: `.vercel/output/static`
 3. **Add environment variables BEFORE first deploy:**
    - Settings → Environment Variables
    - Add:
@@ -390,21 +394,25 @@ Free tier: 50,000 MRU (no credit card required)
      CLERK_SECRET_KEY = sk_test_...
      NEXT_PUBLIC_API_URL = https://mame-backend.workers.dev
      NEXT_PUBLIC_SENTRY_DSN = https://...@sentry.io/...
+     NODE_VERSION = 20
      ```
-4. **Deploy** — Click "Deploy" button (takes 1-3 minutes)
-5. **Verify:**
-   - Production URL: `https://mame-app.vercel.app`
+4. **Configure custom domain** (optional):
+   - Settings → Custom domains → Add `mame.app` or similar
+5. **Deploy** — Push to `main` branch triggers auto-deploy (2-5 minutes)
+6. **Verify:**
+   - Production URL: `https://mame-app.pages.dev`
    - Auto-deploy on push to `main` branch
    - Preview deployments created for every PR/branch
 
 ### Result
 
 ```
-URL: https://mame-app.vercel.app
+URL: https://mame-app.pages.dev
 Auto-deploy: On push to main
 Preview deploys: Per branch/PR
-Environment variables: 4 configured
-Free tier: 100GB bandwidth/month
+Environment variables: 5 configured
+Free tier: UNLIMITED bandwidth, 500 builds/month
+Functions: Share 100K req/day limit with Workers
 ```
 
 ---
@@ -439,7 +447,7 @@ Use case: Verification codes, password reset, notifications
 
 ## Service 7 — Cloudinary (PRIMARY Evidence Storage)
 
-> **Cloudinary is the PRIMARY file storage for evidence files.** Free forever, NO credit card required. 25 monthly credits (1 credit = 1GB storage OR 1GB bandwidth OR 1,000 transformations — credits are a shared pool, NOT 25GB total). This was chosen over Cloudflare R2 because R2 requires credit card verification.
+> **Cloudinary is the PRIMARY file storage for evidence files.** Free forever, NO credit card required. 25 monthly credits (1 credit = 1GB storage OR 1GB bandwidth OR 1,000 transformations — shared pool). **At 10K DAU scale, ALL media is compressed client-side and ALL delivery is cached through a Cloudflare CDN proxy — this reduces effective Cloudinary usage to ~22 of 25 credits/month.** Chosen over R2 because R2 requires credit card.
 
 ### Setup Steps
 
@@ -464,7 +472,7 @@ Use case: Verification codes, password reset, notifications
    - Name: `mame-evidence`
    - Signing Mode: **Signed** (requires API secret)
    - Folder: `mame-evidencias`
-   - Flags: `strip_profile` (auto-strip EXIF/metadata on upload)
+   - Flags: `strip_profile` (fallback EXIF strip — primary stripping done client-side via piexifjs to save transform credits)
    - Resource type: `auto` (supports images, videos, PDFs)
 
 ### Result
@@ -474,9 +482,41 @@ Cloud name: CLOUDINARY_CLOUD_NAME saved
 API credentials: Key + Secret saved
 Folder structure: mame-evidencias/{imagenes,videos,documentos}
 Authenticated delivery: Enabled (signed URLs required)
-Upload preset: mame-evidence (signed, strip_profile)
-Free tier: 25 credits/mo (1 credit = 1GB storage OR bandwidth OR 1K transforms). No CC required.
+Upload preset: mame-evidence (signed, strip_profile as fallback)
+Free tier: 25 credits/mo (~22 used at 10K DAU with CDN proxy + client-side compression).
 ```
+
+### CDN Proxy Setup (Critical for Scale)
+
+To serve Cloudinary files through Cloudflare's free CDN (unlimited bandwidth), create a Worker that proxies and caches media:
+
+```javascript
+// workers/media-proxy.js
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const cacheKey = new Request(url.toString(), request);
+    const cache = caches.default;
+
+    // Check Cloudflare CDN cache first
+    let response = await cache.match(cacheKey);
+    if (response) return response; // FREE - no Cloudinary bandwidth credit
+
+    // Cache miss: fetch from Cloudinary (costs bandwidth credit)
+    const cloudinaryUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/${url.pathname}`;
+    response = await fetch(cloudinaryUrl);
+
+    // Cache for 24 hours at Cloudflare edge (free, unlimited)
+    response = new Response(response.body, response);
+    response.headers.set('Cache-Control', 'public, max-age=86400');
+    await cache.put(cacheKey, response.clone());
+
+    return response;
+  }
+};
+```
+
+This single Worker reduces Cloudinary bandwidth from ~240 credits/month to ~4 credits/month (only first-access cache misses count).
 
 ---
 
@@ -523,7 +563,7 @@ Free tier: 5,000 events/month
 
 ## Complete Environment Variables Summary
 
-### Frontend (Vercel)
+### Frontend (Cloudflare Pages)
 
 | Variable | Source | Public? |
 |---|---|---|
@@ -605,8 +645,8 @@ wrangler secret put ENCRYPTION_RELATION_KEY
 | 3 | Cloudflare Workers | ☐ | ☐ Account dashboard | ☐ wrangler.toml |
 | 4 | Cloudflare KV | ☐ | ☐ 2 namespace IDs | ☐ wrangler.toml |
 | 5 | Cloudinary | ☐ | ☐ 3 credentials (cloud name, key, secret) | ☐ Workers vars/secrets |
-| 6 | Clerk.dev | ☐ | ☐ 2 API keys + webhook secret | ☐ Vercel + Workers |
-| 7 | Vercel | ☐ | ☐ Deploy URL | ☐ 4 env vars |
+| 6 | Clerk.dev | ☐ | ☐ 2 API keys + webhook secret | ☐ Pages + Workers |
+| 7 | Cloudflare Pages | ☐ | ☐ Deploy URL | ☐ 5 env vars |
 | 8 | Resend.com | ☐ | ☐ API key | ☐ Workers secret |
 | 9 | Sentry.io | ☐ | ☐ 2 DSNs | ☐ Frontend + Backend |
 | 11 | Encryption Keys | ☐ Generated | ☐ Password manager | ☐ Workers secrets |

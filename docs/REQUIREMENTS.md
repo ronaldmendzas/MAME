@@ -113,26 +113,27 @@ MAME is a publicly accessible web platform where anyone can register and anonymo
 |---|---|---|
 | API response time | < 200ms | P95 under normal load |
 | Page load | < 2 seconds | 4G connection, first load |
-| Page load (cached) | < 500ms | Active cache |
-| Minimum throughput | ~69 req/min sustained (100K req/day) | Free tier Workers limit. Burst capacity higher for short periods. |
-| Concurrent users | 50–100 sustained | Free tier reality. Burst up to 200 for short periods. |
-| Evidence upload | < 30 seconds | 50MB file |
-| Full-text search | < 300ms | DB with 10K–50K records (500MB Neon limit) |
+| Page load (cached) | < 500ms | ISR-cached pages from Cloudflare CDN |
+| Function invocations | ≤45K/day (of 100K limit) | With ISR caching: 80%+ page views served from CDN, only dynamic writes + searches + ISR revalidation hit actual functions. |
+| Concurrent users | ~275 at peak (11am weekday) | ISR serves cached pages. Only write operations require live function execution. |
+| Evidence upload | < 15 seconds | After client-side compression (≤200KB images, ≤500KB video, ≤300KB audio) |
+| Full-text search | < 500ms | DB with ~90K records (month 4). GIN indexes on search_vector. |
 | LCP (Lighthouse) | < 2.5 seconds | Simulated 4G |
 | Upload progress | Visible progress bar | All file uploads |
 
 ### 4.2 Scalability
 
-| Scenario | Required Capacity | Free Tier Limit |
+| Scenario | Required Capacity | Free Tier Strategy |
 |---|---|---|
-| Total registered users | Up to 50,000 | Clerk: 50K MRU (no CC). Beyond → custom auth migration |
-| Daily active users | 200–500 under normal operation | Workers: 100K req/day ≈ 200–500 DAU (at ~50–100 API calls/user/session) |
-| Peak concurrency | 50–100 simultaneous users | 100K req/day ÷ 1440 min = ~69 req/min avg. Higher in bursts. |
-| Daily publications | 10–50 reports/day + comments | Cloudinary: 25 credits/mo ≈ 300–500 evidence files/month |
-| Evidence storage | ~5–10GB realistic usage/month | Cloudinary 25 credits: 1 credit = 1GB storage OR 1GB bandwidth OR 1K transformations. Actual capacity depends on mix. |
-| Growth projection | Support 10x with free alternative swaps | Hexagonal architecture enables service swaps |
+| Total registered users | 50,000 in 4 months | Clerk: 50K MRU (no CC). Hits limit month 4 → upgrade with funding. |
+| Daily active users | 10,000 DAU by month 4 | ISR caching: 80%+ reads from CDN = ~45K function invocations/day (within 100K). |
+| Peak concurrency | ~275 simultaneous (11am peak) | University traffic pattern. ISR serves cached pages. Writes are <15% of traffic. |
+| Daily publications | 500–1,000 reports/day + 3,750 comments + 7,500 votes | Client-compressed media (≤200KB avg). ~22 of 25 Cloudinary credits used in month 4. |
+| Evidence storage | ~18GB cumulative by month 4 | Client-side compression: images ≤200KB WebP, video ≤10sec/500KB, audio ≤60sec/300KB, PDFs ≤2MB. CDN proxy eliminates bandwidth credits. |
+| DB storage | ~430MB by month 4 | 90K reports + 450K comments + 50K users + indexes. TOAST compression on long text. Fits 500MB with ~70MB margin. |
+| Growth projection | Month 5+: funded upgrades | Hexagonal architecture enables service swaps. Priority: Clerk Pro → R2 storage → Workers Paid. |
 
-> **Scaling Reality:** These targets represent the system's design capacity, not initial free tier limits. The hexagonal architecture allows incremental service upgrades as usage grows. See Architecture doc's Strangler Fig Pattern for migration paths.
+> **Scaling Reality:** The free tier supports 50K users and 10K DAU through aggressive ISR caching, client-side media processing, and CDN proxying. The system is designed to hit its limits at exactly month 4 — coinciding with the planned funding timeline.
 
 ### 4.3 Security
 
@@ -148,7 +149,7 @@ MAME is a publicly accessible web platform where anyone can register and anonymo
 - Automatic key rotation every 90 days
 - No email or identifiable data stored in plaintext in our database (Clerk stores emails on their infrastructure as auth trust delegate — see Privacy section)
 - No user IPs stored in any log or table
-- All files processed (metadata stripped) before storage in Cloudinary
+- All files processed (metadata stripped **client-side** via piexifjs/pdf-lib before upload; server rejects files with residual metadata as fallback)
 - OWASP ZAP scan with zero critical/high vulnerabilities before launch
 
 ### 4.4 Privacy
@@ -228,7 +229,7 @@ MAME is a publicly accessible web platform where anyone can register and anonymo
 | **Budget** | Zero dollars. Entire stack must be free | Limits infrastructure options |
 | **Team** | 15+ students with different experience levels | Requires standardized, documented code |
 | **Timeline** | University project with academic deadlines | MVP first, advanced features later |
-| **Infrastructure** | Only services with robust free tiers and NO credit card requirement | Cloudflare, Vercel, Neon.tech, Cloudinary, Clerk.dev |
+| **Infrastructure** | Only services with robust free tiers and NO credit card requirement for 4 months | Cloudflare (Pages + Workers + KV + Queues + AI), Neon.tech, Cloudinary, Clerk.dev |
 | **Legal** | Cannot identify users without court order | Anonymity architecture is non-negotiable |
 | **Content** | Cannot host illegal content | Automatic AI moderation mandatory before any publication |
 
@@ -243,6 +244,6 @@ The system is ready for public launch when ALL of the following are met:
 3. **Report without evidence is impossible** to submit (blocked on frontend AND backend)
 4. **NSFW/illegal content detected and rejected** automatically before reaching moderation
 5. **Approved report visible publicly** in < 24 hours from submission
-6. **50–100 concurrent users** without measurable performance degradation (free tier reality)
+6. **~275 concurrent users at peak** without measurable performance degradation (ISR-cached pages + CDN delivery)
 7. **Moderation panel** allows processing 50 reports/hour per moderator
 8. **Security scan** (OWASP ZAP) passes with zero critical or high vulnerabilities
