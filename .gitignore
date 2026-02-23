@@ -1,20 +1,46 @@
-# VS Code local config
+# === IDE / Editor ===
 .vscode/
+.idea/
+*.swp
+*.swo
 
-# OS files
+# === OS files ===
 Thumbs.db
 .DS_Store
+Desktop.ini
 
-# Environment files (NEVER commit secrets)
+# === Environment files (NEVER commit secrets) ===
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 .dev.vars
 
-# Node
+# === Node / npm ===
 node_modules/
 dist/
+*.tsbuildinfo
+
+# === Next.js ===
+.next/
+out/
+.vercel/
+
+# === Cloudflare ===
 .wrangler/
 
-# Misc
+# === Turborepo ===
+.turbo/
+
+# === Testing (Vitest) ===
+coverage/
+
+# === Docker (local dev volumes) ===
+pgdata/
+
+# === Logs ===
 *.log
+npm-debug.log*
+
+# === Security (never commit keys) ===
+*.pem
+*.key
