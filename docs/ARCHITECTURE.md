@@ -49,7 +49,7 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 
 ```
 ┌────────────┐     ┌──────────────┐     ┌──────────────────┐
-│   Client    │────▶│   Vercel     │────▶│  Cloudflare      │
+│   Client    │────▶│  CF Pages    │────▶│  Cloudflare      │
 │  (Browser)  │     │  (Next.js 15)│     │  Workers (Hono)  │
 └────────────┘     └──────────────┘     └──────┬───────────┘
                                                │
@@ -557,7 +557,7 @@ Pull Request Opened
   └── All must pass → PR can be merged
 
 Push to `develop`
-  ├── Auto-deploy to staging (Vercel preview + Workers staging)
+  ├── Auto-deploy to staging (Pages preview + Workers staging)
   ├── Integration tests run
   └── Discord webhook notification
 

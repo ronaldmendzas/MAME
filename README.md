@@ -218,7 +218,7 @@ Month 4 credit breakdown:
 | **Time** | University project with academic deadlines | MVP first, advanced features later; 11 weeks total |
 | **Legal** | Cannot identify users without court order | Anonymity architecture is non-negotiable; identity reveal requires 2 founder approvals + both master keys |
 | **Content** | Cannot host illegal content under any circumstance | Automatic AI moderation is mandatory before any human sees uploaded content |
-| **Infrastructure** | Only services with robust free tiers and NO credit card requirement | Cloudflare (Workers/KV/Queues/AI), Vercel, Neon.tech, Clerk.dev, Cloudinary, Resend, Sentry |
+| **Infrastructure** | Only services with robust free tiers and NO credit card requirement | Cloudflare (Pages/Workers/KV/Queues/AI), Neon.tech, Clerk.dev, Cloudinary, Resend, Sentry |
 
 ---
 
