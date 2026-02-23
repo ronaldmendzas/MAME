@@ -126,7 +126,7 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 |---|---|
 | **Type** | Globally distributed key-value store |
 | **Read Latency** | Microseconds (served from nearest edge location) |
-| **Use Cases** | Feed cache, session data, rate limit counters |
+| **Use Cases** | Session data, rate limit counters, config cache |
 | **Free Tier** | 1GB storage, 100K reads/day, 1K writes/day |
 
 > **KV Write Batching Strategy:** At 10K DAU with 750+ reports/day + comments + votes, naive cache invalidation would exceed 1K writes/day. Solution: aggregate invalidation — a Worker batches multiple cache-busting events into a single KV write every 30 seconds via a Durable Object or Queue. Feed cache is handled by ISR (not KV), so KV writes are primarily rate limit counters + config = ~300-500 writes/day.
@@ -181,7 +181,7 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 
 | Service | Purpose | Free Tier |
 |---|---|---|
-| **Resend.com** | Transactional email (verification codes, notifications) | 3,000 emails/month. No CC. |
+| **Resend.com** | **Admin alert emails only** (Clerk handles all auth emails: verification, password reset). In-app notifications for users. | 3,000 emails/month. No CC. |
 | **Sentry.io** | Error monitoring and performance tracking (configured to exclude personal data) | 5,000 errors/month, 1 user. No CC. |
 | **GitHub Actions** | CI/CD pipeline (lint, type-check, tests, deploy) | 2,000 minutes/month. No CC. |
 
@@ -268,7 +268,7 @@ The moderation pipeline is fully event-driven. No synchronous blocking of the us
 3. Event enters Cloudflare Queue
 4. Queue triggers Worker AI analysis
 5. AI passes → `ReportReadyForHumanReview` event → enters moderation queue
-6. AI rejects → `ReportAutoRejected` event → user notified, content NEVER stored
+6. AI rejects → `ReportAutoRejected` event → user notified, report marked `REJECTED`, uploaded files queued for deletion
 7. Moderator approves → `ReportApproved` event → random 1-6h delay in Queue
 8. Delay expires → `ReportPublished` event → visible in feed, reporter notified
 
@@ -291,7 +291,9 @@ POST /webhooks/clerk → Verify Svix signature
   → BEGIN TRANSACTION
     → INSERT users (clerk_id, email_hash)
     → INSERT anonymous_profiles (token_id)
-    → INSERT identity_links (clerk_id → token_id)
+    → relation_proof = HMAC-SHA256(email_hash + token_id, ENCRYPTION_RELATION_KEY)
+    → INSERT identity_links (relation_proof)
+    → Update Clerk user publicMetadata with { token_id }
   → COMMIT
   → return 201 Created
   → ON ERROR → ROLLBACK → return 500
@@ -382,6 +384,8 @@ The hexagonal architecture makes this possible: swap the adapter, keep the domai
 | `created_at` | TIMESTAMPTZ | Auto-generated |
 
 > **Note:** This table has NO direct FK to `users` or `anonymous_profiles`. The `relation_proof` is a one-way hash. Without BOTH `ENCRYPTION_MASTER_KEY` AND `ENCRYPTION_RELATION_KEY` (stored only in Cloudflare Secrets), it is mathematically impossible to determine which user owns which token.
+>
+> **Operational lookup (normal login flow):** When the `user.created` webhook creates the anonymous token, the handler stores `token_id` in Clerk's `publicMetadata` for that user. On subsequent logins, the JWT from Clerk includes `token_id` in its claims — the system reads it directly from the token. The `identity_links` table is **never queried during normal operations**; it exists solely as an emergency de-anonymization path (court order) where an admin with BOTH keys can mathematically prove which user owns which token.
 
 #### `reports`
 
@@ -394,7 +398,7 @@ The hexagonal architecture makes this possible: swap the adapter, keep the domai
 | `category` | TEXT | Predefined category |
 | `faculty` | TEXT | Faculty/department |
 | `status` | TEXT | Draft/Under Review/Published/etc. |
-| `votes` | INT | Anonymous vote counter |
+| `votes` | INT | Denormalized counter — incremented/decremented by application logic inside the same transaction as the `votes` table INSERT/DELETE. Avoids extra query on feed reads. |
 | `search_vector` | TSVECTOR | Full-text search vector |
 | `created_at` | TIMESTAMPTZ | Auto-generated |
 
@@ -404,9 +408,10 @@ The hexagonal architecture makes this possible: swap the adapter, keep the domai
 |---|---|---|
 | `id` | UUID (PK) | Evidence ID |
 | `report_id` | UUID (FK → reports) | Parent report |
-| `file_key` | TEXT | Cloudinary public_id (UUID-based) |
-| `file_type` | TEXT | MIME type (verified by magic number) |
-| `file_size` | INT | Size in bytes |
+| `type` | TEXT | `'file'` or `'external_link'` |
+| `file_key` | TEXT | Cloudinary public_id (UUID-based) for files, or full URL for external links (YouTube/Drive) |
+| `file_type` | TEXT | MIME type (verified by magic number) for files, `'external_link'` for links |
+| `file_size` | INT | Size in bytes (0 for external links) |
 | `uploaded_at` | TIMESTAMPTZ | Auto-generated |
 
 #### `comments`
@@ -501,7 +506,7 @@ CREATE UNIQUE INDEX idx_votes_unique ON votes(report_id, token_id);
 | **Network** | HTTPS TLS 1.3, HSTS max-age=31536000 | Encrypted transport, forces HTTPS |
 | **Application** | Rate limiting, strict CORS, CSP headers | Prevents abuse, XSS, clickjacking |
 | **Authentication** | JWT RS256 via Clerk (trust delegate), refresh token rotation | Secure identity verification. Clerk stores email; our DB only HMAC hash. |
-| **Data** | HMAC-SHA256 for emails (irreversible without ENCRYPTION_MASTER_KEY), bcrypt passwords handled by Clerk | At-rest protection for sensitive data |
+| **Data** | HMAC-SHA256 for emails (irreversible without ENCRYPTION_MASTER_KEY), password hashing handled entirely by Clerk | At-rest protection for sensitive data |
 | **Files** | UUID filenames in Cloudinary, signed URLs with time-limited authentication tokens, metadata stripped on upload | No file metadata leakage, no permanent public URLs |
 
 ### Cryptographic Anonymity Flow (7 Steps)
