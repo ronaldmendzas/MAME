@@ -44,3 +44,5 @@ npm-debug.log*
 # === Security (never commit keys) ===
 *.pem
 *.key
+CREDENTIALS.md
+docs/CREDENTIALS.md
