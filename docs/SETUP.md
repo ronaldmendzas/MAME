@@ -14,9 +14,9 @@ MAME runs entirely on free-tier services. Total cost: **$0 USD**.
 |---|---|---|---|---|
 | 1 | GitHub | Source code, CI/CD, project management | Unlimited public repos, 2000 CI min/mo | **NO** |
 | 2 | Neon.tech | PostgreSQL database (serverless) | 500MB storage, branching, pgBouncer | **NO** |
-| 3 | Cloudflare | Pages (frontend), Workers (backend), KV (cache), AI, Queues | **Unlimited bandwidth** (Pages), 100K req/day (functions), Workers AI | **NO** |
+| 3 | Cloudflare | Workers (backend), KV (cache), AI, Queues | 100K req/day (functions), Workers AI, 1M queue msg/mo | **NO** |
 | 4 | Clerk.dev | Authentication, JWT, roles | 50,000 MRU (Monthly Retained Users) | **NO** |
-| 5 | Cloudflare Pages | Frontend hosting (Next.js) — replaces Vercel | **Unlimited bandwidth**, 500 builds/mo | **NO** |
+| 5 | Cloudflare Pages | Frontend hosting (Next.js) | **Unlimited bandwidth**, 500 builds/mo, 100K req/day (shared with Workers) | **NO** |
 | 6 | Resend.com | Admin-only email (Clerk handles auth emails) | 3,000 emails/month | **NO** |
 | 7 | Cloudinary + CDN proxy | Evidence file storage + Cloudflare CDN cache | 25 credits/mo (~22 used at scale). **No CC.** | **NO** |
 | 8 | Sentry.io | Error monitoring | 5,000 errors/month, 1 user | **NO** |
@@ -123,7 +123,7 @@ CREATE TABLE reports (
     category TEXT NOT NULL,
     faculty TEXT,
     status TEXT DEFAULT 'pending',
-    votes INT DEFAULT 0,
+    votes INT DEFAULT 0,            -- denormalized counter; app increments/decrements in same txn as votes table INSERT/DELETE
     search_vector TSVECTOR,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -159,9 +159,10 @@ CREATE INDEX idx_reports_faculty ON reports(faculty, status);
 CREATE TABLE evidence (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     report_id UUID REFERENCES reports(id),
-    file_key TEXT NOT NULL,
-    file_type TEXT NOT NULL,
-    file_size INT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'file',  -- 'file' or 'external_link'
+    file_key TEXT NOT NULL,             -- Cloudinary public_id for files, full URL for external links
+    file_type TEXT NOT NULL,            -- MIME type for files, 'external_link' for links
+    file_size INT NOT NULL DEFAULT 0,   -- bytes (0 for external links)
     uploaded_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -256,7 +257,7 @@ Tables: 10+ created with indexes
    - Subdomain: `mame-backend` → Result: `mame-backend.workers.dev`
 3. **Create KV Namespaces:**
    - Workers & Pages → KV → Create a namespace
-   - Create: `MAME_CACHE` (for feed cache, rate limit counters)
+   - Create: `MAME_CACHE` (for rate limit counters, config cache)
    - Create: `MAME_SESSIONS` (for session data)
    - **Note the Namespace IDs** — needed for `wrangler.toml`
 4. **⚠️ R2 NOT used as primary storage** (requires credit card verification):
@@ -440,7 +441,7 @@ Functions: Share 100K req/day limit with Workers
 ```
 API Key: RESEND_API_KEY saved
 Free tier: 3,000 emails/month
-Use case: Verification codes, password reset, notifications
+Use case: Admin alert emails only (Clerk handles all auth emails: verification, password reset)
 ```
 
 ---
@@ -492,6 +493,9 @@ To serve Cloudinary files through Cloudflare's free CDN (unlimited bandwidth), c
 
 ```javascript
 // workers/media-proxy.js
+// CDN proxy: caches Cloudinary files at Cloudflare edge (free, unlimited bandwidth).
+// Browser requests media from this Worker domain (e.g., media.mame.app),
+// never from res.cloudinary.com directly.
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -502,9 +506,15 @@ export default {
     let response = await cache.match(cacheKey);
     if (response) return response; // FREE - no Cloudinary bandwidth credit
 
-    // Cache miss: fetch from Cloudinary (costs bandwidth credit)
-    const cloudinaryUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/${url.pathname}`;
+    // Cache miss: fetch from Cloudinary (costs 1 bandwidth credit per GB)
+    // pathname format: /<resource_type>/upload/<public_id>
+    // e.g., /image/upload/mame-evidencias/abc123
+    //       /video/upload/mame-evidencias/xyz789
+    //       /raw/upload/mame-evidencias/doc456.pdf
+    const cloudinaryUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}${url.pathname}${url.search}`;
     response = await fetch(cloudinaryUrl);
+
+    if (!response.ok) return response; // Don't cache errors
 
     // Cache for 24 hours at Cloudflare edge (free, unlimited)
     response = new Response(response.body, response);
@@ -649,6 +659,7 @@ wrangler secret put ENCRYPTION_RELATION_KEY
 | 7 | Cloudflare Pages | ☐ | ☐ Deploy URL | ☐ 5 env vars |
 | 8 | Resend.com | ☐ | ☐ API key | ☐ Workers secret |
 | 9 | Sentry.io | ☐ | ☐ 2 DSNs | ☐ Frontend + Backend |
+| 10 | Cloudflare Queues | ☐ | ☐ Queue created | ☐ wrangler.toml |
 | 11 | Encryption Keys | ☐ Generated | ☐ Password manager | ☐ Workers secrets |
 
 ---
@@ -689,7 +700,6 @@ wrangler dev
 ### Docker Compose Template
 
 ```yaml
-version: '3.8'
 services:
   postgres:
     image: postgres:16
