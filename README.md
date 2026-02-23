@@ -63,7 +63,6 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 | Technology | Role | Why This Choice |
 |---|---|---|
 | **Resend.com** | Transactional email | Email verification on registration, 3,000/month free |
-| **Cloudinary** | Evidence file storage (primary) | 25 credits/month free, **NO credit card required**, built-in CDN, signed URLs, image/video transformations |
 | **Sentry.io** | Error monitoring | Real-time error tracking with stack traces (configured to exclude personal data), 5K errors/month free, 1 user (DevOps lead monitors, shares via Discord). **No CC required.** |
 | **GitHub Actions** | CI/CD | Lint + type-check + tests on every PR; auto-deploy staging on push to `develop`; manual approval for production |
 | **Vercel** | Frontend hosting | Auto-deploy on push, preview deployments per branch, 100GB bandwidth/month |
@@ -74,22 +73,22 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 
 | Metric | Target | Free Tier Reality |
 |---|---|---|
-| Registered users | 50,000 (aspirational) | Clerk: 50K MRU free (no CC). Beyond → migrate to custom auth |
-| Daily active users | 5,000 | Cloudflare Workers: 100K req/day ≈ ~2K-5K active users depending on usage |
-| Peak concurrency | 500 simultaneous users (validated) | Workers auto-scale on edge; bottleneck is Neon connection pooling |
-| Daily publications | Hundreds of reports + comments | KV: 1K writes/day limits cache updates; Cloudinary 25 credits/month limits evidence volume |
+| Registered users | Up to 50,000 | Clerk: 50K MRU free (no CC). Beyond → migrate to custom auth |
+| Daily active users | 200–500 | Cloudflare Workers: 100K req/day ≈ 200–500 DAU (at ~50–100 API calls/user/session) |
+| Peak concurrency | 50–100 simultaneous users | 100K req/day ÷ 1440 min = ~69 req/min avg. Burst capacity higher but sustained concurrency limited. |
+| Daily publications | 10–50 reports/day + comments | Cloudinary: ~25 credits/mo limits to ~300–500 evidence files/month total |
 | API response time | < 200ms (P95 under normal load) | Achievable — Workers edge + Neon pgBouncer |
 | Page load (first, 4G) | < 2 seconds | Achievable — Vercel CDN + Next.js SSR |
 | Page load (cached) | < 500ms | Achievable |
-| Full-text search | < 500ms with 100K records | GIN indexes on Neon; 500MB storage limits total records |
-| Evidence upload (50MB) | < 30 seconds | Cloudinary free: 25 credits/month (≈25GB combined) |
+| Full-text search | < 500ms with 10K records | GIN indexes on Neon; 500MB storage limits total records to ~10K–50K |
+| Evidence upload (50MB) | < 30 seconds | Cloudinary free: 25 credits/mo (≈1 credit per GB of storage or bandwidth — NOT 25GB) |
 | LCP (Lighthouse) | < 2.5 seconds on simulated 4G | Achievable with proper optimization |
 | Lighthouse scores | ≥ 85 (Performance, Accessibility, Best Practices) | Achievable |
 | Annual uptime | 99.5% (max 43h downtime/year) | Dependent on Cloudflare/Vercel/Neon uptime (all >99.9%) |
-| RTO (Recovery Time Objective) | < 2 hours | Neon branching enables fast recovery |
-| RPO (Recovery Point Objective) | Max 1 hour of lost data | Neon automatic backups |
+| RTO (Recovery Time) | < 2 hours | Neon branching enables fast recovery |
+| RPO (Data Loss) | Max 1 hour of lost data | Neon automatic backups |
 
-> **100% Free — Zero Credit Card Required:** Every service in the stack was selected specifically because it offers a generous free tier with NO credit card required for signup. When free tier limits are reached, the hexagonal architecture enables service-by-service migration to free alternatives (see Strangler Fig Pattern in Architecture doc). Priority upgrade path: Neon (500MB) → Cloudinary (25 credits) → Workers (100K req/day).
+> **100% Free — Zero Credit Card Required.** Every service was selected for generous free tiers with NO payment method. These targets are realistic for a university project. When limits are reached, hexagonal architecture enables service-by-service migration to free alternatives (see Strangler Fig Pattern in Architecture doc). **First bottleneck:** Cloudinary (25 credits/mo) → then Workers (100K req/day) → then Neon (500MB).
 
 ---
 

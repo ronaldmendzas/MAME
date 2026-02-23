@@ -112,7 +112,7 @@
 | `GET /reports` cursor-based pagination | Backend | 3 | Returns published reports with cursor. Default 20/page. Supports filter params: `category`, `faculty`, `status`, `date_from`, `date_to`. |
 | `GET /reports/:id` with permissions | Backend | 2 | Public if `Published`. Author can see all statuses. Moderator can see `Under Review`. Includes evidence URLs (signed) and comment count. |
 | Upload to Cloudinary: multipart, magic number verification, UUID rename | Backend | 8 | Multipart upload handler. Verify file type by magic bytes (not extension). Rename to UUID v4. Cloudinary signed upload with `strip_profile` flag. Return signed URL. |
-| EXIF stripping: Sharp (images) + pdf-lib (PDFs) | Backend | 5 | Sharp: `sharp(buffer).rotate().removeMetadata().toBuffer()`. pdf-lib: strip Title, Author, Subject, Creator, Producer, CreationDate, ModDate. ffmpeg for video. |
+| Metadata stripping: Cloudinary (images/video) + pdf-lib (PDFs) | Backend | 5 | **Images:** Cloudinary `flags: 'strip_profile'` on upload (strips ALL EXIF). **PDFs:** pdf-lib in-Worker: strip Title, Author, Subject, Creator, Producer, CreationDate, ModDate. **Videos:** Cloudinary `resource_type: 'video'` auto-strips container metadata. Note: Sharp/ffmpeg cannot run in Workers (V8 isolates). |
 | Workers AI text classifier (Llama Guard 3) | Backend | 8 | `@cf/meta/llama-guard-3-8b`. Purpose-built safety classifier for: CSAM, drugs, weapons, grooming, trafficking, violence incitement. Confidence threshold tuning. Fallback to human-only moderation if accuracy < 90%. |
 | Workers AI image classifier + pHash | Backend | 8 | `@cf/meta/llama-3.2-11b-vision-instruct` for NSFW/violence. Perceptual hashing for known-bad image detection. Combined pass/fail decision. Mandatory NCMEC CyberTipline reporting process for suspected CSAM. |
 | Cloudinary signed URLs with configurable expiration | Backend | 3 | Generate Cloudinary signed URLs for evidence access with time-limited authentication tokens. Regenerate on each request. Never permanent public URLs. |
@@ -224,7 +224,7 @@
 | Responsive design: complete 320-1440px | Frontend | 8 | Test all pages at 320px, 375px, 768px, 1024px, 1440px. Fix all breakpoint issues. Touch targets ≥ 44x44px. No overflow. |
 | Admin statistics dashboard (Chart.js) | Full-Stack | 5 | Reports per category (bar chart). Reports per month (line chart). Reports per faculty (pie chart). Average moderation time. Active tokens count. |
 | Landing page + FAQ + onboarding flow | Frontend | 5 | Hero section explaining MAME. How it works (3-step visual). FAQ (collapsible). First-time user onboarding modal/tour. |
-| k6 load tests: 500 concurrent users | QA | 8 | k6 scripts simulating 500 concurrent users. Scenarios: browse feed, search, create report, comment, vote. Max P95 latency < 200ms. Error rate < 1%. |
+| k6 load tests: 50–100 concurrent users | QA | 8 | k6 scripts simulating 50–100 concurrent users (free tier reality). Scenarios: browse feed, search, create report, comment, vote. Max P95 latency < 200ms. Error rate < 1%. Verify system stays within 100K req/day Workers limit. |
 | Accessibility tests: axe-core, WCAG 2.1 AA | QA | 3 | Run axe-core on all pages. Fix all critical/serious issues. Color contrast ratios pass. Screen reader navigation works. Keyboard navigation complete. |
 | API documentation: Swagger/OpenAPI 3.0 | Backend | 3 | All endpoints documented. Request/response schemas. Authentication requirements. Example values. Available at `/api/docs`. |
 | Incident response plan (documented) | DevOps | 3 | Written P0-P3 response procedures. Contact list. Escalation paths. Communication templates. Shared with all team members. |
@@ -236,7 +236,7 @@
 | # | Criterion | How to Verify |
 |---|---|---|
 | 1 | OWASP ZAP scan: zero critical, zero high vulnerabilities | ZAP report screenshots |
-| 2 | 500 concurrent users with no >20% degradation in response time | k6 load test results |
+| 2 | 50–100 concurrent users with no >20% degradation in response time | k6 load test results |
 | 3 | Lighthouse score ≥ 85 on mobile | Lighthouse report |
 | 4 | 24 DSS security controls completed with evidence | Checklist with screenshots |
 | 5 | Swagger/OpenAPI documentation complete for all endpoints | `/api/docs` accessible |

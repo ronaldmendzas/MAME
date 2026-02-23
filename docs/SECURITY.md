@@ -30,7 +30,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 | **SQL injection** | Attacker extracts users table | Drizzle ORM prepared statements + Zod input validation |
 | **Corrupt moderator** | Internal betrayal — moderator identifies reporters | Moderators only see anonymous tokens, never emails. Immutable audit log of all moderator actions. |
 | **IP logs exposed** | Students identified via university network logs | NO IP addresses stored anywhere in the system — not in logs, not in DB, not in analytics |
-| **File metadata** | Evidence photo reveals device, GPS location, author name | Sharp strips EXIF, pdf-lib strips PDF metadata, ffmpeg transcodes video — all BEFORE Cloudinary upload. Cloudinary `flags: 'strip_profile'` as secondary defense. |
+| **File metadata** | Evidence photo reveals device, GPS location, author name | Cloudinary `flags: 'strip_profile'` strips ALL EXIF/GPS/device metadata from images on upload. pdf-lib strips PDF metadata in-Worker (pure JS). Cloudinary video transformations strip container metadata. |
 | **Timing correlation** | "Report appeared at 3pm, who was online at 3pm?" | Random 1-6h publication delay via Cloudflare Queues, relative timestamps only |
 
 ---
@@ -88,7 +88,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 | **XSS (Cross-Site Scripting)** | Inject malicious JavaScript via report content, comments | Next.js auto-escapes output by default. CSP strict headers (`script-src 'self'`). DOMPurify for any user-generated HTML. NEVER use `dangerouslySetInnerHTML`. |
 | **Unauthorized Moderator Access** | Attacker gains moderator role or bypasses role check | Role verification on EVERY backend endpoint (not just frontend). JWT RS256 — backend always verifies signature with Clerk's public key. No role stored in JWT payload alone. |
 | **Brute Force Login** | Automated attempts to guess user passwords | Clerk.dev handles rate limiting and password security. 5 failed attempts → 15-minute block. 10 failed → 1-hour block + CAPTCHA. Password hashing managed by Clerk (bcrypt). |
-| **File Metadata Exposure** | Uploaded photo contains GPS, device name, author | Sharp strips ALL EXIF data from images. pdf-lib strips author/program/dates from PDFs. ffmpeg transcodes video to strip embedded metadata. All processing happens BEFORE Cloudinary upload. |
+| **File Metadata Exposure** | Uploaded photo contains GPS, device name, author | Cloudinary `strip_profile` flag removes ALL EXIF data from images on upload. pdf-lib (pure JS, runs in Workers) strips author/program/dates from PDFs before upload. Cloudinary video transformations strip embedded metadata. |
 | **ID Enumeration** | Sequential IDs allow crawling all resources | UUID v4 for ALL entity IDs (users, tokens, reports, evidence, comments). Permission check on every endpoint — knowing an ID doesn't grant access. |
 | **DDoS** | Volumetric attack overwhelming the service | Cloudflare auto-blocks volumetric attacks at edge. Rate limiting per IP (100 req/min public). Rate limiting per token (20 req/min write). Workers auto-scale. |
 
@@ -160,11 +160,11 @@ Step 2: Workers AI analyzes content (text + images)
          → Illegal content → REJECT, log attempt, NEVER store
          → Clean content → proceed
 
-Step 3: Sharp / pdf-lib / ffmpeg strip ALL metadata
-         → GPS coordinates removed
-         → Device name removed
-         → Author name removed
-         → Creation timestamps removed
+Step 3: Metadata stripping (Cloudinary + pdf-lib)
+         → Images: Cloudinary `strip_profile` flag removes GPS, device, author, timestamps on upload
+         → PDFs: pdf-lib (pure JS, runs in Workers) strips author, program, creation date before upload
+         → Videos: Cloudinary video transformations strip container metadata on upload
+         → Note: Sharp/ffmpeg CANNOT run in Workers (V8 isolates). Cloudinary handles media processing.
 
 Step 4: Files renamed to UUID v4
          → Original filename NEVER stored
@@ -220,9 +220,9 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 | Control | Configuration |
 |---|---|
 | **Pre-analysis** | Workers AI scans content BEFORE storage in Cloudinary |
-| **EXIF Stripping** | Sharp library removes ALL image metadata (GPS, device, author, timestamp) |
+| **EXIF Stripping** | Cloudinary `flags: 'strip_profile'` removes ALL image metadata (GPS, device, author, timestamp) on upload |
 | **PDF Metadata** | pdf-lib removes author, creation program, creation date, modification date |
-| **Video Metadata** | ffmpeg transcode strips embedded metadata, container info |
+| **Video Metadata** | Cloudinary video transformation pipeline strips embedded metadata, container info on upload |
 | **File Naming** | Original filename NEVER stored. Replaced with UUID v4. |
 | **Type Verification** | Magic number (file header bytes), not file extension |
 | **Size Limit** | 50MB per file, 200MB per report |
@@ -340,7 +340,7 @@ The system CANNOT reveal:
 | 11 | Rate limiting active on login + content creation endpoints | ☐ |
 | 12 | ALL database queries use prepared statements via Drizzle (no string concatenation) | ☐ |
 | 13 | Zod validation on ALL write endpoints (create report, comment, vote, etc.) | ☐ |
-| 14 | EXIF metadata stripped from ALL images before Cloudinary upload (Sharp) | ☐ |
+| 14 | EXIF metadata stripped from ALL images via Cloudinary `strip_profile` flag on upload | ☐ |
 | 15 | PDF metadata stripped from ALL PDFs before Cloudinary upload (pdf-lib) | ☐ |
 | 16 | File type verified by magic number, not declared extension | ☐ |
 | 17 | Workers AI content filter runs BEFORE any file is stored in Cloudinary | ☐ |

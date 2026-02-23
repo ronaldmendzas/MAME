@@ -131,6 +131,25 @@ CREATE TABLE reports (
 -- Full-text search index
 CREATE INDEX idx_reports_search ON reports USING GIN(search_vector);
 
+-- Auto-populate search_vector on INSERT or UPDATE
+CREATE OR REPLACE FUNCTION update_search_vector()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.search_vector := 
+    setweight(to_tsvector('spanish', COALESCE(NEW.title, '')), 'A') ||
+    setweight(to_tsvector('spanish', COALESCE(NEW.body, '')), 'B') ||
+    setweight(to_tsvector('spanish', COALESCE(NEW.category, '')), 'C') ||
+    setweight(to_tsvector('spanish', COALESCE(NEW.faculty, '')), 'D');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER reports_search_update
+  BEFORE INSERT OR UPDATE OF title, body, category, faculty
+  ON reports
+  FOR EACH ROW
+  EXECUTE FUNCTION update_search_vector();
+
 -- Feed performance indexes
 CREATE INDEX idx_reports_status ON reports(status, created_at DESC);
 CREATE INDEX idx_reports_category ON reports(category, status);
@@ -189,6 +208,10 @@ CREATE TABLE moderation_log (
     reason TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Enforce immutability: prevent UPDATE and DELETE on moderation_log
+CREATE RULE no_update_moderation AS ON UPDATE TO moderation_log DO INSTEAD NOTHING;
+CREATE RULE no_delete_moderation AS ON DELETE TO moderation_log DO INSTEAD NOTHING;
 
 -- Collaborative report supporters
 CREATE TABLE report_supporters (

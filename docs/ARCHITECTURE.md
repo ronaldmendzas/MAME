@@ -41,7 +41,7 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 
 - **Serverless** via Cloudflare Workers: no servers to manage, auto-scaling, pay-per-request (free tier covers our needs)
 - **Event-Driven** for moderation pipeline: report creation triggers async queue → AI analysis → human review → publication
-- **CQRS** for read/write separation on high-traffic endpoints
+- **CQRS-Inspired Separation** for organized read/write code paths (code-level separation, not infrastructure-level CQRS)
 
 ---
 
@@ -225,9 +225,9 @@ class MockReportRepository implements ReportRepository {
 }
 ```
 
-### 6.2 CQRS (Command Query Responsibility Segregation)
+### 6.2 CQRS-Inspired Separation (Code Organization)
 
-Separate write operations (commands) from read operations (queries) for clarity and optimization.
+We organize handlers into Commands (writes) and Queries (reads) for code clarity. This is **code-level organization, not infrastructure-level CQRS** — both commands and queries hit the same PostgreSQL database through the same Drizzle ORM connection. There are no separate read/write databases, no event sourcing, and no eventual consistency. Think of it as a naming convention that makes the codebase easier to navigate.
 
 **Commands (Write):**
 
@@ -267,16 +267,43 @@ The moderation pipeline is fully event-driven. No synchronous blocking of the us
 7. Moderator approves → `ReportApproved` event → random 1-6h delay in Queue
 8. Delay expires → `ReportPublished` event → visible in feed, reporter notified
 
+#### Webhook Idempotency (Clerk `user.created`)
+
+Clerk's `user.created` webhook triggers creation of 3 linked records: `users` (HMAC hash only), `anonymous_profiles`, and `identity_links`. A partial failure or Clerk retry could leave the DB in an inconsistent state.
+
+**Idempotency Strategy:**
+
+1. **Idempotency key:** Use `clerk_id` as natural idempotency key. Before processing, `SELECT` by `clerk_id` — if record exists, return 200 OK immediately (skip duplicate).
+2. **Transaction wrapping:** All 3 inserts (`users` + `anonymous_profiles` + `identity_links`) execute inside a single PostgreSQL transaction. If any step fails, the entire transaction rolls back — no orphan records.
+3. **Clerk retry handling:** Clerk retries webhooks with the same payload. The idempotency check (step 1) ensures retries are no-ops that return 200 OK.
+4. **Svix signature verification:** Every webhook is verified against Clerk's Svix signing secret before processing. Invalid signatures are rejected with 401.
+
+```
+POST /webhooks/clerk → Verify Svix signature
+  → Extract clerk_id from payload
+  → SELECT users WHERE clerk_id = $1
+  → IF exists → return 200 OK (idempotent)
+  → BEGIN TRANSACTION
+    → INSERT users (clerk_id, email_hash)
+    → INSERT anonymous_profiles (token_id)
+    → INSERT identity_links (clerk_id → token_id)
+  → COMMIT
+  → return 201 Created
+  → ON ERROR → ROLLBACK → return 500
+```
+
 ### 6.4 Factory Pattern (Evidence Processing)
 
 Different file types need different processing pipelines:
 
 | Evidence Type | Processing Pipeline |
 |---|---|
-| **Image** (JPG, PNG) | Validate magic number → Sharp strips EXIF/GPS/device → Workers AI (Llama 3.2 Vision) NSFW check → pHash duplicate/known-bad detection → Rename to UUID → Upload to Cloudinary |
-| **Video** (MP4, WEBM) | Validate magic number → ffmpeg transcode (strips metadata) → Workers AI frame analysis → Rename to UUID → Upload to Cloudinary |
-| **Audio** (MP3) | Validate magic number → Strip ID3/metadata tags → Rename to UUID → Upload to Cloudinary |
-| **Document** (PDF) | Validate magic number → pdf-lib strips author/creation date/program → Workers AI (Llama Guard 3) text extraction + analysis → Rename to UUID → Upload to Cloudinary |
+| **Image** (JPG, PNG) | Validate magic number → Workers AI (Llama 3.2 Vision) NSFW check → pHash duplicate/known-bad detection → Rename to UUID → Upload to Cloudinary with `flags: 'strip_profile'` (strips ALL EXIF/GPS/device metadata on upload) |
+| **Video** (MP4, WEBM) | Validate magic number → Workers AI frame analysis → Rename to UUID → Upload to Cloudinary with `resource_type: 'video'` (Cloudinary strips container metadata on transcode) |
+| **Audio** (MP3) | Validate magic number → Rename to UUID → Upload to Cloudinary with `resource_type: 'video'` (handles audio; strips ID3 tags) |
+| **Document** (PDF) | Validate magic number → pdf-lib strips author/creation date/program in-Worker (pure JS, no native deps) → Workers AI (Llama Guard 3) text extraction + analysis → Rename to UUID → Upload to Cloudinary |
+
+> **⚠️ Why no Sharp/ffmpeg?** Cloudflare Workers are V8 isolates with NO file system, NO native binary execution, and NO Node.js C++ addons. Sharp requires `libvips` (C library) and ffmpeg is a compiled binary — both are **architecturally impossible** in Workers. Instead, we use **Cloudinary's server-side transformations** for image/video metadata stripping and **pdf-lib** (pure JavaScript) for PDF metadata removal. This is not a limitation — Cloudinary's `strip_profile` flag is more reliable than Sharp for EXIF stripping because it handles all image formats uniformly.
 
 ### 6.5 Middleware Chain
 

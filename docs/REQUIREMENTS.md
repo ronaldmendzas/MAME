@@ -68,7 +68,7 @@ MAME is a publicly accessible web platform where anyone can register and anonymo
 |---|---|---|---|---|
 | **RF-07** | **Publications require mandatory evidence.** Without at least 1 attached file, the backend rejects the submission. | MUST | S2 | Form fields: title (10-200 chars), detailed description (100-5000 chars), mandatory category, faculty/department, date of incident, minimum 1 evidence file. Backend validates all fields + file presence. |
 | **RF-08** | **Accepted file formats:** JPG, PNG, PDF, MP4, MP3, WEBM. Limit: 50MB per file, 200MB per report. | MUST | S2 | Verify file type by **magic number** (not declared extension). Files renamed to UUID v4 on upload. Original filename NEVER stored. Additional evidence can be added post-publication. |
-| **RF-09** | **Metadata stripping.** Before storing ANY file, system removes ALL EXIF metadata (images) and authorship metadata (PDFs). | MUST | S2 | Sharp library for image EXIF/GPS/author/device stripping. pdf-lib for PDF metadata removal (author, program, creation date). Videos transcoded with ffmpeg to strip metadata. Cloudinary `flags: 'strip_profile'` also applied on upload as secondary stripping. File stored in Cloudinary has zero identifying metadata. |
+| **RF-09** | **Metadata stripping.** Before storing ANY file, system removes ALL EXIF metadata (images) and authorship metadata (PDFs). | MUST | S2 | **Images:** Cloudinary `flags: 'strip_profile'` on upload removes ALL EXIF/GPS/device/author metadata server-side. **PDFs:** pdf-lib (pure JavaScript, runs in Workers) strips Title, Author, Subject, Creator, Producer, CreationDate, ModDate. **Videos:** Cloudinary video upload with transformation pipeline strips container metadata. **Note:** Sharp and ffmpeg CANNOT run in Cloudflare Workers (V8 isolates have no native binary support). Cloudinary handles all media metadata stripping. |
 | **RF-10** | **AI content filter analyzes text AND images BEFORE storage.** Illegal content automatically rejected. | MUST | S2 | Workers AI on the edge. **Text moderation:** Llama Guard 3 (`@cf/meta/llama-guard-3-8b`) for safety classification (drugs, weapons, CSAM, grooming, trafficking, violence). **Image moderation:** Llama 3.2 Vision (`@cf/meta/llama-3.2-11b-vision-instruct`) for NSFW/violent/exploitative content detection. **CSAM detection:** Perceptual hashing (pHash) against locally-maintained hash lists + mandatory reporting to NCMEC CyberTipline if suspected CSAM is detected (legal obligation). **Note:** Direct access to NCMEC's hash database requires ESP registration — the system uses AI-based detection as primary defense with human escalation for edge cases. Content that fails = NEVER stored in Cloudinary or DB. |
 | **RF-11** | **Evidence files only accessible via Cloudinary signed URLs** with time-limited authentication tokens. Storage is private (authenticated delivery). | MUST | S2 | Cloudinary configured for authenticated delivery. Every evidence access generates a temporary signed URL with expiration. No permanent public URLs for evidence. |
 | **RF-12** | **Approved publications published with random 1-6 hour delay** to prevent temporal correlation. | MUST | S3 | Via Cloudflare Queues. When moderator approves, report enters queue with random delay (1-6h). Prevents adversaries from correlating "report appeared at 3pm → who submitted something around 3pm?" |
@@ -114,10 +114,10 @@ MAME is a publicly accessible web platform where anyone can register and anonymo
 | API response time | < 200ms | P95 under normal load |
 | Page load | < 2 seconds | 4G connection, first load |
 | Page load (cached) | < 500ms | Active cache |
-| Minimum throughput | 200 req/sec | Under peak load (free tier Workers limit: 100K req/day) |
-| Concurrent users | 500 | Without service degradation (validated with k6) |
+| Minimum throughput | ~69 req/min sustained (100K req/day) | Free tier Workers limit. Burst capacity higher for short periods. |
+| Concurrent users | 50–100 sustained | Free tier reality. Burst up to 200 for short periods. |
 | Evidence upload | < 30 seconds | 50MB file |
-| Full-text search | < 300ms | DB with 1M records |
+| Full-text search | < 300ms | DB with 10K–50K records (500MB Neon limit) |
 | LCP (Lighthouse) | < 2.5 seconds | Simulated 4G |
 | Upload progress | Visible progress bar | All file uploads |
 
@@ -125,11 +125,11 @@ MAME is a publicly accessible web platform where anyone can register and anonymo
 
 | Scenario | Required Capacity | Free Tier Limit |
 |---|---|---|
-| Total registered users | 50,000 (aspirational) | Clerk: 50K MRU (no CC). Beyond → custom auth migration |
-| Daily active users | 5,000 under normal operation | Workers: 100K req/day ≈ 2K-5K DAU |
-| Peak concurrency | 500 simultaneous users (validated) | Neon connection pooling is bottleneck |
-| Daily publications | Hundreds of reports + comments | KV: 1K writes/day; Cloudinary: 25 credits/mo |
-| Evidence storage | 25GB combined (storage+bandwidth) | Cloudinary free: 25 credits/mo. No CC. Upgrade: R2 (10GB, requires CC) |
+| Total registered users | Up to 50,000 | Clerk: 50K MRU (no CC). Beyond → custom auth migration |
+| Daily active users | 200–500 under normal operation | Workers: 100K req/day ≈ 200–500 DAU (at ~50–100 API calls/user/session) |
+| Peak concurrency | 50–100 simultaneous users | 100K req/day ÷ 1440 min = ~69 req/min avg. Higher in bursts. |
+| Daily publications | 10–50 reports/day + comments | Cloudinary: 25 credits/mo ≈ 300–500 evidence files/month |
+| Evidence storage | ~5–10GB realistic usage/month | Cloudinary 25 credits: 1 credit = 1GB storage OR 1GB bandwidth OR 1K transformations. Actual capacity depends on mix. |
 | Growth projection | Support 10x with free alternative swaps | Hexagonal architecture enables service swaps |
 
 > **Scaling Reality:** These targets represent the system's design capacity, not initial free tier limits. The hexagonal architecture allows incremental service upgrades as usage grows. See Architecture doc's Strangler Fig Pattern for migration paths.
@@ -243,6 +243,6 @@ The system is ready for public launch when ALL of the following are met:
 3. **Report without evidence is impossible** to submit (blocked on frontend AND backend)
 4. **NSFW/illegal content detected and rejected** automatically before reaching moderation
 5. **Approved report visible publicly** in < 24 hours from submission
-6. **500 concurrent users** without measurable performance degradation
+6. **50–100 concurrent users** without measurable performance degradation (free tier reality)
 7. **Moderation panel** allows processing 50 reports/hour per moderator
 8. **Security scan** (OWASP ZAP) passes with zero critical or high vulnerabilities
