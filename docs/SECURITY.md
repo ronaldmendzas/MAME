@@ -30,7 +30,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 | **SQL injection** | Attacker extracts users table | Drizzle ORM prepared statements + Zod input validation |
 | **Corrupt moderator** | Internal betrayal — moderator identifies reporters | Moderators only see anonymous tokens, never emails. Immutable audit log of all moderator actions. |
 | **IP logs exposed** | Students identified via university network logs | NO IP addresses stored anywhere in the system — not in logs, not in DB, not in analytics |
-| **File metadata** | Evidence photo reveals device, GPS location, author name | Cloudinary `flags: 'strip_profile'` strips ALL EXIF/GPS/device metadata from images on upload. pdf-lib strips PDF metadata in-Worker (pure JS). Cloudinary video transformations strip container metadata. |
+| **File metadata** | Evidence photo reveals device, GPS location, author name | **Client-side primary:** piexifjs strips ALL EXIF/GPS/device metadata from images in browser. pdf-lib strips PDF metadata in browser. MediaRecorder re-encodes video/audio (strips container metadata). **Server fallback:** Worker rejects files with residual metadata (422). Cloudinary `strip_profile` reserved for funded phase. |
 | **Timing correlation** | "Report appeared at 3pm, who was online at 3pm?" | Random 1-6h publication delay via Cloudflare Queues, relative timestamps only |
 
 ---
@@ -76,7 +76,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 - **Legal obligation:** If suspected CSAM is detected by any means, mandatory report to NCMEC CyberTipline (18 U.S.C. § 2258A). Process documented in incident response.
 - Llama Guard 3 (`@cf/meta/llama-guard-3-8b`) for text content safety classification
 - Llama 3.2 Vision (`@cf/meta/llama-3.2-11b-vision-instruct`) for image content analysis
-- **ABSOLUTE RULE:** Content flagged as illegal is NEVER stored — not in DB, not in Cloudinary, nowhere
+- **ABSOLUTE RULE:** Files flagged as illegal are NEVER uploaded to Cloudinary. Report metadata is stored in DB with `PENDING` status for audit trail, then immediately marked `REJECTED` with files queued for deletion.
 - Forensic log records the attempt: timestamp + anonymous token + content hash (not content)
 - Token that attempted upload is flagged for review
 
@@ -87,8 +87,8 @@ Before diving into technical controls, understand what goes wrong if security fa
 | **SQL Injection** | Crafted input in forms/URLs to execute arbitrary SQL | Drizzle ORM with native prepared statements (parameterized queries). Zod schema validation on ALL inputs. No raw SQL concatenation ever. |
 | **XSS (Cross-Site Scripting)** | Inject malicious JavaScript via report content, comments | Next.js auto-escapes output by default. CSP strict headers (`script-src 'self'`). DOMPurify for any user-generated HTML. NEVER use `dangerouslySetInnerHTML`. |
 | **Unauthorized Moderator Access** | Attacker gains moderator role or bypasses role check | Role verification on EVERY backend endpoint (not just frontend). JWT RS256 — backend always verifies signature with Clerk's public key. No role stored in JWT payload alone. |
-| **Brute Force Login** | Automated attempts to guess user passwords | Clerk.dev handles rate limiting and password security. 5 failed attempts → 15-minute block. 10 failed → 1-hour block + CAPTCHA. Password hashing managed by Clerk (bcrypt). |
-| **File Metadata Exposure** | Uploaded photo contains GPS, device name, author | Cloudinary `strip_profile` flag removes ALL EXIF data from images on upload. pdf-lib (pure JS, runs in Workers) strips author/program/dates from PDFs before upload. Cloudinary video transformations strip embedded metadata. |
+| **Brute Force Login** | Automated attempts to guess user passwords | Clerk.dev handles rate limiting and password security. 5 failed attempts → 15-minute block. 10 failed → 1-hour block + CAPTCHA. Password hashing managed entirely by Clerk. |
+| **File Metadata Exposure** | Uploaded photo contains GPS, device name, author | **Client-side primary:** piexifjs strips ALL EXIF from images in browser. pdf-lib (pure JS, runs in browser) strips author/program/dates from PDFs. MediaRecorder re-encodes video/audio. **Server enforces:** Worker rejects uploads with residual metadata (422). |
 | **ID Enumeration** | Sequential IDs allow crawling all resources | UUID v4 for ALL entity IDs (users, tokens, reports, evidence, comments). Permission check on every endpoint — knowing an ID doesn't grant access. |
 | **DDoS** | Volumetric attack overwhelming the service | Cloudflare auto-blocks volumetric attacks at edge. Rate limiting per IP (100 req/min public). Rate limiting per token (20 req/min write). Workers auto-scale. |
 
@@ -136,6 +136,12 @@ Step 7: relation_proof = HMAC-SHA256(email_hash + token_id, ENCRYPTION_RELATION_
         ENCRYPTION_RELATION_KEY stored ONLY in Cloudflare Secrets
         Store in `identity_links` table: { relation_proof }
         NO foreign keys to users or anonymous_profiles — just a one-way hash
+
+Step 8: Store token_id in Clerk user's publicMetadata
+        → On subsequent logins, JWT includes token_id in claims
+        → System reads token_id directly from JWT — no DB lookup needed
+        → identity_links table is NEVER queried in normal operations
+        → It exists solely for emergency de-anonymization (court order, §6)
 ```
 
 **Result:** Three tables, zero direct relationships. Clerk has the email but not the token. Our DB has the token but not the email. Without BOTH `ENCRYPTION_MASTER_KEY` AND `ENCRYPTION_RELATION_KEY` (both in Cloudflare Secrets, not in the database), it is mathematically impossible to determine which email corresponds to which anonymous token.
@@ -157,7 +163,8 @@ Step 1: User publishes report
          → No reference to users table
 
 Step 2: Workers AI analyzes content (text + images)
-         → Illegal content → REJECT, log attempt, NEVER store
+         → Illegal FILES → NEVER uploaded to Cloudinary. Report record marked REJECTED.
+           Forensic log: timestamp + token + content hash (not content itself).
          → Clean content → proceed
 
 Step 3: Metadata stripping (**client-side primary** + server validation)
@@ -174,7 +181,8 @@ Step 4: Files renamed to UUID v4
 
 Step 5: Content stored in Cloudinary with signed URLs (time-limited authentication tokens)
          → No permanent public URLs
-         → Access requires valid, time-limited signed URL with Cloudinary API secret
+         → Access delivered via **Cloudflare CDN proxy** (Worker caches Cloudinary files at edge, 24h TTL)
+         → Browser never contacts Cloudinary directly — only the proxy Worker domain
 
 Step 6: Report enters Cloudflare Queue with random 1-6h delay
          → Prevents temporal correlation attacks
@@ -202,7 +210,7 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 | **JWT Algorithm** | RS256 (asymmetric) — NOT HS256 (symmetric). Even if public key leaks, tokens can't be forged. |
 | **Access Token** | 1 hour expiry — limits damage window if compromised |
 | **Refresh Token** | 7 days with automatic rotation — old token invalidated on use |
-| **Password Hashing** | Handled by Clerk.dev (bcrypt, managed infrastructure) — passwords never touch our system |
+| **Password Hashing** | Handled entirely by Clerk.dev (managed infrastructure) — passwords never touch our system |
 | **Login Rate Limit** | 5 failures → 15min block. 10 failures → 1h block + CAPTCHA |
 | **Session Storage** | In browser memory only — no persistent session cookies |
 | **Logout** | Immediate server-side JWT + refresh token invalidation |
@@ -330,7 +338,7 @@ The system CANNOT reveal:
 | 3 | CSP header strict: `script-src 'self'` — no `unsafe-inline` | ☐ |
 | 4 | ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY stored in Cloudflare Secrets (not in code, .env, or DB) | ☐ |
 | 5 | All emails stored as HMAC-SHA256 hash (no plaintext email in any table) | ☐ |
-| 6 | Password hashing handled by Clerk.dev (bcrypt, managed infrastructure — passwords never in our DB) | ☐ |
+| 6 | Password hashing handled entirely by Clerk.dev (managed infrastructure — passwords never in our DB) | ☐ |
 | 7 | JWT signed with RS256 (asymmetric), NOT HS256 | ☐ |
 | 8 | All entity IDs are UUID v4 (no sequential integers) | ☐ |
 | 9 | CORS configured to accept ONLY MAME domain(s) | ☐ |
@@ -343,8 +351,8 @@ The system CANNOT reveal:
 | 11 | Rate limiting active on login + content creation endpoints | ☐ |
 | 12 | ALL database queries use prepared statements via Drizzle (no string concatenation) | ☐ |
 | 13 | Zod validation on ALL write endpoints (create report, comment, vote, etc.) | ☐ |
-| 14 | EXIF metadata stripped from ALL images via Cloudinary `strip_profile` flag on upload | ☐ |
-| 15 | PDF metadata stripped from ALL PDFs before Cloudinary upload (pdf-lib) | ☐ |
+| 14 | EXIF metadata stripped from ALL images **client-side** via piexifjs in browser. Server rejects files with residual EXIF (422). | ☐ |
+| 15 | PDF metadata stripped from ALL PDFs **in browser** via pdf-lib before upload. Server validates no metadata remains. | ☐ |
 | 16 | File type verified by magic number, not declared extension | ☐ |
 | 17 | Workers AI content filter runs BEFORE any file is stored in Cloudinary | ☐ |
 | 18 | Cloudinary evidence files accessible ONLY via signed URLs with expiration | ☐ |
@@ -370,7 +378,9 @@ The system CANNOT reveal:
 ## 8. Security Headers Reference
 
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://res.cloudinary.com; connect-src 'self' https://api.clerk.dev; frame-ancestors 'none'
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://media.YOUR_DOMAIN.com; connect-src 'self' https://api.clerk.dev; frame-ancestors 'none'
+# NOTE: img-src points to the CDN proxy Worker domain (e.g., media.mame.app),
+# NOT res.cloudinary.com — the browser never contacts Cloudinary directly.
 Strict-Transport-Security: max-age=31536000; includeSubDomains
 X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
