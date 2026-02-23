@@ -1,0 +1,20 @@
+# VS Code local config
+.vscode/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Environment files (NEVER commit secrets)
+.env
+.env.local
+.env.production
+.dev.vars
+
+# Node
+node_modules/
+dist/
+.wrangler/
+
+# Misc
+*.log
