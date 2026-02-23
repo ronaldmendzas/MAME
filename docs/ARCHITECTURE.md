@@ -134,7 +134,7 @@ For a team of 15+ people, simple MVC becomes unmaintainable fast. Hexagonal (Por
 | **Type** | Cloud-based media management and CDN delivery |
 | **Key Feature** | **NO credit card required** for free tier. Built-in image/video transformations. CDN delivery. |
 | **Access** | Authenticated delivery via signed URLs with time-limited tokens |
-| **Free Tier** | 25 credits/month (≈25GB combined storage + bandwidth + transformations). **No CC.** |
+| **Free Tier** | 25 credits/month. 1 credit = 1GB storage OR 1GB bandwidth OR 1,000 transformations (credits are shared across all usage types). **No CC.** |
 | **Why Cloudinary over R2** | Cloudflare R2 requires credit card verification even for the free tier. For a student project with $0 budget and no payment methods, this is a hard blocker. Cloudinary provides similar functionality (signed URLs, CDN, transformations) with zero CC requirement. |
 | **SDK** | Official Node.js SDK (`cloudinary` npm package) for upload, transform, and signed URL generation |
 | **Metadata Stripping** | Built-in: use `flags: 'strip_profile'` on upload to automatically remove EXIF/GPS/device metadata from images |

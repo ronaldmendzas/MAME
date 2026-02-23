@@ -18,7 +18,7 @@ MAME runs entirely on free-tier services. Total cost: **$0 USD**.
 | 4 | Clerk.dev | Authentication, JWT, roles | 50,000 MRU (Monthly Retained Users) | **NO** |
 | 5 | Vercel | Frontend hosting (Next.js) | 100GB bandwidth/mo | **NO** |
 | 6 | Resend.com | Transactional email | 3,000 emails/month | **NO** |
-| 7 | Cloudinary | **PRIMARY evidence file storage** | 25 credits/mo (≈25GB combined). **No CC.** | **NO** |
+| 7 | Cloudinary | **PRIMARY evidence file storage** | 25 credits/mo (1 credit = 1GB storage OR 1GB bandwidth OR 1K transforms — shared). **No CC.** | **NO** |
 | 8 | Sentry.io | Error monitoring | 5,000 errors/month, 1 user | **NO** |
 
 > **✅ ZERO CREDIT CARD REQUIRED.** Every service above works with NO payment method. This was a hard design requirement.
@@ -439,7 +439,7 @@ Use case: Verification codes, password reset, notifications
 
 ## Service 7 — Cloudinary (PRIMARY Evidence Storage)
 
-> **Cloudinary is the PRIMARY file storage for evidence files.** Free forever, NO credit card required. 25 monthly credits (≈25GB of combined storage + bandwidth + transformations). This was chosen over Cloudflare R2 because R2 requires credit card verification.
+> **Cloudinary is the PRIMARY file storage for evidence files.** Free forever, NO credit card required. 25 monthly credits (1 credit = 1GB storage OR 1GB bandwidth OR 1,000 transformations — credits are a shared pool, NOT 25GB total). This was chosen over Cloudflare R2 because R2 requires credit card verification.
 
 ### Setup Steps
 
@@ -475,7 +475,7 @@ API credentials: Key + Secret saved
 Folder structure: mame-evidencias/{imagenes,videos,documentos}
 Authenticated delivery: Enabled (signed URLs required)
 Upload preset: mame-evidence (signed, strip_profile)
-Free tier: 25 credits/mo (~25GB combined). No CC required.
+Free tier: 25 credits/mo (1 credit = 1GB storage OR bandwidth OR 1K transforms). No CC required.
 ```
 
 ---

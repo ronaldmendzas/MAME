@@ -49,7 +49,7 @@ MAME is not just a complaint box. It is a **full social network**: users can pub
 | Technology | Role | Why This Choice |
 |---|---|---|
 | **Neon PostgreSQL** (serverless) | Primary database | Serverless autoscaling, sleeps when idle (perfect for university project), native full-text search, unlimited free projects, DB branching for dev/staging/prod. **No CC required.** |
-| **Cloudinary** | Evidence file storage (primary) | 25 credits/month free (covers ~25GB combined storage + bandwidth), **NO credit card required**, signed URLs with authentication tokens, built-in image/video transformations for metadata stripping, CDN delivery, SDK for Node.js |
+| **Cloudinary** | Evidence file storage (primary) | 25 credits/month free (1 credit = 1GB storage OR 1GB bandwidth OR 1K transformations — shared pool, NOT 25GB). **NO credit card required**, signed URLs, built-in image/video transformations for metadata stripping, CDN delivery, SDK for Node.js |
 | **Cloudflare KV** | Distributed cache | Global key-value store, microsecond latency, 100K reads/day free. **No CC required.** |
 | **Cloudflare Queues** | Task queues | Publication delay (anti-timing correlation), async moderation pipeline, automatic retry on failure. **No CC required.** |
 
