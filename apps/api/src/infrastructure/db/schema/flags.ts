@@ -1,8 +1,8 @@
 import { pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core'
 
-import { flagCategoryEnum } from './enums.js'
-import { reports } from './reports.js'
-import { anonymousProfiles } from './users.js'
+import { flagCategoryEnum } from './enums'
+import { reports } from './reports'
+import { anonymousProfiles } from './users'
 
 export const flags = pgTable(
   'flags',

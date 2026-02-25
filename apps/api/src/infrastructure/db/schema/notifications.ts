@@ -1,7 +1,7 @@
 import { boolean, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-import { notificationTypeEnum } from './enums.js'
-import { anonymousProfiles } from './users.js'
+import { notificationTypeEnum } from './enums'
+import { anonymousProfiles } from './users'
 
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),

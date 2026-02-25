@@ -1,13 +1,13 @@
 import { relations } from 'drizzle-orm'
 
-import { anonymousProfiles, users } from './users.js'
-import { reports } from './reports.js'
-import { evidence } from './evidence.js'
-import { comments } from './comments.js'
-import { votes } from './votes.js'
-import { moderationLog, reportStatusHistory } from './moderation.js'
-import { notifications } from './notifications.js'
-import { flags } from './flags.js'
+import { anonymousProfiles, users } from './users'
+import { reports } from './reports'
+import { evidence } from './evidence'
+import { comments } from './comments'
+import { votes } from './votes'
+import { moderationLog, reportStatusHistory } from './moderation'
+import { notifications } from './notifications'
+import { flags } from './flags'
 
 export const usersRelations = relations(users, ({ many }) => ({
   moderationLogs: many(moderationLog),

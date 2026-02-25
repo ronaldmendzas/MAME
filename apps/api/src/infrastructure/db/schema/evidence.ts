@@ -1,7 +1,7 @@
 import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-import { evidenceTypeEnum } from './enums.js'
-import { reports } from './reports.js'
+import { evidenceTypeEnum } from './enums'
+import { reports } from './reports'
 
 export const evidence = pgTable('evidence', {
   id: uuid('id').primaryKey().defaultRandom(),

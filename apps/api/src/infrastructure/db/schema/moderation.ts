@@ -1,8 +1,8 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-import { moderationActionEnum, reportStatusEnum } from './enums.js'
-import { reports } from './reports.js'
-import { users } from './users.js'
+import { moderationActionEnum, reportStatusEnum } from './enums'
+import { reports } from './reports'
+import { users } from './users'
 
 export const moderationLog = pgTable('moderation_log', {
   id: uuid('id').primaryKey().defaultRandom(),

@@ -8,8 +8,8 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 
-import { reportCategoryEnum, reportStatusEnum } from './enums.js'
-import { anonymousProfiles } from './users.js'
+import { reportCategoryEnum, reportStatusEnum } from './enums'
+import { anonymousProfiles } from './users'
 
 const tsvector = customType<{ data: string }>({
   dataType() {

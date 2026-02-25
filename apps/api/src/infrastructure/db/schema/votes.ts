@@ -1,7 +1,7 @@
 import { pgTable, timestamp, unique, uuid } from 'drizzle-orm/pg-core'
 
-import { reports } from './reports.js'
-import { anonymousProfiles } from './users.js'
+import { reports } from './reports'
+import { anonymousProfiles } from './users'
 
 export const votes = pgTable(
   'votes',
