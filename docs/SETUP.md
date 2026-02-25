@@ -2,7 +2,7 @@
 
 > **MAME v2.0** — Step-by-Step Configuration of All External Services
 >
-> *Synthesized from: `MAME_Setup_Guide (2).pdf` (Setup v1.0, 16 pages)*
+> _Synthesized from: `MAME_Setup_Guide (2).pdf` (Setup v1.0, 16 pages)_
 
 ---
 
@@ -10,16 +10,16 @@
 
 MAME runs entirely on free-tier services. Total cost: **$0 USD**.
 
-| # | Service | Purpose | Free Tier | CC Required? |
-|---|---|---|---|---|
-| 1 | GitHub | Source code, CI/CD, project management | Unlimited public repos, 2000 CI min/mo | **NO** |
-| 2 | Neon.tech | PostgreSQL database (serverless) | 500MB storage, branching, pgBouncer | **NO** |
-| 3 | Cloudflare | Workers (backend), KV (cache), AI, Queues | 100K req/day (functions), Workers AI, 1M queue msg/mo | **NO** |
-| 4 | Clerk.dev | Authentication, JWT, roles | 50,000 MRU (Monthly Retained Users) | **NO** |
-| 5 | Cloudflare Pages | Frontend hosting (Next.js) | **Unlimited bandwidth**, 500 builds/mo, 100K req/day (shared with Workers) | **NO** |
-| 6 | Resend.com | Admin-only email (Clerk handles auth emails) | 3,000 emails/month | **NO** |
-| 7 | Cloudinary + CDN proxy | Evidence file storage + Cloudflare CDN cache | 25 credits/mo (~22 used at scale). **No CC.** | **NO** |
-| 8 | Sentry.io | Error monitoring | 5,000 errors/month, 1 user | **NO** |
+| #   | Service                | Purpose                                      | Free Tier                                                                  | CC Required? |
+| --- | ---------------------- | -------------------------------------------- | -------------------------------------------------------------------------- | ------------ |
+| 1   | GitHub                 | Source code, CI/CD, project management       | Unlimited public repos, 2000 CI min/mo                                     | **NO**       |
+| 2   | Neon.tech              | PostgreSQL database (serverless)             | 500MB storage, branching, pgBouncer                                        | **NO**       |
+| 3   | Cloudflare             | Workers (backend), KV (cache), AI, Queues    | 100K req/day (functions), Workers AI, 1M queue msg/mo                      | **NO**       |
+| 4   | Clerk.dev              | Authentication, JWT, roles                   | 50,000 MRU (Monthly Retained Users)                                        | **NO**       |
+| 5   | Cloudflare Pages       | Frontend hosting (Next.js)                   | **Unlimited bandwidth**, 500 builds/mo, 100K req/day (shared with Workers) | **NO**       |
+| 6   | Resend.com             | Admin-only email (Clerk handles auth emails) | 3,000 emails/month                                                         | **NO**       |
+| 7   | Cloudinary + CDN proxy | Evidence file storage + Cloudflare CDN cache | 25 credits/mo (~22 used at scale). **No CC.**                              | **NO**       |
+| 8   | Sentry.io              | Error monitoring                             | 5,000 errors/month, 1 user                                                 | **NO**       |
 
 > **✅ ZERO CREDIT CARD REQUIRED.** Every service above works with NO payment method. This was a hard design requirement.
 
@@ -135,7 +135,7 @@ CREATE INDEX idx_reports_search ON reports USING GIN(search_vector);
 CREATE OR REPLACE FUNCTION update_search_vector()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.search_vector := 
+  NEW.search_vector :=
     setweight(to_tsvector('spanish', COALESCE(NEW.title, '')), 'A') ||
     setweight(to_tsvector('spanish', COALESCE(NEW.body, '')), 'B') ||
     setweight(to_tsvector('spanish', COALESCE(NEW.category, '')), 'C') ||
@@ -270,11 +270,13 @@ Tables: 10+ created with indexes
      - `@cf/meta/llama-guard-3-8b` — Content safety classification
      - `@cf/meta/llama-3.2-11b-vision-instruct` — Multimodal image analysis
 6. **Install Wrangler CLI:**
+
    ```bash
    npm install -g wrangler
    wrangler --version
    wrangler login
    ```
+
    - `wrangler login` opens browser for OAuth authentication
 
 ### wrangler.toml Configuration
@@ -498,32 +500,32 @@ To serve Cloudinary files through Cloudflare's free CDN (unlimited bandwidth), c
 // never from res.cloudinary.com directly.
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-    const cacheKey = new Request(url.toString(), request);
-    const cache = caches.default;
+    const url = new URL(request.url)
+    const cacheKey = new Request(url.toString(), request)
+    const cache = caches.default
 
     // Check Cloudflare CDN cache first
-    let response = await cache.match(cacheKey);
-    if (response) return response; // FREE - no Cloudinary bandwidth credit
+    let response = await cache.match(cacheKey)
+    if (response) return response // FREE - no Cloudinary bandwidth credit
 
     // Cache miss: fetch from Cloudinary (costs 1 bandwidth credit per GB)
     // pathname format: /<resource_type>/upload/<public_id>
     // e.g., /image/upload/mame-evidencias/abc123
     //       /video/upload/mame-evidencias/xyz789
     //       /raw/upload/mame-evidencias/doc456.pdf
-    const cloudinaryUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}${url.pathname}${url.search}`;
-    response = await fetch(cloudinaryUrl);
+    const cloudinaryUrl = `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}${url.pathname}${url.search}`
+    response = await fetch(cloudinaryUrl)
 
-    if (!response.ok) return response; // Don't cache errors
+    if (!response.ok) return response // Don't cache errors
 
     // Cache for 24 hours at Cloudflare edge (free, unlimited)
-    response = new Response(response.body, response);
-    response.headers.set('Cache-Control', 'public, max-age=86400');
-    await cache.put(cacheKey, response.clone());
+    response = new Response(response.body, response)
+    response.headers.set('Cache-Control', 'public, max-age=86400')
+    await cache.put(cacheKey, response.clone())
 
-    return response;
-  }
-};
+    return response
+  },
+}
 ```
 
 This single Worker reduces Cloudinary bandwidth from ~240 credits/month to ~4 credits/month (only first-access cache misses count).
@@ -575,27 +577,27 @@ Free tier: 5,000 events/month
 
 ### Frontend (Cloudflare Pages)
 
-| Variable | Source | Public? |
-|---|---|---|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk.dev Dashboard | Yes (public) |
-| `CLERK_SECRET_KEY` | Clerk.dev Dashboard | **NO — server only** |
-| `NEXT_PUBLIC_API_URL` | Your Workers URL | Yes (public) |
-| `NEXT_PUBLIC_SENTRY_DSN` | Sentry Dashboard | Yes (public) |
+| Variable                            | Source              | Public?              |
+| ----------------------------------- | ------------------- | -------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk.dev Dashboard | Yes (public)         |
+| `CLERK_SECRET_KEY`                  | Clerk.dev Dashboard | **NO — server only** |
+| `NEXT_PUBLIC_API_URL`               | Your Workers URL    | Yes (public)         |
+| `NEXT_PUBLIC_SENTRY_DSN`            | Sentry Dashboard    | Yes (public)         |
 
 ### Backend (Cloudflare Workers)
 
-| Variable | Source | Storage |
-|---|---|---|
-| `DATABASE_URL` | Neon.tech Dashboard | Cloudflare Secrets |
-| `CLERK_SECRET_KEY` | Clerk.dev Dashboard | Cloudflare Secrets |
-| `CLERK_WEBHOOK_SECRET` | Clerk.dev Webhooks | Cloudflare Secrets |
-| `RESEND_API_KEY` | Resend Dashboard | Cloudflare Secrets |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary Dashboard | wrangler.toml [vars] |
-| `CLOUDINARY_API_KEY` | Cloudinary Dashboard | Cloudflare Secrets |
-| `CLOUDINARY_API_SECRET` | Cloudinary Dashboard | Cloudflare Secrets |
-| `SENTRY_DSN_BACKEND` | Sentry Dashboard | wrangler.toml [vars] |
-| `ENCRYPTION_MASTER_KEY` | Self-generated | **Cloudflare Secrets ONLY** |
-| `ENCRYPTION_RELATION_KEY` | Self-generated | **Cloudflare Secrets ONLY** |
+| Variable                  | Source               | Storage                     |
+| ------------------------- | -------------------- | --------------------------- |
+| `DATABASE_URL`            | Neon.tech Dashboard  | Cloudflare Secrets          |
+| `CLERK_SECRET_KEY`        | Clerk.dev Dashboard  | Cloudflare Secrets          |
+| `CLERK_WEBHOOK_SECRET`    | Clerk.dev Webhooks   | Cloudflare Secrets          |
+| `RESEND_API_KEY`          | Resend Dashboard     | Cloudflare Secrets          |
+| `CLOUDINARY_CLOUD_NAME`   | Cloudinary Dashboard | wrangler.toml [vars]        |
+| `CLOUDINARY_API_KEY`      | Cloudinary Dashboard | Cloudflare Secrets          |
+| `CLOUDINARY_API_SECRET`   | Cloudinary Dashboard | Cloudflare Secrets          |
+| `SENTRY_DSN_BACKEND`      | Sentry Dashboard     | wrangler.toml [vars]        |
+| `ENCRYPTION_MASTER_KEY`   | Self-generated       | **Cloudflare Secrets ONLY** |
+| `ENCRYPTION_RELATION_KEY` | Self-generated       | **Cloudflare Secrets ONLY** |
 
 ### Generating Encryption Keys
 
@@ -608,6 +610,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
 > **⚠️ CRITICAL WARNING:**
+>
 > - These two keys protect the anonymity of every user on the platform
 > - If `ENCRYPTION_MASTER_KEY` is lost: email hash lookups break (can’t verify HMAC hashes for new Clerk webhook events)
 > - If `ENCRYPTION_RELATION_KEY` is lost: identity linking becomes permanently impossible
@@ -648,19 +651,19 @@ wrangler secret put ENCRYPTION_RELATION_KEY
 
 ## Final Verification Checklist
 
-| # | Service | Account Created | Credentials Saved | Env Variable Configured |
-|---|---|---|---|---|
-| 1 | GitHub | ☐ | N/A | N/A |
-| 2 | Neon.tech | ☐ | ☐ 3 connection strings | ☐ DATABASE_URL |
-| 3 | Cloudflare Workers | ☐ | ☐ Account dashboard | ☐ wrangler.toml |
-| 4 | Cloudflare KV | ☐ | ☐ 2 namespace IDs | ☐ wrangler.toml |
-| 5 | Cloudinary | ☐ | ☐ 3 credentials (cloud name, key, secret) | ☐ Workers vars/secrets |
-| 6 | Clerk.dev | ☐ | ☐ 2 API keys + webhook secret | ☐ Pages + Workers |
-| 7 | Cloudflare Pages | ☐ | ☐ Deploy URL | ☐ 5 env vars |
-| 8 | Resend.com | ☐ | ☐ API key | ☐ Workers secret |
-| 9 | Sentry.io | ☐ | ☐ 2 DSNs | ☐ Frontend + Backend |
-| 10 | Cloudflare Queues | ☐ | ☐ Queue created | ☐ wrangler.toml |
-| 11 | Encryption Keys | ☐ Generated | ☐ Password manager | ☐ Workers secrets |
+| #   | Service            | Account Created | Credentials Saved                         | Env Variable Configured |
+| --- | ------------------ | --------------- | ----------------------------------------- | ----------------------- |
+| 1   | GitHub             | ☐               | N/A                                       | N/A                     |
+| 2   | Neon.tech          | ☐               | ☐ 3 connection strings                    | ☐ DATABASE_URL          |
+| 3   | Cloudflare Workers | ☐               | ☐ Account dashboard                       | ☐ wrangler.toml         |
+| 4   | Cloudflare KV      | ☐               | ☐ 2 namespace IDs                         | ☐ wrangler.toml         |
+| 5   | Cloudinary         | ☐               | ☐ 3 credentials (cloud name, key, secret) | ☐ Workers vars/secrets  |
+| 6   | Clerk.dev          | ☐               | ☐ 2 API keys + webhook secret             | ☐ Pages + Workers       |
+| 7   | Cloudflare Pages   | ☐               | ☐ Deploy URL                              | ☐ 5 env vars            |
+| 8   | Resend.com         | ☐               | ☐ API key                                 | ☐ Workers secret        |
+| 9   | Sentry.io          | ☐               | ☐ 2 DSNs                                  | ☐ Frontend + Backend    |
+| 10  | Cloudflare Queues  | ☐               | ☐ Queue created                           | ☐ wrangler.toml         |
+| 11  | Encryption Keys    | ☐ Generated     | ☐ Password manager                        | ☐ Workers secrets       |
 
 ---
 
@@ -708,7 +711,7 @@ services:
       POSTGRES_USER: mame_user
       POSTGRES_PASSWORD: local_dev_password
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
 

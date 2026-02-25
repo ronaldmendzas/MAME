@@ -1,0 +1,25 @@
+name = "mame-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "development"
+
+# [kv_namespaces]
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT_KV"
+# id = "placeholder"
+
+# [[queues.producers]]
+# binding = "MODERATION_QUEUE"
+# queue = "mame-moderation"
+
+# [[queues.consumers]]
+# queue = "mame-moderation"
+
+# [ai]
+# binding = "AI"
+
+[dev]
+port = 8787

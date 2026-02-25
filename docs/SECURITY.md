@@ -2,7 +2,7 @@
 
 > **MAME v2.0** — Complete Security Architecture, Threat Model, Privacy Design & Incident Response
 >
-> *Synthesized from: `MAME_Seguridad.pdf` (DSS v1.0, 11 pages) and `MAME_Seguridad_v2.pdf` (DSS v2.0, 8 pages)*
+> _Synthesized from: `MAME_Seguridad.pdf` (DSS v1.0, 11 pages) and `MAME_Seguridad_v2.pdf` (DSS v2.0, 8 pages)_
 
 ---
 
@@ -23,15 +23,15 @@
 
 Before diving into technical controls, understand what goes wrong if security fails:
 
-| Failure Scenario | Real Consequence | Technical Prevention |
-|---|---|---|
-| **Identity leak** | Professor retaliates against student who reported them | HMAC-SHA256 email hashing, no plaintext storage, token-only publication references |
-| **Database breach** | Mass de-anonymization of all reporters | Email-token relation stored as one-way hash requiring 2 separate keys (ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY), both in Cloudflare Secrets |
-| **SQL injection** | Attacker extracts users table | Drizzle ORM prepared statements + Zod input validation |
-| **Corrupt moderator** | Internal betrayal — moderator identifies reporters | Moderators only see anonymous tokens, never emails. Immutable audit log of all moderator actions. |
-| **IP logs exposed** | Students identified via university network logs | NO IP addresses stored anywhere in the system — not in logs, not in DB, not in analytics |
-| **File metadata** | Evidence photo reveals device, GPS location, author name | **Client-side primary:** piexifjs strips ALL EXIF/GPS/device metadata from images in browser. pdf-lib strips PDF metadata in browser. MediaRecorder re-encodes video/audio (strips container metadata). **Server fallback:** Worker rejects files with residual metadata (422). Cloudinary `strip_profile` reserved for funded phase. |
-| **Timing correlation** | "Report appeared at 3pm, who was online at 3pm?" | Random 1-6h publication delay via Cloudflare Queues, relative timestamps only |
+| Failure Scenario       | Real Consequence                                         | Technical Prevention                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identity leak**      | Professor retaliates against student who reported them   | HMAC-SHA256 email hashing, no plaintext storage, token-only publication references                                                                                                                                                                                                                                                    |
+| **Database breach**    | Mass de-anonymization of all reporters                   | Email-token relation stored as one-way hash requiring 2 separate keys (ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY), both in Cloudflare Secrets                                                                                                                                                                                   |
+| **SQL injection**      | Attacker extracts users table                            | Drizzle ORM prepared statements + Zod input validation                                                                                                                                                                                                                                                                                |
+| **Corrupt moderator**  | Internal betrayal — moderator identifies reporters       | Moderators only see anonymous tokens, never emails. Immutable audit log of all moderator actions.                                                                                                                                                                                                                                     |
+| **IP logs exposed**    | Students identified via university network logs          | NO IP addresses stored anywhere in the system — not in logs, not in DB, not in analytics                                                                                                                                                                                                                                              |
+| **File metadata**      | Evidence photo reveals device, GPS location, author name | **Client-side primary:** piexifjs strips ALL EXIF/GPS/device metadata from images in browser. pdf-lib strips PDF metadata in browser. MediaRecorder re-encodes video/audio (strips container metadata). **Server fallback:** Worker rejects files with residual metadata (422). Cloudinary `strip_profile` reserved for funded phase. |
+| **Timing correlation** | "Report appeared at 3pm, who was online at 3pm?"         | Random 1-6h publication delay via Cloudflare Queues, relative timestamps only                                                                                                                                                                                                                                                         |
 
 ---
 
@@ -44,6 +44,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 **Attack:** An adversary (e.g., corrupt university admin) cross-references publication time + writing style + specific incident details + university network logs to identify the reporter.
 
 **Mitigations:**
+
 - No IP addresses logged — ever
 - Publication delay: random 1-6 hours after moderator approval via Cloudflare Queues
 - UI shows relative timestamps only ("2 hours ago"), not exact times
@@ -56,6 +57,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 **Attack:** An attacker obtains a full database dump and attempts to link emails to anonymous tokens to identify reporters.
 
 **Mitigations:**
+
 - Email-token relationship is NEVER stored in plaintext
 - `email_hash = HMAC-SHA256(email, ENCRYPTION_MASTER_KEY)` — ENCRYPTION_MASTER_KEY in Cloudflare Secrets, not DB
 - `relation_proof = HMAC-SHA256(email_hash + token_id, ENCRYPTION_RELATION_KEY)` — ENCRYPTION_RELATION_KEY in Cloudflare Secrets
@@ -70,6 +72,7 @@ Before diving into technical controls, understand what goes wrong if security fa
 **Attack:** Malicious actors attempt to use MAME to distribute child sexual abuse material, drug sale listings, weapon trafficking instructions, or violent content.
 
 **Mitigations:**
+
 - Workers AI content filter runs BEFORE any file reaches Cloudinary storage or DB
 - Perceptual hashing (pHash) against locally-maintained hash lists for known-bad image detection
 - **NCMEC access limitation:** Direct access to NCMEC’s hash database requires ESP (Electronic Service Provider) registration, which requires corporate entity status. As a university project, MAME uses AI-based detection (Llama Guard 3 + Llama 3.2 Vision) as primary defense.
@@ -82,25 +85,25 @@ Before diving into technical controls, understand what goes wrong if security fa
 
 ### 2.2 HIGH Threats
 
-| Threat | Attack Vector | Mitigation |
-|---|---|---|
-| **SQL Injection** | Crafted input in forms/URLs to execute arbitrary SQL | Drizzle ORM with native prepared statements (parameterized queries). Zod schema validation on ALL inputs. No raw SQL concatenation ever. |
-| **XSS (Cross-Site Scripting)** | Inject malicious JavaScript via report content, comments | Next.js auto-escapes output by default. CSP strict headers (`script-src 'self'`). DOMPurify for any user-generated HTML. NEVER use `dangerouslySetInnerHTML`. |
-| **Unauthorized Moderator Access** | Attacker gains moderator role or bypasses role check | Role verification on EVERY backend endpoint (not just frontend). JWT RS256 — backend always verifies signature with Clerk's public key. No role stored in JWT payload alone. |
-| **Brute Force Login** | Automated attempts to guess user passwords | Clerk.dev handles rate limiting and password security. 5 failed attempts → 15-minute block. 10 failed → 1-hour block + CAPTCHA. Password hashing managed entirely by Clerk. |
-| **File Metadata Exposure** | Uploaded photo contains GPS, device name, author | **Client-side primary:** piexifjs strips ALL EXIF from images in browser. pdf-lib (pure JS, runs in browser) strips author/program/dates from PDFs. MediaRecorder re-encodes video/audio. **Server enforces:** Worker rejects uploads with residual metadata (422). |
-| **ID Enumeration** | Sequential IDs allow crawling all resources | UUID v4 for ALL entity IDs (users, tokens, reports, evidence, comments). Permission check on every endpoint — knowing an ID doesn't grant access. |
-| **DDoS** | Volumetric attack overwhelming the service | Cloudflare auto-blocks volumetric attacks at edge. Rate limiting per IP (100 req/min public). Rate limiting per token (20 req/min write). Workers auto-scale. |
+| Threat                            | Attack Vector                                            | Mitigation                                                                                                                                                                                                                                                          |
+| --------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SQL Injection**                 | Crafted input in forms/URLs to execute arbitrary SQL     | Drizzle ORM with native prepared statements (parameterized queries). Zod schema validation on ALL inputs. No raw SQL concatenation ever.                                                                                                                            |
+| **XSS (Cross-Site Scripting)**    | Inject malicious JavaScript via report content, comments | Next.js auto-escapes output by default. CSP strict headers (`script-src 'self'`). DOMPurify for any user-generated HTML. NEVER use `dangerouslySetInnerHTML`.                                                                                                       |
+| **Unauthorized Moderator Access** | Attacker gains moderator role or bypasses role check     | Role verification on EVERY backend endpoint (not just frontend). JWT RS256 — backend always verifies signature with Clerk's public key. No role stored in JWT payload alone.                                                                                        |
+| **Brute Force Login**             | Automated attempts to guess user passwords               | Clerk.dev handles rate limiting and password security. 5 failed attempts → 15-minute block. 10 failed → 1-hour block + CAPTCHA. Password hashing managed entirely by Clerk.                                                                                         |
+| **File Metadata Exposure**        | Uploaded photo contains GPS, device name, author         | **Client-side primary:** piexifjs strips ALL EXIF from images in browser. pdf-lib (pure JS, runs in browser) strips author/program/dates from PDFs. MediaRecorder re-encodes video/audio. **Server enforces:** Worker rejects uploads with residual metadata (422). |
+| **ID Enumeration**                | Sequential IDs allow crawling all resources              | UUID v4 for ALL entity IDs (users, tokens, reports, evidence, comments). Permission check on every endpoint — knowing an ID doesn't grant access.                                                                                                                   |
+| **DDoS**                          | Volumetric attack overwhelming the service               | Cloudflare auto-blocks volumetric attacks at edge. Rate limiting per IP (100 req/min public). Rate limiting per token (20 req/min write). Workers auto-scale.                                                                                                       |
 
 ### 2.3 MEDIUM Threats
 
-| Threat | Attack Vector | Mitigation |
-|---|---|---|
-| **CSRF** | Forged requests from external sites | Clerk.dev + Next.js default CSRF protection. Origin header verification. Cookies set with `SameSite=Strict`. |
-| **Path Traversal** | Manipulated file paths to access server files | Files stored with UUID-based public_ids in Cloudinary, original name never used. Cloudinary uses flat namespace (no directories to traverse). |
-| **Command Injection** | Shell commands injected via user input | Cloudflare Workers are sandboxed V8 isolates — NO shell access, NO file system, NO exec(). Injection is architecturally impossible. |
-| **ReDoS** | Crafted input triggers exponential regex backtracking | Avoid complex regexps. Use Zod schemas for validation (string length, format checks, no regex when possible). |
-| **Open Redirect** | Manipulated redirect URL sends user to malicious site | URL whitelist validation on all redirects. Reject any URL not matching MAME domain. |
+| Threat                | Attack Vector                                         | Mitigation                                                                                                                                    |
+| --------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CSRF**              | Forged requests from external sites                   | Clerk.dev + Next.js default CSRF protection. Origin header verification. Cookies set with `SameSite=Strict`.                                  |
+| **Path Traversal**    | Manipulated file paths to access server files         | Files stored with UUID-based public_ids in Cloudinary, original name never used. Cloudinary uses flat namespace (no directories to traverse). |
+| **Command Injection** | Shell commands injected via user input                | Cloudflare Workers are sandboxed V8 isolates — NO shell access, NO file system, NO exec(). Injection is architecturally impossible.           |
+| **ReDoS**             | Crafted input triggers exponential regex backtracking | Avoid complex regexps. Use Zod schemas for validation (string length, format checks, no regex when possible).                                 |
+| **Open Redirect**     | Manipulated redirect URL sends user to malicious site | URL whitelist validation on all redirects. Reject any URL not matching MAME domain.                                                           |
 
 ---
 
@@ -195,63 +198,63 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 
 ### 4.1 Transport Security
 
-| Control | Configuration |
-|---|---|
-| **TLS** | 1.3 (latest), enforced by Cloudflare |
-| **HSTS** | `max-age=31536000; includeSubDomains` — forces HTTPS for 1 year |
-| **Certificate** | Managed by Cloudflare (auto-renewal, certificate pinning) |
-| **WAF** | Cloudflare Web Application Firewall active |
-| **CORS** | Strict — only MAME domain(s) allowed, no wildcard |
+| Control         | Configuration                                                   |
+| --------------- | --------------------------------------------------------------- |
+| **TLS**         | 1.3 (latest), enforced by Cloudflare                            |
+| **HSTS**        | `max-age=31536000; includeSubDomains` — forces HTTPS for 1 year |
+| **Certificate** | Managed by Cloudflare (auto-renewal, certificate pinning)       |
+| **WAF**         | Cloudflare Web Application Firewall active                      |
+| **CORS**        | Strict — only MAME domain(s) allowed, no wildcard               |
 
 ### 4.2 Authentication Security
 
-| Control | Configuration |
-|---|---|
-| **JWT Algorithm** | RS256 (asymmetric) — NOT HS256 (symmetric). Even if public key leaks, tokens can't be forged. |
-| **Access Token** | 1 hour expiry — limits damage window if compromised |
-| **Refresh Token** | 7 days with automatic rotation — old token invalidated on use |
-| **Password Hashing** | Handled entirely by Clerk.dev (managed infrastructure) — passwords never touch our system |
-| **Login Rate Limit** | 5 failures → 15min block. 10 failures → 1h block + CAPTCHA |
-| **Session Storage** | In browser memory only — no persistent session cookies |
-| **Logout** | Immediate server-side JWT + refresh token invalidation |
+| Control              | Configuration                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| **JWT Algorithm**    | RS256 (asymmetric) — NOT HS256 (symmetric). Even if public key leaks, tokens can't be forged. |
+| **Access Token**     | 1 hour expiry — limits damage window if compromised                                           |
+| **Refresh Token**    | 7 days with automatic rotation — old token invalidated on use                                 |
+| **Password Hashing** | Handled entirely by Clerk.dev (managed infrastructure) — passwords never touch our system     |
+| **Login Rate Limit** | 5 failures → 15min block. 10 failures → 1h block + CAPTCHA                                    |
+| **Session Storage**  | In browser memory only — no persistent session cookies                                        |
+| **Logout**           | Immediate server-side JWT + refresh token invalidation                                        |
 
 ### 4.3 Input/Output Security
 
-| Control | Configuration |
-|---|---|
-| **SQL Injection** | Drizzle ORM prepared statements + Zod validation. ZERO raw SQL concatenation. |
-| **XSS** | CSP strict (`script-src 'self'`) + DOMPurify + Next.js auto-escape. Never `dangerouslySetInnerHTML`. |
-| **Path Traversal** | UUID filenames for all stored files. No user-provided paths. |
-| **Command Injection** | Architecturally impossible — Workers run in sandboxed V8 isolates with no shell access. |
-| **Input Validation** | Zod schemas on ALL write endpoints. Frontend + backend validation (never trust client only). |
+| Control               | Configuration                                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| **SQL Injection**     | Drizzle ORM prepared statements + Zod validation. ZERO raw SQL concatenation.                        |
+| **XSS**               | CSP strict (`script-src 'self'`) + DOMPurify + Next.js auto-escape. Never `dangerouslySetInnerHTML`. |
+| **Path Traversal**    | UUID filenames for all stored files. No user-provided paths.                                         |
+| **Command Injection** | Architecturally impossible — Workers run in sandboxed V8 isolates with no shell access.              |
+| **Input Validation**  | Zod schemas on ALL write endpoints. Frontend + backend validation (never trust client only).         |
 
 ### 4.4 Evidence File Security
 
-| Control | Configuration |
-|---|---|
-| **Pre-analysis** | Workers AI scans content BEFORE storage in Cloudinary |
-| **EXIF Stripping** | **Primary:** piexifjs strips ALL image metadata in browser (GPS, device, author, timestamp). **Fallback:** server rejects files with residual EXIF (422 error). Cloudinary `strip_profile` reserved for funded phase. |
-| **PDF Metadata** | **Primary:** pdf-lib strips author, creation program, dates in browser. **Server validates** no metadata remains. |
-| **Video Metadata** | MediaRecorder API re-encodes in browser, stripping container metadata. Server validates format. |
-| **Client Compression** | **Mandatory before upload:** Images → WebP ≤200KB, Video → ≤10sec/500KB, Audio → ≤60sec/300KB, PDF → ≤2MB. Server rejects oversized files. |
-| **File Naming** | Original filename NEVER stored. Replaced with UUID v4. |
-| **Type Verification** | Magic number (file header bytes), not file extension |
-| **Size Limit** | 5MB per file (post-compression), 20MB per report |
-| **Access** | Signed URLs with time-limited authentication tokens via **Cloudflare CDN proxy** (Cloudinary files cached at edge). |
+| Control                | Configuration                                                                                                                                                                                                         |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pre-analysis**       | Workers AI scans content BEFORE storage in Cloudinary                                                                                                                                                                 |
+| **EXIF Stripping**     | **Primary:** piexifjs strips ALL image metadata in browser (GPS, device, author, timestamp). **Fallback:** server rejects files with residual EXIF (422 error). Cloudinary `strip_profile` reserved for funded phase. |
+| **PDF Metadata**       | **Primary:** pdf-lib strips author, creation program, dates in browser. **Server validates** no metadata remains.                                                                                                     |
+| **Video Metadata**     | MediaRecorder API re-encodes in browser, stripping container metadata. Server validates format.                                                                                                                       |
+| **Client Compression** | **Mandatory before upload:** Images → WebP ≤200KB, Video → ≤10sec/500KB, Audio → ≤60sec/300KB, PDF → ≤2MB. Server rejects oversized files.                                                                            |
+| **File Naming**        | Original filename NEVER stored. Replaced with UUID v4.                                                                                                                                                                |
+| **Type Verification**  | Magic number (file header bytes), not file extension                                                                                                                                                                  |
+| **Size Limit**         | 5MB per file (post-compression), 20MB per report                                                                                                                                                                      |
+| **Access**             | Signed URLs with time-limited authentication tokens via **Cloudflare CDN proxy** (Cloudinary files cached at edge).                                                                                                   |
 
 ### 4.5 Operational Security
 
-| Control | Configuration |
-|---|---|
-| **Secrets Management** | All keys in Cloudflare Secrets — never in code, .env files, or database |
-| **Key Rotation** | Every 90 days with migration script to re-hash affected data |
-| **Key Naming** | `ENCRYPTION_MASTER_KEY` (email hashing) and `ENCRYPTION_RELATION_KEY` (identity linking) — standardized across all docs and code |
-| **Audit Logging** | All moderation actions logged immutably (no UPDATE/DELETE on audit table) |
-| **Error Monitoring** | Sentry.io configured to EXCLUDE personal data (emails, tokens) from error reports |
-| **Dependency Scanning** | Dependabot active, zero critical/high vulnerabilities required |
-| **Code Review** | Mandatory PR review: 1 reviewer standard, 2 reviewers for security-related changes |
-| **Pen Testing** | OWASP ZAP scan before public launch — zero critical/high findings |
-| **Environment Isolation** | Separate Neon DB branches for dev/staging/prod. Separate Cloudflare Workers per env. |
+| Control                   | Configuration                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Secrets Management**    | All keys in Cloudflare Secrets — never in code, .env files, or database                                                          |
+| **Key Rotation**          | Every 90 days with migration script to re-hash affected data                                                                     |
+| **Key Naming**            | `ENCRYPTION_MASTER_KEY` (email hashing) and `ENCRYPTION_RELATION_KEY` (identity linking) — standardized across all docs and code |
+| **Audit Logging**         | All moderation actions logged immutably (no UPDATE/DELETE on audit table)                                                        |
+| **Error Monitoring**      | Sentry.io configured to EXCLUDE personal data (emails, tokens) from error reports                                                |
+| **Dependency Scanning**   | Dependabot active, zero critical/high vulnerabilities required                                                                   |
+| **Code Review**           | Mandatory PR review: 1 reviewer standard, 2 reviewers for security-related changes                                               |
+| **Pen Testing**           | OWASP ZAP scan before public launch — zero critical/high findings                                                                |
+| **Environment Isolation** | Separate Neon DB branches for dev/staging/prod. Separate Cloudflare Workers per env.                                             |
 
 ---
 
@@ -259,16 +262,17 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 
 ### 5.1 Severity Levels
 
-| Level | Description | Response Time | Examples |
-|---|---|---|---|
-| **P0 — Critical** | User identity potentially exposed, data breach | **15 minutes** | DB breach with email exposure, encryption key compromise, identity linking discovered |
-| **P1 — High** | Illegal content published, moderator account compromised | **30 minutes** | CSAM bypassed filter, moderator acting maliciously, auth bypass |
-| **P2 — Medium** | Suspicious activity, potential abuse | **2 hours** | Unusual token behavior, mass spam reports, rate limit bypass |
-| **P3 — Low** | Minor vulnerability, incorrect configuration | **24 hours** | Minor XSS (no data exfiltration), incorrect rate limit, non-critical dependency CVE |
+| Level             | Description                                              | Response Time  | Examples                                                                              |
+| ----------------- | -------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
+| **P0 — Critical** | User identity potentially exposed, data breach           | **15 minutes** | DB breach with email exposure, encryption key compromise, identity linking discovered |
+| **P1 — High**     | Illegal content published, moderator account compromised | **30 minutes** | CSAM bypassed filter, moderator acting maliciously, auth bypass                       |
+| **P2 — Medium**   | Suspicious activity, potential abuse                     | **2 hours**    | Unusual token behavior, mass spam reports, rate limit bypass                          |
+| **P3 — Low**      | Minor vulnerability, incorrect configuration             | **24 hours**   | Minor XSS (no data exfiltration), incorrect rate limit, non-critical dependency CVE   |
 
 ### 5.2 Response Procedures
 
 **P0 — Critical (Identity Exposure):**
+
 1. Immediately shut down affected system component
 2. Assess scope: how many users potentially affected
 3. Notify all potentially affected users via in-app notification
@@ -278,6 +282,7 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 7. Post-mortem document shared with full team
 
 **P1 — High (Illegal Content / Compromised Moderator):**
+
 1. Remove illegal content immediately from Cloudinary + DB
 2. Revoke compromised moderator's access tokens
 3. Review moderator's audit log for past actions
@@ -286,6 +291,7 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 6. Patch vulnerability within 4 hours
 
 **P2 — Medium (Suspicious Activity):**
+
 1. Suspend suspicious token(s) immediately
 2. Review token's activity history (all anonymous — no identity reveal)
 3. Assess if pattern indicates coordinated attack
@@ -293,6 +299,7 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 5. Document and monitor for 48 hours
 
 **P3 — Low (Minor Vulnerability):**
+
 1. Document in issue tracker
 2. Patch in next scheduled deploy
 3. Add regression test
@@ -316,10 +323,12 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 ### Technical Limitation (By Design)
 
 Even with a valid court order AND both cryptographic keys, the system can ONLY:
+
 - Link an anonymous token to an email hash
 - Derive the original email from the hash (using ENCRYPTION_MASTER_KEY)
 
 The system CANNOT reveal:
+
 - Device used (no device data stored)
 - Physical location (no GPS/IP stored)
 - Exact time of submission (random delay obscures timing)
@@ -331,47 +340,47 @@ The system CANNOT reveal:
 
 ### Sprint 1 — Foundation (10 items)
 
-| # | Control | Check |
-|---|---|---|
-| 1 | TLS 1.3 active + HTTPS redirect for all traffic | ☐ |
-| 2 | HSTS header: `max-age=31536000; includeSubDomains` | ☐ |
-| 3 | CSP header strict: `script-src 'self'` — no `unsafe-inline` | ☐ |
-| 4 | ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY stored in Cloudflare Secrets (not in code, .env, or DB) | ☐ |
-| 5 | All emails stored as HMAC-SHA256 hash (no plaintext email in any table) | ☐ |
-| 6 | Password hashing handled entirely by Clerk.dev (managed infrastructure — passwords never in our DB) | ☐ |
-| 7 | JWT signed with RS256 (asymmetric), NOT HS256 | ☐ |
-| 8 | All entity IDs are UUID v4 (no sequential integers) | ☐ |
-| 9 | CORS configured to accept ONLY MAME domain(s) | ☐ |
-| 10 | Dependabot active with zero critical/high alerts | ☐ |
+| #   | Control                                                                                                 | Check |
+| --- | ------------------------------------------------------------------------------------------------------- | ----- |
+| 1   | TLS 1.3 active + HTTPS redirect for all traffic                                                         | ☐     |
+| 2   | HSTS header: `max-age=31536000; includeSubDomains`                                                      | ☐     |
+| 3   | CSP header strict: `script-src 'self'` — no `unsafe-inline`                                             | ☐     |
+| 4   | ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY stored in Cloudflare Secrets (not in code, .env, or DB) | ☐     |
+| 5   | All emails stored as HMAC-SHA256 hash (no plaintext email in any table)                                 | ☐     |
+| 6   | Password hashing handled entirely by Clerk.dev (managed infrastructure — passwords never in our DB)     | ☐     |
+| 7   | JWT signed with RS256 (asymmetric), NOT HS256                                                           | ☐     |
+| 8   | All entity IDs are UUID v4 (no sequential integers)                                                     | ☐     |
+| 9   | CORS configured to accept ONLY MAME domain(s)                                                           | ☐     |
+| 10  | Dependabot active with zero critical/high alerts                                                        | ☐     |
 
 ### Sprint 2 — Content Security (8 items)
 
-| # | Control | Check |
-|---|---|---|
-| 11 | Rate limiting active on login + content creation endpoints | ☐ |
-| 12 | ALL database queries use prepared statements via Drizzle (no string concatenation) | ☐ |
-| 13 | Zod validation on ALL write endpoints (create report, comment, vote, etc.) | ☐ |
-| 14 | EXIF metadata stripped from ALL images **client-side** via piexifjs in browser. Server rejects files with residual EXIF (422). | ☐ |
-| 15 | PDF metadata stripped from ALL PDFs **in browser** via pdf-lib before upload. Server validates no metadata remains. | ☐ |
-| 16 | File type verified by magic number, not declared extension | ☐ |
-| 17 | Workers AI content filter runs BEFORE any file is stored in Cloudinary | ☐ |
-| 18 | Cloudinary evidence files accessible ONLY via signed URLs with expiration | ☐ |
+| #   | Control                                                                                                                        | Check |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| 11  | Rate limiting active on login + content creation endpoints                                                                     | ☐     |
+| 12  | ALL database queries use prepared statements via Drizzle (no string concatenation)                                             | ☐     |
+| 13  | Zod validation on ALL write endpoints (create report, comment, vote, etc.)                                                     | ☐     |
+| 14  | EXIF metadata stripped from ALL images **client-side** via piexifjs in browser. Server rejects files with residual EXIF (422). | ☐     |
+| 15  | PDF metadata stripped from ALL PDFs **in browser** via pdf-lib before upload. Server validates no metadata remains.            | ☐     |
+| 16  | File type verified by magic number, not declared extension                                                                     | ☐     |
+| 17  | Workers AI content filter runs BEFORE any file is stored in Cloudinary                                                         | ☐     |
+| 18  | Cloudinary evidence files accessible ONLY via signed URLs with expiration                                                      | ☐     |
 
 ### Sprint 3 — Operational Security (3 items)
 
-| # | Control | Check |
-|---|---|---|
-| 19 | Sentry configured to exclude emails, tokens, and personal data from error reports | ☐ |
-| 20 | Moderation audit log records every action with timestamp and moderator token | ☐ |
-| 21 | Publication delay active (random 1-6h via Cloudflare Queues) | ☐ |
+| #   | Control                                                                           | Check |
+| --- | --------------------------------------------------------------------------------- | ----- |
+| 19  | Sentry configured to exclude emails, tokens, and personal data from error reports | ☐     |
+| 20  | Moderation audit log records every action with timestamp and moderator token      | ☐     |
+| 21  | Publication delay active (random 1-6h via Cloudflare Queues)                      | ☐     |
 
 ### Sprint 4 — Pre-Launch (3 items)
 
-| # | Control | Check |
-|---|---|---|
-| 22 | OWASP ZAP automated scan: zero critical vulnerabilities, zero high vulnerabilities | ☐ |
-| 23 | Incident response plan documented and communicated to all team members | ☐ |
-| 24 | Legal identity request protocol documented with multi-party authorization | ☐ |
+| #   | Control                                                                            | Check |
+| --- | ---------------------------------------------------------------------------------- | ----- |
+| 22  | OWASP ZAP automated scan: zero critical vulnerabilities, zero high vulnerabilities | ☐     |
+| 23  | Incident response plan documented and communicated to all team members             | ☐     |
+| 24  | Legal identity request protocol documented with multi-party authorization          | ☐     |
 
 ---
 
@@ -396,6 +405,7 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 **Frequency:** Every 90 days
 
 **Process:**
+
 1. Generate new `ENCRYPTION_MASTER_KEY_v{N+1}` and `ENCRYPTION_RELATION_KEY_v{N+1}`
 2. Store new keys in Cloudflare Secrets alongside old keys
 3. Run migration script: re-hash all `email_hash` values with new ENCRYPTION_MASTER_KEY

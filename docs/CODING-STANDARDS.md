@@ -7,31 +7,31 @@
 
 ## 1. Language & Naming
 
-| Rule | Standard |
-|---|---|
-| **Code language** | English ONLY — variables, functions, classes, types, file names |
-| **Docs language** | English (except CREDENTIALS.md which is local-only) |
-| **Variables** | `camelCase` — `reportCount`, `tokenId`, `emailHash` |
-| **Functions** | `camelCase` — `createReport`, `validateEvidence`, `hashEmail` |
-| **Types/Interfaces** | `PascalCase` — `Report`, `AnonymousProfile`, `CreateReportInput` |
-| **Enums** | `PascalCase` type, `UPPER_SNAKE` values — `ReportStatus.UNDER_REVIEW` |
-| **Files** | `kebab-case.ts` — `create-report.ts`, `auth-middleware.ts` |
-| **Folders** | `kebab-case` — `report-service/`, `auth-middleware/` |
-| **Constants** | `UPPER_SNAKE_CASE` — `MAX_FILE_SIZE`, `JWT_EXPIRY_SECONDS` |
-| **Booleans** | Prefix with `is`, `has`, `can`, `should` — `isPublished`, `hasEvidence` |
-| **DB columns** | `snake_case` — `token_id`, `email_hash`, `created_at` |
+| Rule                 | Standard                                                                |
+| -------------------- | ----------------------------------------------------------------------- |
+| **Code language**    | English ONLY — variables, functions, classes, types, file names         |
+| **Docs language**    | English (except CREDENTIALS.md which is local-only)                     |
+| **Variables**        | `camelCase` — `reportCount`, `tokenId`, `emailHash`                     |
+| **Functions**        | `camelCase` — `createReport`, `validateEvidence`, `hashEmail`           |
+| **Types/Interfaces** | `PascalCase` — `Report`, `AnonymousProfile`, `CreateReportInput`        |
+| **Enums**            | `PascalCase` type, `UPPER_SNAKE` values — `ReportStatus.UNDER_REVIEW`   |
+| **Files**            | `kebab-case.ts` — `create-report.ts`, `auth-middleware.ts`              |
+| **Folders**          | `kebab-case` — `report-service/`, `auth-middleware/`                    |
+| **Constants**        | `UPPER_SNAKE_CASE` — `MAX_FILE_SIZE`, `JWT_EXPIRY_SECONDS`              |
+| **Booleans**         | Prefix with `is`, `has`, `can`, `should` — `isPublished`, `hasEvidence` |
+| **DB columns**       | `snake_case` — `token_id`, `email_hash`, `created_at`                   |
 
 ---
 
 ## 2. File & Function Size Limits
 
-| Rule | Limit |
-|---|---|
-| **Max lines per file** | 100 lines (hard limit) |
-| **Max lines per function** | 20 lines (aim for 10) |
-| **Max parameters per function** | 3 (use an object/type for more) |
-| **Max nesting depth** | 2 levels (no nested ifs inside loops inside ifs) |
-| **Functions per file** | ≤ 5 exported functions |
+| Rule                            | Limit                                            |
+| ------------------------------- | ------------------------------------------------ |
+| **Max lines per file**          | 100 lines (hard limit)                           |
+| **Max lines per function**      | 20 lines (aim for 10)                            |
+| **Max parameters per function** | 3 (use an object/type for more)                  |
+| **Max nesting depth**           | 2 levels (no nested ifs inside loops inside ifs) |
+| **Functions per file**          | ≤ 5 exported functions                           |
 
 **If a file approaches 100 lines → split it.** Create a subfolder with `index.ts` re-exporting.
 
@@ -52,6 +52,7 @@ if (canModerate) {
 ```
 
 The ONLY acceptable comments:
+
 - `TODO:` with a GitHub issue number — `// TODO(#42): implement CSAM hash check`
 - JSDoc on exported public API types (not implementation)
 
@@ -126,7 +127,7 @@ for (const item of items) {
 }
 
 // GOOD — use the right method
-const found = items.some(item => item.id === targetId)
+const found = items.some((item) => item.id === targetId)
 ```
 
 ```typescript
@@ -137,18 +138,18 @@ for (const user of users) {
 }
 
 // GOOD — declarative
-const names = users.map(user => user.name)
+const names = users.map((user) => user.name)
 ```
 
 ### 3.5 SOLID Principles
 
-| Principle | How We Apply It |
-|---|---|
-| **S — Single Responsibility** | One file = one purpose. `hash-email.ts` only hashes emails. |
-| **O — Open/Closed** | Use Zod schemas + TypeScript generics to extend, not modify. |
-| **L — Liskov Substitution** | Interfaces over concrete classes. `StoragePort` works with Cloudinary or local. |
-| **I — Interface Segregation** | Small focused types. `CreateReportInput` not `ReportEverything`. |
-| **D — Dependency Inversion** | Business logic depends on interfaces (ports), not implementations (adapters). |
+| Principle                     | How We Apply It                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| **S — Single Responsibility** | One file = one purpose. `hash-email.ts` only hashes emails.                     |
+| **O — Open/Closed**           | Use Zod schemas + TypeScript generics to extend, not modify.                    |
+| **L — Liskov Substitution**   | Interfaces over concrete classes. `StoragePort` works with Cloudinary or local. |
+| **I — Interface Segregation** | Small focused types. `CreateReportInput` not `ReportEverything`.                |
+| **D — Dependency Inversion**  | Business logic depends on interfaces (ports), not implementations (adapters).   |
 
 ---
 
@@ -191,8 +192,8 @@ Never import backwards (domain must NEVER import from infrastructure).
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "exactOptionalPropertyTypes": true,
-    "noPropertyAccessFromIndexSignature": true
-  }
+    "noPropertyAccessFromIndexSignature": true,
+  },
 }
 ```
 
@@ -205,14 +206,23 @@ Never import backwards (domain must NEVER import from infrastructure).
 ```typescript
 // Domain errors — thrown by business logic
 class DomainError extends Error {
-  constructor(message: string, public readonly code: string) {
+  constructor(
+    message: string,
+    public readonly code: string,
+  ) {
     super(message)
   }
 }
 
-class NotFoundError extends DomainError { /* ... */ }
-class ForbiddenError extends DomainError { /* ... */ }
-class ValidationError extends DomainError { /* ... */ }
+class NotFoundError extends DomainError {
+  /* ... */
+}
+class ForbiddenError extends DomainError {
+  /* ... */
+}
+class ValidationError extends DomainError {
+  /* ... */
+}
 ```
 
 - Domain throws `DomainError` subclasses
@@ -224,11 +234,11 @@ class ValidationError extends DomainError { /* ... */ }
 
 ## 7. Testing
 
-| Type | Tool | Where |
-|---|---|---|
-| Unit tests | Vitest | `*.test.ts` next to the file |
-| Integration tests | Vitest + miniflare | `__tests__/integration/` |
-| E2E tests | Playwright | `apps/web/e2e/` |
+| Type              | Tool               | Where                        |
+| ----------------- | ------------------ | ---------------------------- |
+| Unit tests        | Vitest             | `*.test.ts` next to the file |
+| Integration tests | Vitest + miniflare | `__tests__/integration/`     |
+| E2E tests         | Playwright         | `apps/web/e2e/`              |
 
 - File: `create-report.ts` → Test: `create-report.test.ts` (same folder)
 - Minimum 80% coverage on backend business logic
@@ -238,24 +248,24 @@ class ValidationError extends DomainError { /* ... */ }
 
 ## 8. Git Conventions
 
-| Rule | Format |
-|---|---|
-| **Branch naming** | `sprint-N/feature-name` — `sprint-1/scaffolding` |
-| **Commit messages** | Conventional Commits: `feat(scope): description` |
-| **Commit frequency** | Every logical unit of work (not at end of day) |
-| **PR rule** | At least 1 reviewer approval before merge |
+| Rule                 | Format                                           |
+| -------------------- | ------------------------------------------------ |
+| **Branch naming**    | `sprint-N/feature-name` — `sprint-1/scaffolding` |
+| **Commit messages**  | Conventional Commits: `feat(scope): description` |
+| **Commit frequency** | Every logical unit of work (not at end of day)   |
+| **PR rule**          | At least 1 reviewer approval before merge        |
 
 ### Commit Types
 
-| Type | Use |
-|---|---|
-| `feat` | New feature |
-| `fix` | Bug fix |
+| Type       | Use                                   |
+| ---------- | ------------------------------------- |
+| `feat`     | New feature                           |
+| `fix`      | Bug fix                               |
 | `refactor` | Code restructure (no behavior change) |
-| `docs` | Documentation only |
-| `test` | Adding or fixing tests |
-| `ci` | CI/CD changes |
-| `chore` | Dependencies, configs |
+| `docs`     | Documentation only                    |
+| `test`     | Adding or fixing tests                |
+| `ci`       | CI/CD changes                         |
+| `chore`    | Dependencies, configs                 |
 
 ### Examples
 
@@ -295,15 +305,15 @@ export function getConfig(env: Env): Config {
 
 ## 10. Dependency Rules
 
-| Package | Where | Purpose |
-|---|---|---|
-| **zod** | `packages/shared` | Schema validation (shared frontend + backend) |
-| **drizzle-orm** | `apps/api` | Database ORM |
-| **hono** | `apps/api` | HTTP framework for Workers |
-| **@clerk/nextjs** | `apps/web` | Auth UI components |
-| **tailwindcss** | `apps/web` | Styling |
-| **vitest** | root | Testing |
-| **playwright** | `apps/web` | E2E testing |
+| Package           | Where             | Purpose                                       |
+| ----------------- | ----------------- | --------------------------------------------- |
+| **zod**           | `packages/shared` | Schema validation (shared frontend + backend) |
+| **drizzle-orm**   | `apps/api`        | Database ORM                                  |
+| **hono**          | `apps/api`        | HTTP framework for Workers                    |
+| **@clerk/nextjs** | `apps/web`        | Auth UI components                            |
+| **tailwindcss**   | `apps/web`        | Styling                                       |
+| **vitest**        | root              | Testing                                       |
+| **playwright**    | `apps/web`        | E2E testing                                   |
 
 **Rule:** Before adding ANY new dependency, check if it works in Cloudflare Workers (V8 isolate, no Node.js APIs).
 
@@ -338,15 +348,15 @@ export function getConfig(env: Env): Config {
 
 All service credentials are in `docs/CREDENTIALS.md` (LOCAL ONLY, gitignored).
 
-| Service | What We Have |
-|---|---|
-| Neon | `DATABASE_URL` (connection pooling ON) |
-| Cloudflare | `CLOUDFLARE_ACCOUNT_ID` (API Token pending) |
-| Clerk | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, PEM public key |
-| Cloudinary | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
-| Resend | `RESEND_API_KEY` |
-| Sentry | `NEXT_PUBLIC_SENTRY_DSN` (backend DSN pending) |
-| Encryption | Generated at deploy time via `scripts/generate-encryption-keys.ts` |
+| Service    | What We Have                                                            |
+| ---------- | ----------------------------------------------------------------------- |
+| Neon       | `DATABASE_URL` (connection pooling ON)                                  |
+| Cloudflare | `CLOUDFLARE_ACCOUNT_ID` (API Token pending)                             |
+| Clerk      | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, PEM public key |
+| Cloudinary | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`  |
+| Resend     | `RESEND_API_KEY`                                                        |
+| Sentry     | `NEXT_PUBLIC_SENTRY_DSN` (backend DSN pending)                          |
+| Encryption | Generated at deploy time via `scripts/generate-encryption-keys.ts`      |
 
 ---
 
