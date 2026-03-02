@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import type { AppEnv } from '../../env.js'
 import { createReport } from '../../application/create-report.js'
+import { updateReport } from '../../application/update-report.js'
 import { ValidationError } from '../../domain/errors.js'
 import { createDb } from '../../infrastructure/db/connection.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
@@ -20,6 +21,11 @@ const createSchema = z.object({
   body: z.string().min(100).max(5000),
   category: z.enum(REPORT_CATEGORIES),
   faculty: z.string().min(1),
+})
+
+const updateSchema = z.object({
+  title: z.string().min(10).max(200).optional(),
+  body: z.string().min(100).max(5000).optional(),
 })
 
 const reportRoutes = new Hono<AppEnv>()
@@ -45,6 +51,25 @@ reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
   )
 
   return c.json({ success: true, data: report }, 201)
+})
+
+reportRoutes.patch('/:id', authMiddleware, rateLimitWrite(), async (c) => {
+  const raw = await c.req.json()
+  const parsed = updateSchema.safeParse(raw)
+  if (!parsed.success) {
+    throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid input')
+  }
+
+  const tokenId = c.get('tokenId')
+  if (!tokenId) throw new ValidationError('Missing token_id in JWT')
+
+  const db = createDb(c.env.DATABASE_URL)
+  const report = await updateReport(
+    { reportId: c.req.param('id'), tokenId, ...parsed.data },
+    { reportRepo: createReportRepository(db) },
+  )
+
+  return c.json({ success: true, data: report })
 })
 
 export { reportRoutes }
