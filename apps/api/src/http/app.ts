@@ -5,7 +5,7 @@ import type { AppEnv } from '../env.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { rateLimitRead } from './middleware/rate-limit.js'
 import { createSecurityMiddleware } from './middleware/security.js'
-import { health, me, webhooks } from './routes/index.js'
+import { health, me, reportRoutes, webhooks } from './routes/index.js'
 
 export function createApp() {
   const app = new Hono<AppEnv>()
@@ -20,6 +20,7 @@ export function createApp() {
   app.route('/health', health)
   app.route('/webhooks', webhooks)
   app.route('/me', me)
+  app.route('/reports', reportRoutes)
 
   app.notFound((c) => {
     return c.json({ success: false, error: 'Not found', code: 'NOT_FOUND' }, 404)
