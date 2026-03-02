@@ -253,7 +253,30 @@ class ValidationError extends DomainError {
 | **Branch naming**    | `sprint-N/feature-name` — `sprint-1/scaffolding` |
 | **Commit messages**  | Conventional Commits: `feat(scope): description` |
 | **Commit frequency** | Every logical unit of work (not at end of day)   |
+| **Commit granularity** | Atomic — one concern per commit (see below)    |
 | **PR rule**          | At least 1 reviewer approval before merge        |
+
+### Atomic Commit Rule
+
+NEVER bundle an entire feature in a single commit. Each commit must be:
+
+- **Small**: one port, one adapter, one use case, one route, or one test file
+- **Buildable**: `tsc --noEmit` must pass after each commit
+- **Testable**: tests pass after each commit (no broken intermediate states)
+- **Reviewable**: a teammate can understand the commit in under 2 minutes
+- **Bisectable**: `git bisect` can pinpoint exactly where a bug was introduced
+
+**Commit sequence for a typical feature (e.g., CRUD reports):**
+
+1. `feat(reports): add report repository port (interface)`
+2. `feat(reports): add report repository adapter (drizzle)`
+3. `feat(reports): add create-report use case`
+4. `feat(reports): add POST /reports route`
+5. `test(reports): add create-report unit tests`
+6. `feat(reports): add get-report use case + GET route`
+7. `test(reports): add get-report tests`
+
+**Anti-pattern**: `feat(reports): complete CRUD + tests + middleware` (40 files, +1300 lines)
 
 ### Commit Types
 
