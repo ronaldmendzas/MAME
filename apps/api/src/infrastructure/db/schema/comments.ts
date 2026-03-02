@@ -1,18 +1,22 @@
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 import { anonymousProfiles } from './users'
 import { reports } from './reports'
 
-export const comments = pgTable('comments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  reportId: uuid('report_id')
-    .notNull()
-    .references(() => reports.id, { onDelete: 'cascade' }),
-  tokenId: uuid('token_id')
-    .notNull()
-    .references(() => anonymousProfiles.tokenId),
-  parentId: uuid('parent_id'),
-  body: text('body').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-})
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    reportId: uuid('report_id')
+      .notNull()
+      .references(() => reports.id, { onDelete: 'cascade' }),
+    tokenId: uuid('token_id')
+      .notNull()
+      .references(() => anonymousProfiles.tokenId),
+    parentId: uuid('parent_id'),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('idx_comments_report').on(table.reportId)],
+)

@@ -31,10 +31,11 @@ describe('schema enums', () => {
     expect(evidenceTypeEnum.enumValues).toEqual(['file', 'external_link'])
   })
 
-  it('moderationActionEnum has 4 values', () => {
-    expect(moderationActionEnum.enumValues).toHaveLength(4)
+  it('moderationActionEnum has 5 values', () => {
+    expect(moderationActionEnum.enumValues).toHaveLength(5)
     expect(moderationActionEnum.enumValues).toContain('approve')
     expect(moderationActionEnum.enumValues).toContain('escalate')
+    expect(moderationActionEnum.enumValues).toContain('edit')
   })
 
   it('flagCategoryEnum has 5 values', () => {

@@ -37,6 +37,7 @@ export const moderationActionEnum = pgEnum('moderation_action', [
   'reject',
   'request_info',
   'escalate',
+  'edit',
 ])
 
 export const flagCategoryEnum = pgEnum('flag_category', [

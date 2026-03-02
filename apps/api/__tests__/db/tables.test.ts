@@ -61,20 +61,25 @@ describe('schema tables', () => {
     const cols = getTableColumns(moderationLog)
     expect(Object.keys(cols)).toHaveLength(6)
     expect(cols.action).toBeDefined()
+    expect(cols.moderatorToken).toBeDefined()
   })
 
-  it('reportStatusHistory has 6 columns', () => {
+  it('reportStatusHistory has 7 columns', () => {
     const cols = getTableColumns(reportStatusHistory)
-    expect(Object.keys(cols)).toHaveLength(6)
+    expect(Object.keys(cols)).toHaveLength(7)
     expect(cols.oldStatus).toBeDefined()
     expect(cols.newStatus).toBeDefined()
+    expect(cols.changedByToken).toBeDefined()
+    expect(cols.reason).toBeDefined()
   })
 
-  it('notifications has 7 columns', () => {
+  it('notifications has 8 columns', () => {
     const cols = getTableColumns(notifications)
-    expect(Object.keys(cols)).toHaveLength(7)
+    expect(Object.keys(cols)).toHaveLength(8)
     expect(cols.payload).toBeDefined()
     expect(cols.read).toBeDefined()
+    expect(cols.reportId).toBeDefined()
+    expect(cols.message).toBeDefined()
   })
 
   it('flags has 6 columns', () => {

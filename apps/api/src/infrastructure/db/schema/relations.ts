@@ -9,10 +9,7 @@ import { moderationLog, reportStatusHistory } from './moderation'
 import { notifications } from './notifications'
 import { flags } from './flags'
 
-export const usersRelations = relations(users, ({ many }) => ({
-  moderationLogs: many(moderationLog),
-  statusChanges: many(reportStatusHistory),
-}))
+export const usersRelations = relations(users, () => ({}))
 
 export const anonymousProfilesRelations = relations(anonymousProfiles, ({ many }) => ({
   reports: many(reports),
@@ -20,6 +17,8 @@ export const anonymousProfilesRelations = relations(anonymousProfiles, ({ many }
   votes: many(votes),
   notifications: many(notifications),
   flags: many(flags),
+  moderationLogs: many(moderationLog),
+  statusChanges: many(reportStatusHistory),
 }))
 
 export const reportsRelations = relations(reports, ({ one, many }) => ({
@@ -33,6 +32,7 @@ export const reportsRelations = relations(reports, ({ one, many }) => ({
   moderationLogs: many(moderationLog),
   statusHistory: many(reportStatusHistory),
   flags: many(flags),
+  notifications: many(notifications),
 }))
 
 export const evidenceRelations = relations(evidence, ({ one }) => ({
@@ -75,9 +75,9 @@ export const moderationLogRelations = relations(moderationLog, ({ one }) => ({
     fields: [moderationLog.reportId],
     references: [reports.id],
   }),
-  moderator: one(users, {
-    fields: [moderationLog.moderatorId],
-    references: [users.id],
+  moderator: one(anonymousProfiles, {
+    fields: [moderationLog.moderatorToken],
+    references: [anonymousProfiles.tokenId],
   }),
 }))
 
@@ -86,9 +86,9 @@ export const reportStatusHistoryRelations = relations(reportStatusHistory, ({ on
     fields: [reportStatusHistory.reportId],
     references: [reports.id],
   }),
-  changedBy: one(users, {
-    fields: [reportStatusHistory.changedBy],
-    references: [users.id],
+  changedBy: one(anonymousProfiles, {
+    fields: [reportStatusHistory.changedByToken],
+    references: [anonymousProfiles.tokenId],
   }),
 }))
 
@@ -96,6 +96,10 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   recipient: one(anonymousProfiles, {
     fields: [notifications.tokenId],
     references: [anonymousProfiles.tokenId],
+  }),
+  report: one(reports, {
+    fields: [notifications.reportId],
+    references: [reports.id],
   }),
 }))
 
