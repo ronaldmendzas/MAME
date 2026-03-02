@@ -3,3 +3,4 @@ export type { ProfileRepository, InsertProfileData, ProfileRecord } from './prof
 export type { IdentityLinkRepository, InsertLinkData } from './identity-link-repository'
 export type { CryptoService } from './crypto-service'
 export type { ClerkService } from './clerk-service'
+export type { ReportRepository, ReportRow, InsertReportData, ReportFilters } from './report-repository'
