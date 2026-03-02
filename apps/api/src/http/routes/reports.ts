@@ -8,17 +8,12 @@ import { createDb } from '../../infrastructure/db/connection.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { rateLimitWrite } from '../middleware/rate-limit.js'
-
-const REPORT_CATEGORIES = [
-  'sexual-harassment',
-  'academic-corruption',
-  'faculty-plagiarism',
-  'discrimination',
-  'nepotism',
-  'administrative-irregularities',
-  'fraud',
-  'other',
-] as const
+import {
+  REPORT_CATEGORIES,
+  handleFeed,
+  handleMyReports,
+  handleReportDetail,
+} from './report-feed.js'
 
 const createSchema = z.object({
   title: z.string().min(10).max(200),
@@ -29,9 +24,11 @@ const createSchema = z.object({
 
 const reportRoutes = new Hono<AppEnv>()
 
-reportRoutes.use('*', authMiddleware)
+reportRoutes.get('/', handleFeed)
+reportRoutes.get('/mine', authMiddleware, handleMyReports)
+reportRoutes.get('/:id', handleReportDetail)
 
-reportRoutes.post('/', rateLimitWrite(), async (c) => {
+reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
   const raw = await c.req.json()
   const parsed = createSchema.safeParse(raw)
   if (!parsed.success) {
