@@ -12,3 +12,11 @@ export interface Env {
   SENTRY_DSN: string
   RATE_LIMIT_KV: KVNamespace
 }
+
+export interface AppVariables {
+  userId: string
+  tokenId: string
+  userRole: string
+}
+
+export type AppEnv = { Bindings: Env; Variables: AppVariables }
