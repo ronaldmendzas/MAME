@@ -335,8 +335,12 @@ export function getConfig(env: Env): Config {
 | **hono**          | `apps/api`        | HTTP framework for Workers                    |
 | **@clerk/nextjs** | `apps/web`        | Auth UI components                            |
 | **tailwindcss**   | `apps/web`        | Styling                                       |
+| **shadcn/ui**     | `apps/web`        | Accessible UI primitives (source code, not runtime dep) |
+| **react-bits**    | `apps/web`        | Animated backgrounds/effects (source code, not runtime dep) |
 | **vitest**        | root              | Testing                                       |
 | **playwright**    | `apps/web`        | E2E testing                                   |
+
+> **Note on shadcn/ui & React Bits:** These are NOT traditional npm dependencies. Their CLI copies component source code into the project (`src/components/ui/` and `src/components/backgrounds/`). The code is fully owned and modifiable — no external runtime. Only their peer dependencies (Radix primitives, utility libs like `clsx`, `tailwind-merge`) are installed as real npm packages.
 
 **Rule:** Before adding ANY new dependency, check if it works in Cloudflare Workers (V8 isolate, no Node.js APIs).
 
@@ -392,10 +396,16 @@ MAME/
 │   │   ├── src/
 │   │   │   ├── app/          # App Router pages
 │   │   │   ├── components/   # React components
+│   │   │   │   ├── ui/       # shadcn/ui primitives (Button, Input, Card, Sidebar, etc.)
+│   │   │   │   ├── backgrounds/ # React Bits backgrounds (Galaxy, etc.)
+│   │   │   │   ├── feed/     # Report feed feature components
+│   │   │   │   ├── report-form/  # Report creation form
+│   │   │   │   ├── report-detail/ # Report detail view
+│   │   │   │   └── my-reports/    # User's reports list
 │   │   │   ├── hooks/        # Custom hooks
-│   │   │   └── lib/          # Utils, config
+│   │   │   └── lib/          # Utils, config (includes shadcn cn() helper)
 │   │   ├── public/
-│   │   ├── tailwind.config.ts
+│   │   ├── components.json   # shadcn/ui configuration
 │   │   ├── next.config.ts
 │   │   └── tsconfig.json
 │   └── api/                  # Hono.js (Cloudflare Worker)
