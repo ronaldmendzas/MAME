@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
     "rootDir": ".",
     "jsx": "preserve",
     "module": "ESNext",
@@ -12,9 +11,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@mame/shared": ["../../packages/shared/src"],
-      "@mame/shared/*": ["../../packages/shared/src/*"]
+      "@/*": ["./src/*"]
     },
     "allowJs": true,
     "noEmit": true
