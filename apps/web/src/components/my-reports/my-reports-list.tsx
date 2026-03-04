@@ -9,7 +9,7 @@ export function MyReportsList() {
   const { reports, loading, hasMore, loadMore, error } = useMyReports()
   const sentinelRef = useIntersectionObserver(loadMore, hasMore && !loading)
 
-  if (error) return <p className="py-20 text-center text-red-500">{error}</p>
+  if (error) return <p className="py-20 text-center text-destructive">{error}</p>
   if (!loading && reports.length === 0) return <EmptyState />
 
   return (
@@ -26,7 +26,7 @@ export function MyReportsList() {
 function EmptyState() {
   return (
     <div className="py-20 text-center">
-      <p className="text-neutral-500">You have not submitted any reports yet.</p>
+      <p className="text-muted-foreground">You have not submitted any reports yet.</p>
     </div>
   )
 }
