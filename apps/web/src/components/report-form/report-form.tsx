@@ -7,6 +7,7 @@ import type { ReportCategory } from '@mame/shared/constants'
 
 import { createReport } from '@/lib/api'
 import { useMultiStepForm } from '@/hooks/use-multi-step-form'
+import { Button } from '@/components/ui/button'
 import { StepContent } from './step-content'
 import { StepCategory } from './step-category'
 import { StepPreview } from './step-preview'
@@ -59,12 +60,12 @@ export function ReportForm() {
         {step === 1 && <StepCategory category={data.category} faculty={data.faculty} onUpdate={update} />}
         {step === 2 && <StepPreview {...data} />}
       </div>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
       <div className="mt-6 flex justify-between">
-        <button onClick={back} disabled={isFirst} className="rounded-md border px-4 py-2 text-sm disabled:opacity-30">Back</button>
+        <Button onClick={back} disabled={isFirst} variant="outline">Back</Button>
         {isLast
-          ? <button onClick={handleSubmit} disabled={submitting} className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-700 disabled:opacity-50">{submitting ? 'Submitting...' : 'Submit Report'}</button>
-          : <button onClick={next} disabled={!canAdvance} className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-700 disabled:opacity-50">Next</button>}
+          ? <Button onClick={handleSubmit} disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Report'}</Button>
+          : <Button onClick={next} disabled={!canAdvance}>Next</Button>}
       </div>
     </div>
   )
@@ -75,9 +76,9 @@ function StepIndicator({ current, labels }: { current: number; labels: string[] 
     <div className="flex items-center gap-2">
       {labels.map((label, i) => (
         <div key={label} className="flex items-center gap-2">
-          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${i <= current ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}`}>{i + 1}</span>
-          <span className={`text-sm ${i <= current ? 'font-medium' : 'text-neutral-400'}`}>{label}</span>
-          {i < labels.length - 1 && <div className="mx-1 h-px w-8 bg-neutral-300" />}
+          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${i <= current ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>{i + 1}</span>
+          <span className={`text-sm ${i <= current ? 'font-medium' : 'text-muted-foreground'}`}>{label}</span>
+          {i < labels.length - 1 && <div className="mx-1 h-px w-8 bg-border" />}
         </div>
       ))}
     </div>

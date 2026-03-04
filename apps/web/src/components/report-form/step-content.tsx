@@ -1,6 +1,8 @@
 'use client'
 
 import { MIN_TITLE_LENGTH, MAX_TITLE_LENGTH, MIN_BODY_LENGTH, MAX_BODY_LENGTH } from '@mame/shared/constants'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 interface StepContentProps {
   title: string
@@ -15,7 +17,7 @@ export function StepContent({ title, body, onUpdate }: StepContentProps) {
         <label htmlFor="title" className="mb-1 block text-sm font-medium">
           Title
         </label>
-        <input
+        <Input
           id="title"
           type="text"
           value={title}
@@ -23,9 +25,8 @@ export function StepContent({ title, body, onUpdate }: StepContentProps) {
           placeholder="Brief description of the incident"
           minLength={MIN_TITLE_LENGTH}
           maxLength={MAX_TITLE_LENGTH}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
         />
-        <p className="mt-1 text-xs text-neutral-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {title.length}/{MAX_TITLE_LENGTH} characters (min {MIN_TITLE_LENGTH})
         </p>
       </div>
@@ -33,7 +34,7 @@ export function StepContent({ title, body, onUpdate }: StepContentProps) {
         <label htmlFor="body" className="mb-1 block text-sm font-medium">
           Description
         </label>
-        <textarea
+        <Textarea
           id="body"
           rows={8}
           value={body}
@@ -41,9 +42,9 @@ export function StepContent({ title, body, onUpdate }: StepContentProps) {
           placeholder="Provide a detailed account of what happened..."
           minLength={MIN_BODY_LENGTH}
           maxLength={MAX_BODY_LENGTH}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
+          className="min-h-[12rem]"
         />
-        <p className="mt-1 text-xs text-neutral-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {body.length}/{MAX_BODY_LENGTH} characters (min {MIN_BODY_LENGTH})
         </p>
       </div>
