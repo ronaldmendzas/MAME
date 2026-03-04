@@ -1,5 +1,6 @@
 import type { ReportStatus } from '@mame/shared/constants'
 import { getStatusColor } from '@/lib/format'
+import { Badge } from '@/components/ui/badge'
 
 interface StatusTimelineProps {
   currentStatus: ReportStatus
@@ -20,11 +21,11 @@ export function StatusTimeline({ currentStatus }: StatusTimelineProps) {
         const isActive = i <= currentIndex
         return (
           <div key={step.status} className="flex items-center gap-1">
-            <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? getStatusColor(step.status) : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800'}`}>
+            <Badge className={isActive ? getStatusColor(step.status) : 'bg-muted text-muted-foreground'}>
               {step.label}
-            </div>
+            </Badge>
             {i < TIMELINE_STEPS.length - 1 && (
-              <div className={`h-px w-6 ${isActive ? 'bg-neutral-400' : 'bg-neutral-200 dark:bg-neutral-700'}`} />
+              <div className={`h-px w-6 ${isActive ? 'bg-foreground/40' : 'bg-border'}`} />
             )}
           </div>
         )
