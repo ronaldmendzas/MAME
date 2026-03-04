@@ -10,12 +10,12 @@ export function ReportFeed({ params }: { params?: URLSearchParams }) {
   const sentinelRef = useIntersectionObserver(loadMore, hasMore && !loading)
 
   if (error) {
-    return <p className="py-8 text-center text-sm text-red-600">{error}</p>
+    return <p className="py-8 text-center text-sm text-destructive">{error}</p>
   }
 
   if (!loading && reports.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-neutral-500">
+      <p className="py-8 text-center text-sm text-muted-foreground">
         No reports found. Be the first to report!
       </p>
     )

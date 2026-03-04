@@ -1,18 +1,23 @@
+import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent } from '@/components/ui/card'
+
 export function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
-      <div className="mb-2 flex gap-2">
-        <div className="h-5 w-24 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-        <div className="h-5 w-16 rounded bg-neutral-200 dark:bg-neutral-700" />
-      </div>
-      <div className="mb-1 h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-      <div className="mb-1 h-3 w-full rounded bg-neutral-200 dark:bg-neutral-700" />
-      <div className="h-3 w-2/3 rounded bg-neutral-200 dark:bg-neutral-700" />
-      <div className="mt-3 flex justify-between">
-        <div className="h-3 w-20 rounded bg-neutral-200 dark:bg-neutral-700" />
-        <div className="h-3 w-12 rounded bg-neutral-200 dark:bg-neutral-700" />
-      </div>
-    </div>
+    <Card className="gap-3 p-4">
+      <CardContent className="flex flex-col gap-2 p-0">
+        <div className="flex gap-2">
+          <Skeleton className="h-5 w-24 rounded-full" />
+          <Skeleton className="h-5 w-16" />
+        </div>
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-2/3" />
+        <div className="flex justify-between">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
