@@ -1,36 +1,37 @@
 import Link from 'next/link'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { Button } from '@/components/ui/button'
 
 export function Header() {
   return (
-    <header className="border-b border-neutral-200 dark:border-neutral-800">
+    <header className="border-b border-border">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
           <Link href="/" className="text-xl font-bold tracking-tight">
             MAME
           </Link>
-          <Link href="/reports" className="text-sm hover:underline">
-            Reports
-          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/reports">Reports</Link>
+          </Button>
           <SignedIn>
-            <Link href="/reports/mine" className="text-sm hover:underline">
-              My Reports
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/reports/mine">My Reports</Link>
+            </Button>
           </SignedIn>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <SignedOut>
-            <Link href="/sign-in" className="text-sm hover:underline">
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white hover:bg-neutral-700"
-            >
-              Sign Up
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/sign-up">Sign Up</Link>
+            </Button>
           </SignedOut>
           <SignedIn>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/reports/create">New Report</Link>
+            </Button>
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </div>
