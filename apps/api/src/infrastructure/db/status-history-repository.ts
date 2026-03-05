@@ -1,11 +1,12 @@
 import { desc, eq } from 'drizzle-orm'
 
-import type { Database } from './connection'
 import type {
   InsertStatusHistoryData,
   StatusHistoryRepository,
   StatusHistoryRow,
 } from '../../domain/ports/status-history-repository'
+
+import type { Database } from './connection'
 import { reportStatusHistory } from './schema/moderation'
 
 export function createStatusHistoryRepository(db: Database): StatusHistoryRepository {

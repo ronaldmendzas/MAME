@@ -1,9 +1,10 @@
 'use client'
 
-import { useFeed } from '@/hooks/use-feed'
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer'
 import { ReportCard } from './report-card'
 import { SkeletonFeed } from './skeleton-card'
+
+import { useFeed } from '@/hooks/use-feed'
+import { useIntersectionObserver } from '@/hooks/use-intersection-observer'
 
 export function ReportFeed({ params }: { params?: URLSearchParams }) {
   const { reports, loading, hasMore, loadMore, error } = useFeed(params)

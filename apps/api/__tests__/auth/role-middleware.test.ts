@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest'
 import { Hono } from 'hono'
+import { describe, expect, it } from 'vitest'
 
 import type { AppEnv } from '../../src/env'
-import { requireRole } from '../../src/http/middleware/role'
 import { errorHandler } from '../../src/http/middleware/error-handler'
+import { requireRole } from '../../src/http/middleware/role'
 
 function createTestApp() {
   const app = new Hono<AppEnv>()

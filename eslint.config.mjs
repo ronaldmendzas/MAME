@@ -59,20 +59,35 @@ export default [
         KVNamespace: 'readonly',
         DurableObjectNamespace: 'readonly',
         ExecutionContext: 'readonly',
+        CryptoKey: 'readonly',
+        JsonWebKey: 'readonly',
+        TextEncoder: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
       },
     },
   },
   {
-    files: ['apps/web/**/*.tsx'],
+    files: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'],
     languageOptions: {
       globals: {
         React: 'readonly',
         JSX: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        HTMLDivElement: 'readonly',
+        MouseEvent: 'readonly',
+        KeyboardEvent: 'readonly',
+        IntersectionObserver: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        RequestInit: 'readonly',
+        process: 'readonly',
       },
     },
   },
   {
-    files: ['scripts/**/*.ts', '**/drizzle.config.ts'],
+    files: ['**/scripts/**/*.ts', '**/drizzle.config.ts'],
     languageOptions: {
       globals: {
         process: 'readonly',
@@ -80,6 +95,7 @@ export default [
     },
     rules: {
       'no-console': 'off',
+      'no-nested-ternary': 'off',
     },
   },
   {

@@ -1,8 +1,9 @@
 'use client'
 
-import { getCategoryLabel } from '@/lib/format'
 import type { ReportCategory } from '@mame/shared/constants'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getCategoryLabel } from '@/lib/format'
 
 interface StepPreviewProps {
   title: string

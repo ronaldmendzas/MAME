@@ -1,10 +1,10 @@
+import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 
-import { ClerkProvider } from '@clerk/nextjs'
 
 import './globals.css'
-import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
 
 export const metadata: Metadata = {
   title: 'MAME — Anonymous Reporting Platform',

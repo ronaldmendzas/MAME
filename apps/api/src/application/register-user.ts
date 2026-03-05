@@ -1,8 +1,8 @@
-import type { CryptoService } from '../domain/ports/crypto-service'
-import type { UserRepository } from '../domain/ports/user-repository'
-import type { ProfileRepository } from '../domain/ports/profile-repository'
-import type { IdentityLinkRepository } from '../domain/ports/identity-link-repository'
 import type { ClerkService } from '../domain/ports/clerk-service'
+import type { CryptoService } from '../domain/ports/crypto-service'
+import type { IdentityLinkRepository } from '../domain/ports/identity-link-repository'
+import type { ProfileRepository } from '../domain/ports/profile-repository'
+import type { UserRepository } from '../domain/ports/user-repository'
 
 export interface RegisterUserInput {
   clerkId: string

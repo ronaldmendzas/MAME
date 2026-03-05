@@ -1,14 +1,14 @@
-import { describe, expect, it } from 'vitest'
 import { getTableColumns } from 'drizzle-orm'
+import { describe, expect, it } from 'vitest'
 
-import { users, anonymousProfiles, identityLinks } from '../../src/infrastructure/db/schema/users'
-import { reports } from '../../src/infrastructure/db/schema/reports'
-import { evidence } from '../../src/infrastructure/db/schema/evidence'
 import { comments } from '../../src/infrastructure/db/schema/comments'
-import { votes } from '../../src/infrastructure/db/schema/votes'
+import { evidence } from '../../src/infrastructure/db/schema/evidence'
+import { flags } from '../../src/infrastructure/db/schema/flags'
 import { moderationLog, reportStatusHistory } from '../../src/infrastructure/db/schema/moderation'
 import { notifications } from '../../src/infrastructure/db/schema/notifications'
-import { flags } from '../../src/infrastructure/db/schema/flags'
+import { reports } from '../../src/infrastructure/db/schema/reports'
+import { users, anonymousProfiles, identityLinks } from '../../src/infrastructure/db/schema/users'
+import { votes } from '../../src/infrastructure/db/schema/votes'
 
 describe('schema tables', () => {
   it('users has 8 columns', () => {

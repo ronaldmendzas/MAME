@@ -1,4 +1,5 @@
-import type { IdentityLinkRepository, InsertLinkData } from '../../domain/ports/identity-link-repository'
+import type { IdentityLinkRepository } from '../../domain/ports/identity-link-repository'
+
 import type { Database } from './connection'
 import { identityLinks } from './schema/users'
 

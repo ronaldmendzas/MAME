@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono'
 
-import type { AppEnv } from '../../env.js'
 import { UnauthorizedError } from '../../domain/errors.js'
+import type { AppEnv } from '../../env.js'
 
 const CLERK_JWKS_URL = 'https://vocal-longhorn-17.clerk.accounts.dev/.well-known/jwks.json'
 

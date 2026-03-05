@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono'
 
-import type { AppEnv } from '../../env.js'
 import { ForbiddenError } from '../../domain/errors.js'
+import type { AppEnv } from '../../env.js'
 
 type UserRole = 'user' | 'moderator' | 'admin'
 

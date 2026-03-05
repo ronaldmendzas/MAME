@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
 import type { Report } from '@mame/shared/types'
-import { fetchReport } from '@/lib/api'
+import { useParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
 import { ReportDetail } from '@/components/report-detail'
+import { fetchReport } from '@/lib/api'
 
 export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()

@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import Link from 'next/link'
+
 import { Button } from '@/components/ui/button'
 
 export function Header() {

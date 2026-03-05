@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import { SignedIn } from '@clerk/nextjs'
+import Link from 'next/link'
+
 import { ReportFeed } from '@/components/feed'
 
 export default function ReportsPage() {

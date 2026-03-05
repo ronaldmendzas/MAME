@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { Hono } from 'hono'
+import { describe, expect, it } from 'vitest'
 
 import type { AppEnv } from '../../src/env'
 import { rateLimitRead, rateLimitWrite } from '../../src/http/middleware/rate-limit'

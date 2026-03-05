@@ -1,6 +1,7 @@
 import type { ReportStatus } from '@mame/shared/constants'
-import { getStatusColor } from '@/lib/format'
+
 import { Badge } from '@/components/ui/badge'
+import { getStatusColor } from '@/lib/format'
 
 interface StatusTimelineProps {
   currentStatus: ReportStatus

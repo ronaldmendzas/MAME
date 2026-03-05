@@ -1,16 +1,17 @@
 'use client'
 
-import { useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
-import { createReportSchema } from '@mame/shared/schemas'
 import type { ReportCategory } from '@mame/shared/constants'
+import { createReportSchema } from '@mame/shared/schemas'
+import { useState } from 'react'
 
-import { createReport } from '@/lib/api'
-import { useMultiStepForm } from '@/hooks/use-multi-step-form'
-import { Button } from '@/components/ui/button'
-import { StepContent } from './step-content'
 import { StepCategory } from './step-category'
+import { StepContent } from './step-content'
 import { StepPreview } from './step-preview'
+
+import { Button } from '@/components/ui/button'
+import { useMultiStepForm } from '@/hooks/use-multi-step-form'
+import { createReport } from '@/lib/api'
 
 interface FormData {
   title: string
@@ -29,11 +30,11 @@ export function ReportForm() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  const canAdvance = step === 0
-    ? data.title.length >= 10 && data.body.length >= 100
-    : step === 1
-      ? data.category !== '' && data.faculty.length > 0
-      : true
+  const canAdvanceByStep: Record<number, boolean> = {
+    0: data.title.length >= 10 && data.body.length >= 100,
+    1: data.category !== '' && data.faculty.length > 0,
+  }
+  const canAdvance = canAdvanceByStep[step] ?? true
 
   async function handleSubmit() {
     setError(null)

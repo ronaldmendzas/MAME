@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
 import type { Report } from '@mame/shared/types'
+import { useEffect, useRef, useState, useCallback } from 'react'
+
 import { fetchFeed } from '@/lib/api'
 
 interface UseFeedReturn {

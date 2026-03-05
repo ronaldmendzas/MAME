@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 
-import type { ProfileRepository, ProfileRecord, InsertProfileData } from '../../domain/ports/profile-repository'
+import type { ProfileRepository, ProfileRecord } from '../../domain/ports/profile-repository'
+
 import type { Database } from './connection'
 import { anonymousProfiles } from './schema/users'
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { validateTransition, canTransition } from '../../src/domain/report-state-machine'
 import { ValidationError } from '../../src/domain/errors'
+import { validateTransition, canTransition } from '../../src/domain/report-state-machine'
 
 describe('report state machine', () => {
   describe('valid transitions', () => {

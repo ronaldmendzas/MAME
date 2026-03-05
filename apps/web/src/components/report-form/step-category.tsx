@@ -2,8 +2,9 @@
 
 import { REPORT_CATEGORIES } from '@mame/shared/constants'
 import type { ReportCategory } from '@mame/shared/constants'
-import { getCategoryLabel } from '@/lib/format'
+
 import { Input } from '@/components/ui/input'
+import { getCategoryLabel } from '@/lib/format'
 
 interface StepCategoryProps {
   category: ReportCategory | ''

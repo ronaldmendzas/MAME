@@ -1,8 +1,11 @@
 import type { Report } from '@mame/shared/types'
-import { getCategoryLabel, formatDate, getStatusColor } from '@/lib/format'
+
+import { StatusTimeline } from './status-timeline'
+
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { StatusTimeline } from './status-timeline'
+import { getCategoryLabel, formatDate, getStatusColor } from '@/lib/format'
+
 
 export function ReportDetail({ report }: { report: Report }) {
   return (

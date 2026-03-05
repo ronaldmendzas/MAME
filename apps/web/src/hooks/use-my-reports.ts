@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import type { Report } from '@mame/shared/types'
+import { useEffect, useRef, useState, useCallback } from 'react'
+
 import { fetchMyReports } from '@/lib/api'
 
 interface UseMyReportsReturn {
