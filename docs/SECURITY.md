@@ -220,13 +220,17 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 
 ### 4.3 Input/Output Security
 
-| Control               | Configuration                                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------------------------- |
-| **SQL Injection**     | Drizzle ORM prepared statements + Zod validation. ZERO raw SQL concatenation.                        |
-| **XSS**               | CSP strict (`script-src 'self'`) + DOMPurify + Next.js auto-escape. Never `dangerouslySetInnerHTML`. |
-| **Path Traversal**    | UUID filenames for all stored files. No user-provided paths.                                         |
-| **Command Injection** | Architecturally impossible — Workers run in sandboxed V8 isolates with no shell access.              |
-| **Input Validation**  | Zod schemas on ALL write endpoints. Frontend + backend validation (never trust client only).         |
+| Control                  | Configuration                                                                                                                                                                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SQL Injection**        | Drizzle ORM prepared statements + Zod validation. ZERO raw SQL concatenation.                                                                                                                                                             |
+| **XSS**                  | CSP strict (`script-src 'self'`) + DOMPurify sanitization on all user-generated content + Next.js auto-escape. NEVER use `dangerouslySetInnerHTML`.                                                                                       |
+| **Path Traversal**       | UUID filenames for all stored files. No user-provided paths.                                                                                                                                                                              |
+| **Command Injection**    | Architecturally impossible — Workers run in sandboxed V8 isolates with no shell access.                                                                                                                                                   |
+| **Input Validation**     | Zod schemas on ALL write endpoints. Frontend + backend validation (never trust client only).                                                                                                                                              |
+| **Input Sanitization**   | ALL user inputs are sanitized before processing: `DOMPurify.sanitize()` on frontend for any rendered user content, Zod `.trim()` + `.max()` constraints on backend. No raw user input ever reaches DB or is rendered without sanitization. |
+| **Output Sanitization**  | DOMPurify installed in `apps/web` — every component rendering user-generated text (report body, comments, titles) passes content through `DOMPurify.sanitize()` before render. React's default escaping is a second layer, not the only one. |
+| **CORS**                 | Hono CORS middleware configured with strict origin whitelist — ONLY the MAME frontend domain(s). No wildcard (`*`). Credentials mode enabled. Preflight cached 1 hour.                                                                   |
+| **Security Headers**     | Applied via Hono middleware on ALL responses: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`. See §8 for full header values. |
 
 ### 4.4 Evidence File Security
 
@@ -336,9 +340,9 @@ The system CANNOT reveal:
 
 ---
 
-## 7. Pre-Launch Security Checklist (24 Items)
+## 7. Pre-Launch Security Checklist (27 Items)
 
-### Sprint 1 — Foundation (10 items)
+### Sprint 1 — Foundation (13 items)
 
 | #   | Control                                                                                                 | Check |
 | --- | ------------------------------------------------------------------------------------------------------- | ----- |
@@ -350,37 +354,40 @@ The system CANNOT reveal:
 | 6   | Password hashing handled entirely by Clerk.dev (managed infrastructure — passwords never in our DB)     | ☐     |
 | 7   | JWT signed with RS256 (asymmetric), NOT HS256                                                           | ☐     |
 | 8   | All entity IDs are UUID v4 (no sequential integers)                                                     | ☐     |
-| 9   | CORS configured to accept ONLY MAME domain(s)                                                           | ☐     |
+| 9   | CORS configured to accept ONLY MAME domain(s) via Hono CORS middleware (no wildcard)                    | ☐     |
 | 10  | Dependabot active with zero critical/high alerts                                                        | ☐     |
+| 11  | Security headers middleware active on ALL responses (CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy) | ☐     |
+| 12  | DOMPurify installed and applied to ALL rendered user-generated content in frontend                       | ☐     |
+| 13  | ALL user inputs sanitized: Zod `.trim()` + `.max()` on backend, DOMPurify on frontend output            | ☐     |
 
 ### Sprint 2 — Content Security (8 items)
 
 | #   | Control                                                                                                                        | Check |
 | --- | ------------------------------------------------------------------------------------------------------------------------------ | ----- |
-| 11  | Rate limiting active on login + content creation endpoints                                                                     | ☐     |
-| 12  | ALL database queries use prepared statements via Drizzle (no string concatenation)                                             | ☐     |
-| 13  | Zod validation on ALL write endpoints (create report, comment, vote, etc.)                                                     | ☐     |
-| 14  | EXIF metadata stripped from ALL images **client-side** via piexifjs in browser. Server rejects files with residual EXIF (422). | ☐     |
-| 15  | PDF metadata stripped from ALL PDFs **in browser** via pdf-lib before upload. Server validates no metadata remains.            | ☐     |
-| 16  | File type verified by magic number, not declared extension                                                                     | ☐     |
-| 17  | Workers AI content filter runs BEFORE any file is stored in Cloudinary                                                         | ☐     |
-| 18  | Cloudinary evidence files accessible ONLY via signed URLs with expiration                                                      | ☐     |
+| 14  | Rate limiting active on login + content creation endpoints                                                                     | ☐     |
+| 15  | ALL database queries use prepared statements via Drizzle (no string concatenation)                                             | ☐     |
+| 16  | Zod validation on ALL write endpoints (create report, comment, vote, etc.)                                                     | ☐     |
+| 17  | EXIF metadata stripped from ALL images **client-side** via piexifjs in browser. Server rejects files with residual EXIF (422). | ☐     |
+| 18  | PDF metadata stripped from ALL PDFs **in browser** via pdf-lib before upload. Server validates no metadata remains.            | ☐     |
+| 19  | File type verified by magic number, not declared extension                                                                     | ☐     |
+| 20  | Workers AI content filter runs BEFORE any file is stored in Cloudinary                                                         | ☐     |
+| 21  | Cloudinary evidence files accessible ONLY via signed URLs with expiration                                                      | ☐     |
 
 ### Sprint 3 — Operational Security (3 items)
 
 | #   | Control                                                                           | Check |
 | --- | --------------------------------------------------------------------------------- | ----- |
-| 19  | Sentry configured to exclude emails, tokens, and personal data from error reports | ☐     |
-| 20  | Moderation audit log records every action with timestamp and moderator token      | ☐     |
-| 21  | Publication delay active (random 1-6h via Cloudflare Queues)                      | ☐     |
+| 22  | Sentry configured to exclude emails, tokens, and personal data from error reports | ☐     |
+| 23  | Moderation audit log records every action with timestamp and moderator token      | ☐     |
+| 24  | Publication delay active (random 1-6h via Cloudflare Queues)                      | ☐     |
 
 ### Sprint 4 — Pre-Launch (3 items)
 
 | #   | Control                                                                            | Check |
 | --- | ---------------------------------------------------------------------------------- | ----- |
-| 22  | OWASP ZAP automated scan: zero critical vulnerabilities, zero high vulnerabilities | ☐     |
-| 23  | Incident response plan documented and communicated to all team members             | ☐     |
-| 24  | Legal identity request protocol documented with multi-party authorization          | ☐     |
+| 25  | OWASP ZAP automated scan: zero critical vulnerabilities, zero high vulnerabilities | ☐     |
+| 26  | Incident response plan documented and communicated to all team members             | ☐     |
+| 27  | Legal identity request protocol documented with multi-party authorization          | ☐     |
 
 ---
 

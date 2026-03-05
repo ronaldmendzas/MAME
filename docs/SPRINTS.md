@@ -61,9 +61,11 @@
 | Auth middleware: JWT RS256 verification                                 | Backend | 5      | Middleware that verifies JWT on every protected route. Uses Clerk's public RSA key. Extracts user role and token.                                                                                                         |
 | Cloudflare Workers setup: Hono.js + wrangler                            | DevOps  | 5      | `wrangler.toml` configured. Hono.js routes. KV bindings. Secrets configured.                                                                                                                                              |
 | Environment variables + Cloudflare Secrets                              | DevOps  | 3      | `ENCRYPTION_MASTER_KEY`, `ENCRYPTION_RELATION_KEY` in Cloudflare Secrets. DB URLs in env. `.env.example` versioned.                                                                                                       |
-| Sentry setup (no personal data in logs)                                 | DevOps  | 2      | Sentry SDK initialized in frontend + backend. `beforeSend` hook strips emails/tokens from error events.                                                                                                                   |
-| Security headers: CORS, CSP, HSTS                                       | Backend | 3      | Middleware or Cloudflare config. CSP `script-src 'self'`. HSTS `max-age=31536000`. CORS origin whitelist.                                                                                                                 |
-| Auth unit tests: >80% coverage                                          | QA      | 5      | Tests for: registration flow, login flow, token generation, JWT verification, rate limiting, logout. Vitest.                                                                                                              |
+| Sentry setup (no personal data in logs)                                  | DevOps   | 2      | Sentry SDK initialized in frontend + backend. `beforeSend` hook strips emails/tokens from error events.                                                                                                                   |
+| Security headers middleware: CSP, HSTS, X-Frame-Options                  | Backend  | 3      | Hono middleware on ALL routes. `Content-Security-Policy: script-src 'self'`. `Strict-Transport-Security: max-age=31536000; includeSubDomains`. `X-Content-Type-Options: nosniff`. `X-Frame-Options: DENY`. `Referrer-Policy: strict-origin-when-cross-origin`. `Permissions-Policy: camera=(), microphone=(), geolocation=()`. |
+| CORS strict middleware                                                   | Backend  | 2      | Hono `cors()` middleware. Origin whitelist: ONLY MAME frontend domain(s). NO wildcard `*`. Credentials enabled. Preflight cache 1h. Applied before all route handlers.                                                                                           |
+| DOMPurify + input sanitization hardening                                 | Frontend | 3      | Install `dompurify` + `@types/dompurify` in `apps/web`. Create `sanitize()` utility. Apply to ALL components rendering user-generated content (report body, titles, comments). Zod schemas with `.trim()` + `.max()` constraints on backend.                     |
+| Auth unit tests: >80% coverage                                          | QA       | 5      | Tests for: registration flow, login flow, token generation, JWT verification, rate limiting, logout. Vitest.                                                                                                              |
 
 ### Sprint 1 Definition of Done
 
@@ -73,11 +75,14 @@
 | 2   | Anonymous token has NO direct foreign key to `users` table                                   |
 | 3   | JWT signed with RS256 (verify with `jwt.io` that algorithm is RS256)                         |
 | 4   | Rate limiting active: 5 failed logins → 15min block (automated test)                         |
-| 5   | Security headers present on all responses (automated check)                                  |
-| 6   | ENCRYPTION_MASTER_KEY and ENCRYPTION_RELATION_KEY in Cloudflare Secrets, not in code or .env |
-| 7   | Unit tests >80% coverage on auth module                                                      |
-| 8   | CI pipeline runs on every PR, blocks merge on failure                                        |
-| 9   | Docker Compose `up` works for all team members                                               |
+| 5   | Security headers present on ALL responses (CSP, HSTS, X-Frame-Options, nosniff — automated check) |
+| 6   | CORS configured with strict origin whitelist — no wildcard `*` (automated test)              |
+| 7   | ENCRYPTION_MASTER_KEY and ENCRYPTION_RELATION_KEY in Cloudflare Secrets, not in code or .env |
+| 8   | DOMPurify applied to ALL user-generated content rendering (report body, titles, comments)    |
+| 9   | ALL inputs sanitized: Zod `.trim()` + `.max()` on backend, DOMPurify on frontend             |
+| 10  | Unit tests >80% coverage on auth module                                                      |
+| 11  | CI pipeline runs on every PR, blocks merge on failure                                        |
+| 12  | Docker Compose `up` works for all team members                                               |
 
 ### Delivers: **v0.1 Alpha Técnico**
 
@@ -224,7 +229,7 @@
 | Task                                                                 | Owner      | Points | Description                                                                                                                                                                                                                                                                                 |
 | -------------------------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OWASP ZAP automated security audit + fix critical/high               | Security   | 8      | Run OWASP ZAP against staging. Fix ALL critical and high findings. Document remaining medium/low with mitigation timeline.                                                                                                                                                                  |
-| DSS checklist: 24 items with evidence                                | Security   | 5      | Complete the 24-item security checklist (see SECURITY.md). Each item must have screenshot/log evidence of compliance.                                                                                                                                                                       |
+| DSS checklist: 27 items with evidence                                | Security   | 5      | Complete the 27-item security checklist (see SECURITY.md). Each item must have screenshot/log evidence of compliance.                                                                                                                                                                       |
 | Performance optimization: lazy loading, code splitting, `next/image` | Frontend   | 5      | Audit bundle size. Code split heavy components. Lazy load below-fold content. Use `next/image` for all images. Implement `next/font`.                                                                                                                                                       |
 | Responsive design: complete 320-1440px                               | Frontend   | 8      | Test all pages at 320px, 375px, 768px, 1024px, 1440px. Fix all breakpoint issues. Touch targets ≥ 44x44px. No overflow.                                                                                                                                                                     |
 | Admin statistics dashboard (Chart.js)                                | Full-Stack | 5      | Reports per category (bar chart). Reports per month (line chart). Reports per faculty (pie chart). Average moderation time. Active tokens count.                                                                                                                                            |
@@ -243,7 +248,7 @@
 | 1   | OWASP ZAP scan: zero critical, zero high vulnerabilities                            | ZAP report screenshots     |
 | 2   | ~275 concurrent users at peak with no >20% degradation in response time (ISR + CDN) | k6 load test results       |
 | 3   | Lighthouse score ≥ 85 on mobile                                                     | Lighthouse report          |
-| 4   | 24 DSS security controls completed with evidence                                    | Checklist with screenshots |
+| 4   | 27 DSS security controls completed with evidence                                    | Checklist with screenshots |
 | 5   | Swagger/OpenAPI documentation complete for all endpoints                            | `/api/docs` accessible     |
 | 6   | 5+ beta users completed full flow (register → report → interact)                    | User feedback forms        |
 | 7   | Sentry active and capturing errors (without personal data)                          | Sentry dashboard           |
