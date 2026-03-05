@@ -3,6 +3,7 @@ export interface Env {
   ENCRYPTION_MASTER_KEY: string
   ENCRYPTION_RELATION_KEY: string
   ENVIRONMENT: string
+  ALLOWED_ORIGINS?: string
   CLERK_SECRET_KEY: string
   CLERK_WEBHOOK_SECRET: string
   CLOUDINARY_CLOUD_NAME: string
