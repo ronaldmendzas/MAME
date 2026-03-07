@@ -18,3 +18,5 @@ export type ReportStatus =
   | 'resolved'
 
 export type UserRole = 'user' | 'moderator' | 'admin'
+
+export type EvidenceType = 'file' | 'external_link'

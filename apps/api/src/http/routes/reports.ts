@@ -16,6 +16,8 @@ import {
   handleMyReports,
   handleReportDetail,
 } from './report-feed.js'
+import { handleEvidenceList } from './evidence-list.js'
+import { handleEvidenceUpload } from './evidence.js'
 import { handleSearch } from './report-search.js'
 import { handleStatusHistory } from './report-history.js'
 
@@ -38,6 +40,8 @@ reportRoutes.get('/search', handleSearch)
 reportRoutes.get('/mine', authMiddleware, handleMyReports)
 reportRoutes.get('/:id', handleReportDetail)
 reportRoutes.get('/:id/history', handleStatusHistory)
+reportRoutes.get('/:id/evidence', handleEvidenceList)
+reportRoutes.post('/:id/evidence', authMiddleware, rateLimitWrite(), handleEvidenceUpload)
 
 reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
   const raw = await c.req.json()

@@ -36,17 +36,17 @@ export function createSearchRepository(db: Database): SearchRepository {
 
 function mapToSearchResult(row: Record<string, unknown>): SearchResult {
   return {
-    id: row.id as string,
-    tokenId: row.tokenId as string,
-    title: row.title as string,
-    body: row.body as string,
-    category: row.category as SearchResult['category'],
-    faculty: row.faculty as string,
-    status: row.status as SearchResult['status'],
-    votes: row.votes as number,
-    createdAt: row.createdAt as Date,
-    updatedAt: row.updatedAt as Date,
-    publishedAt: row.publishedAt as Date | null,
-    rank: Number(row.rank),
+    id: row['id'] as string,
+    tokenId: row['tokenId'] as string,
+    title: row['title'] as string,
+    body: row['body'] as string,
+    category: row['category'] as SearchResult['category'],
+    faculty: row['faculty'] as string,
+    status: row['status'] as SearchResult['status'],
+    votes: row['votes'] as number,
+    createdAt: row['createdAt'] as Date,
+    updatedAt: row['updatedAt'] as Date,
+    publishedAt: row['publishedAt'] as Date | null,
+    rank: Number(row['rank']),
   }
 }
