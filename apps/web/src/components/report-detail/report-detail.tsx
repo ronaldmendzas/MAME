@@ -21,7 +21,7 @@ export function ReportDetail({ report }: { report: Report }) {
       <p className="mb-6 text-xs text-muted-foreground">
         {formatDate(report.publishedAt ?? report.createdAt)} &middot; {report.votes} votes
       </p>
-      <StatusTimeline currentStatus={report.status} />
+      <StatusTimeline reportId={report.id} />
       <div className="mt-6 whitespace-pre-wrap text-sm leading-relaxed">
         {report.body}
       </div>

@@ -72,6 +72,15 @@ export interface ModerationLogEntry {
   createdAt: Date
 }
 
+export interface StatusHistoryEntry {
+  id: string
+  reportId: string
+  oldStatus: ReportStatus
+  newStatus: ReportStatus
+  reason: string | null
+  createdAt: Date
+}
+
 export interface Flag {
   id: string
   reportId: string

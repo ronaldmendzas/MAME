@@ -17,6 +17,7 @@ import {
   handleReportDetail,
 } from './report-feed.js'
 import { handleSearch } from './report-search.js'
+import { handleStatusHistory } from './report-history.js'
 
 const createSchema = z.object({
   title: z.string().min(10).max(200),
@@ -36,6 +37,7 @@ reportRoutes.get('/', handleFeed)
 reportRoutes.get('/search', handleSearch)
 reportRoutes.get('/mine', authMiddleware, handleMyReports)
 reportRoutes.get('/:id', handleReportDetail)
+reportRoutes.get('/:id/history', handleStatusHistory)
 
 reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
   const raw = await c.req.json()

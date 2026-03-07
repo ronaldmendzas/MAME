@@ -1,5 +1,5 @@
 import type { CreateReportInput } from '@mame/shared/schemas'
-import type { ApiResponse, PaginatedResponse, Report } from '@mame/shared/types'
+import type { ApiResponse, PaginatedResponse, Report, StatusHistoryEntry } from '@mame/shared/types'
 
 import { sanitizeText } from './sanitize'
 
@@ -44,4 +44,8 @@ export async function createReport(data: CreateReportInput, token: string) {
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(data),
   })
+}
+
+export async function fetchStatusHistory(reportId: string) {
+  return apiFetch<ApiResponse<StatusHistoryEntry[]>>(`/reports/${reportId}/history`)
 }
