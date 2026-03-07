@@ -1,5 +1,6 @@
 import type { Report } from '@mame/shared/types'
 
+import { EvidenceSection } from './evidence-section'
 import { StatusTimeline } from './status-timeline'
 
 import { Badge } from '@/components/ui/badge'
@@ -25,19 +26,9 @@ export function ReportDetail({ report }: { report: Report }) {
       <div className="mt-6 whitespace-pre-wrap text-sm leading-relaxed">
         {report.body}
       </div>
-      <EvidencePlaceholder />
+      <EvidenceSection reportId={report.id} />
       <CommentsPlaceholder />
     </article>
-  )
-}
-
-function EvidencePlaceholder() {
-  return (
-    <Card className="mt-8 border-dashed">
-      <CardContent className="py-6 text-center">
-        <p className="text-sm text-muted-foreground">Evidence attachments coming in a future update.</p>
-      </CardContent>
-    </Card>
   )
 }
 

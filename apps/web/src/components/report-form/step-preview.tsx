@@ -27,7 +27,7 @@ export function StepPreview({ title, body, category, faculty }: StepPreviewProps
           <p className="whitespace-pre-wrap text-sm">{body || '—'}</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Evidence upload will be available in a future update.
+          You can attach evidence after submitting the report.
         </p>
       </CardContent>
     </Card>

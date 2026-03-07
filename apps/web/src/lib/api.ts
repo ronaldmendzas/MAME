@@ -49,3 +49,31 @@ export async function createReport(data: CreateReportInput, token: string) {
 export async function fetchStatusHistory(reportId: string) {
   return apiFetch<ApiResponse<StatusHistoryEntry[]>>(`/reports/${reportId}/history`)
 }
+
+export interface EvidenceItem {
+  id: string
+  reportId: string
+  type: string
+  fileKey: string
+  mimeType: string
+  sizeBytes: number
+  url: string
+  createdAt: string
+}
+
+export async function fetchEvidence(reportId: string) {
+  return apiFetch<ApiResponse<EvidenceItem[]>>(`/reports/${reportId}/evidence`)
+}
+
+export async function uploadEvidence(reportId: string, file: File, token: string) {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await fetch(`${API_BASE}/reports/${reportId}/evidence`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  })
+  const json = (await res.json()) as { error?: string }
+  if (!res.ok) throw new Error(json.error ?? 'Upload failed')
+  return json as ApiResponse<EvidenceItem>
+}
