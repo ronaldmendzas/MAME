@@ -16,6 +16,7 @@ import {
   handleMyReports,
   handleReportDetail,
 } from './report-feed.js'
+import { handleSearch } from './report-search.js'
 
 const createSchema = z.object({
   title: z.string().min(10).max(200),
@@ -32,6 +33,7 @@ const updateSchema = z.object({
 const reportRoutes = new Hono<AppEnv>()
 
 reportRoutes.get('/', handleFeed)
+reportRoutes.get('/search', handleSearch)
 reportRoutes.get('/mine', authMiddleware, handleMyReports)
 reportRoutes.get('/:id', handleReportDetail)
 
