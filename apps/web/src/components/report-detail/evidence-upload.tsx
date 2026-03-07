@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { uploadEvidence, type EvidenceItem } from '@/lib/api'
+import { stripMetadata } from '@/lib/strip-metadata'
 
 const ACCEPTED = '.jpg,.jpeg,.png,.webp,.pdf,.mp4,.mp3'
 
@@ -31,7 +32,8 @@ export function EvidenceUpload({ reportId, onUploaded }: Props) {
     if (!token) { setError('Not authenticated'); return }
     setUploading(true)
     try {
-      const res = await uploadEvidence(reportId, file, token)
+      const cleaned = await stripMetadata(file)
+      const res = await uploadEvidence(reportId, cleaned, token)
       if (res.data) onUploaded(res.data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')

@@ -1,4 +1,5 @@
 import { ValidationError } from '../domain/errors.js'
+import { hasExifData } from '../domain/exif-check.js'
 import { detectMimeType, isAllowedType } from '../domain/magic-bytes.js'
 import type { EvidenceRepository, EvidenceRow } from '../domain/ports/evidence-repository.js'
 import type { StoragePort } from '../domain/ports/storage-port.js'
@@ -27,6 +28,10 @@ export async function uploadEvidence(input: UploadInput, deps: Deps): Promise<Ev
   const detectedMime = detectMimeType(input.file)
   if (!detectedMime || !isAllowedType(detectedMime)) {
     throw new ValidationError('Unsupported file type')
+  }
+
+  if (detectedMime === 'image/jpeg' && hasExifData(input.file)) {
+    throw new ValidationError('JPEG contains residual EXIF metadata')
   }
 
   const fileKey = `evidence/${crypto.randomUUID()}`

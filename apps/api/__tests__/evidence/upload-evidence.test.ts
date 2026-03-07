@@ -71,4 +71,17 @@ describe('uploadEvidence', () => {
       ),
     ).rejects.toThrow('Unsupported file type')
   })
+
+  it('rejects JPEG with residual EXIF data', async () => {
+    const exif = new Uint8Array([
+      0xff, 0xd8, 0xff, 0xe1, 0x00, 0x04, 0x00, 0x00,
+      0xff, 0xda, ...new Array(50).fill(0),
+    ])
+    await expect(
+      uploadEvidence(
+        { reportId: 'r1', file: exif.buffer, filename: 'exif.jpg' },
+        { storage: makeStorage(), evidenceRepo: makeRepo() },
+      ),
+    ).rejects.toThrow('EXIF metadata')
+  })
 })
