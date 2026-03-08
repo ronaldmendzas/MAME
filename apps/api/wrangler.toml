@@ -18,8 +18,8 @@ ENVIRONMENT = "development"
 # [[queues.consumers]]
 # queue = "mame-moderation"
 
-# [ai]
-# binding = "AI"
+[ai]
+binding = "AI"
 
 [dev]
 port = 8787

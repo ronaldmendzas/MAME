@@ -12,6 +12,7 @@ export interface Env {
   RESEND_API_KEY: string
   SENTRY_DSN: string
   RATE_LIMIT_KV: KVNamespace
+  AI: Ai
 }
 
 export interface AppVariables {
