@@ -27,7 +27,11 @@ const filtersSchema = z.object({
 })
 
 export async function handleFeed(c: Context<AppEnv>) {
-  const query = filtersSchema.parse(c.req.query())
+  const parsed = filtersSchema.safeParse(c.req.query())
+  if (!parsed.success) {
+    throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid feed params')
+  }
+  const query = parsed.data
   const db = createDb(c.env.DATABASE_URL)
   const repo = createReportRepository(db)
 
