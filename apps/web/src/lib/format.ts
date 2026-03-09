@@ -12,13 +12,13 @@ const CATEGORY_LABELS: Record<ReportCategory, string> = {
 }
 
 const STATUS_COLORS: Record<ReportStatus, string> = {
-  draft: 'bg-neutral-200 text-neutral-700',
-  pending: 'bg-yellow-100 text-yellow-800',
-  under_review: 'bg-blue-100 text-blue-800',
-  published: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-  archived: 'bg-neutral-300 text-neutral-600',
-  resolved: 'bg-purple-100 text-purple-800',
+  draft: 'bg-neutral-800/60 text-neutral-300 border border-neutral-700/50',
+  pending: 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30',
+  under_review: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+  published: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+  rejected: 'bg-red-500/15 text-red-400 border border-red-500/30',
+  archived: 'bg-neutral-700/40 text-neutral-400 border border-neutral-600/40',
+  resolved: 'bg-violet-500/15 text-violet-400 border border-violet-500/30',
 }
 
 export function getCategoryLabel(cat: ReportCategory): string {

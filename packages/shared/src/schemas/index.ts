@@ -7,7 +7,7 @@ import {
   MIN_BODY_LENGTH,
   MIN_TITLE_LENGTH,
   REPORT_CATEGORIES,
-} from '../constants/index.js'
+} from '../constants'
 
 export const createReportSchema = z.object({
   title: z.string().min(MIN_TITLE_LENGTH).max(MAX_TITLE_LENGTH),

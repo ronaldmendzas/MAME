@@ -27,6 +27,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
+  transpilePackages: ['@mame/shared'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },

@@ -1,3 +1,5 @@
+'use client'
+
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
@@ -8,24 +10,36 @@ const Galaxy = dynamic(() => import('@/components/backgrounds/galaxy'), { ssr: f
 
 export default function HomePage() {
   return (
-    <div className="relative -mx-4 -mt-8 flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden px-4">
-      <div className="absolute inset-0 -z-10">
-        <Galaxy speed={0.3} density={0.7} />
+    <div className="relative -mx-6 -mt-8 flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-6">
+      <div className="absolute inset-0 -z-10 opacity-60">
+        <Galaxy speed={0.2} density={0.5} />
       </div>
-      <div className="flex flex-col items-center gap-6 text-center">
-        <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">MAME</h1>
-        <p className="max-w-lg text-lg text-muted-foreground">
-          Anonymous, secure, and verified reporting platform for university communities.
-        </p>
-        <div className="flex gap-3">
-          <Badge variant="secondary">Platform: In Development</Badge>
-          <Badge variant="outline">v0.0.1</Badge>
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/40 via-transparent to-background" />
+      <div className="flex flex-col items-center gap-8 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-sm font-medium uppercase tracking-[0.3em] text-primary">
+            Anonymous Reporting
+          </span>
+          <h1 className="bg-gradient-to-b from-foreground via-foreground/90 to-foreground/60 bg-clip-text text-6xl font-bold tracking-tighter text-transparent sm:text-8xl">
+            MAME
+          </h1>
+          <p className="mt-2 max-w-md text-base leading-relaxed text-muted-foreground">
+            Secure, anonymous, and verified reporting platform for university communities.
+          </p>
         </div>
-        <div className="mt-4 flex gap-4">
-          <Button asChild size="lg">
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="border border-border/50 bg-secondary/50 backdrop-blur-sm">
+            In Development
+          </Badge>
+          <Badge variant="outline" className="border-border/50 backdrop-blur-sm">
+            v0.0.1
+          </Badge>
+        </div>
+        <div className="mt-2 flex gap-4">
+          <Button asChild size="lg" className="bg-primary px-8 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30">
             <Link href="/reports">View Reports</Link>
           </Button>
-          <Button asChild variant="outline" size="lg">
+          <Button asChild variant="outline" size="lg" className="border-border/50 px-8 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/10">
             <Link href="/reports/create">Submit Report</Link>
           </Button>
         </div>

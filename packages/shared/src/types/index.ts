@@ -5,7 +5,7 @@ import type {
   ReportCategory,
   ReportStatus,
   UserRole,
-} from '../constants/index.js'
+} from '../constants'
 
 export interface User {
   id: string

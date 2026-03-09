@@ -3,8 +3,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function SkeletonCard() {
   return (
-    <Card className="gap-3 p-4">
-      <CardContent className="flex flex-col gap-2 p-0">
+    <Card className="gap-3 border-border/40 bg-card/50 p-5">
+      <CardContent className="flex flex-col gap-3 p-0">
         <div className="flex gap-2">
           <Skeleton className="h-5 w-24 rounded-full" />
           <Skeleton className="h-5 w-16" />
@@ -12,7 +12,7 @@ export function SkeletonCard() {
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-2/3" />
-        <div className="flex justify-between">
+        <div className="flex justify-between border-t border-border/20 pt-3">
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-3 w-12" />
         </div>
