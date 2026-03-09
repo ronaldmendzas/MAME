@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { EvidenceUpload } from './evidence-upload'
 import { LinkForm } from './link-form'
+import { SubmitButton } from './submit-button'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetchEvidence, type EvidenceItem } from '@/lib/api'
@@ -46,6 +47,7 @@ export function EvidenceSection({ reportId }: { reportId: string }) {
         ))}
         {isSignedIn && <EvidenceUpload reportId={reportId} onUploaded={onUploaded} />}
         {isSignedIn && <LinkForm reportId={reportId} onAdded={onUploaded} />}
+        {isSignedIn && <SubmitButton reportId={reportId} hasEvidence={items.length > 0} />}
       </CardContent>
     </Card>
   )

@@ -85,3 +85,15 @@ export async function addExternalLink(reportId: string, url: string, token: stri
     body: JSON.stringify({ url }),
   })
 }
+
+export interface SubmitResult {
+  outcome: 'submitted' | 'rejected'
+  reason?: string
+}
+
+export async function submitForReview(reportId: string, token: string) {
+  return apiFetch<ApiResponse<SubmitResult>>(`/reports/${reportId}/submit`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
