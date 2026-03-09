@@ -6,3 +6,6 @@ export type { CreateReportInput, CreateReportDeps } from './create-report'
 
 export { updateReport } from './update-report'
 export type { UpdateReportInput, UpdateReportDeps } from './update-report'
+
+export { submitReport } from './submit-report'
+export type { SubmitReportInput, SubmitReportDeps, SubmitResult } from './submit-report'
