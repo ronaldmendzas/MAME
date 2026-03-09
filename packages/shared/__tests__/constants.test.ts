@@ -7,6 +7,7 @@ import {
   MAX_BODY_LENGTH,
   MAX_COMMENT_LENGTH,
   MAX_FILE_SIZE_BYTES,
+  MAX_IMAGE_COMPRESSED_BYTES,
   MAX_REPORTS_PER_DAY,
   MAX_TITLE_LENGTH,
   MIN_BODY_LENGTH,
@@ -92,6 +93,10 @@ describe('numeric constants', () => {
 
   it('max file size is 5MB', () => {
     expect(MAX_FILE_SIZE_BYTES).toBe(5 * 1024 * 1024)
+  })
+
+  it('max image compressed size is 200KB', () => {
+    expect(MAX_IMAGE_COMPRESSED_BYTES).toBe(200 * 1024)
   })
 
   it('rate limit is 10 reports per day', () => {

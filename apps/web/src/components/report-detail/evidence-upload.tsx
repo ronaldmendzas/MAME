@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { uploadEvidence, type EvidenceItem } from '@/lib/api'
+import { compressImage } from '@/lib/compress-image'
 import { stripMetadata } from '@/lib/strip-metadata'
 
 const ACCEPTED = '.jpg,.jpeg,.png,.webp,.pdf,.mp4,.mp3'
@@ -33,7 +34,8 @@ export function EvidenceUpload({ reportId, onUploaded }: Props) {
     setUploading(true)
     try {
       const cleaned = await stripMetadata(file)
-      const res = await uploadEvidence(reportId, cleaned, token)
+      const optimized = await compressImage(cleaned)
+      const res = await uploadEvidence(reportId, optimized, token)
       if (res.data) onUploaded(res.data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')
