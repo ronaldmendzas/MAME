@@ -9,3 +9,6 @@ export type { UpdateReportInput, UpdateReportDeps } from './update-report'
 
 export { submitReport } from './submit-report'
 export type { SubmitReportInput, SubmitReportDeps, SubmitResult } from './submit-report'
+
+export { addExternalLink } from './add-external-link'
+export type { AddLinkInput, AddLinkDeps } from './add-external-link'

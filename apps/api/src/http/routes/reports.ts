@@ -21,6 +21,7 @@ import { handleEvidenceUpload } from './evidence.js'
 import { handleSearch } from './report-search.js'
 import { handleStatusHistory } from './report-history.js'
 import { handleSubmitReport } from './report-submit.js'
+import { handleAddLink } from './evidence-link.js'
 
 const createSchema = z.object({
   title: z.string().min(10).max(200),
@@ -43,6 +44,7 @@ reportRoutes.get('/:id', handleReportDetail)
 reportRoutes.get('/:id/history', handleStatusHistory)
 reportRoutes.get('/:id/evidence', handleEvidenceList)
 reportRoutes.post('/:id/evidence', authMiddleware, rateLimitWrite(), handleEvidenceUpload)
+reportRoutes.post('/:id/evidence/link', authMiddleware, rateLimitWrite(), handleAddLink)
 reportRoutes.post('/:id/submit', authMiddleware, rateLimitWrite(), handleSubmitReport)
 
 reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
