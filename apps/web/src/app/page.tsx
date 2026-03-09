@@ -11,11 +11,21 @@ const Galaxy = dynamic(() => import('@/components/backgrounds/galaxy'), { ssr: f
 export default function HomePage() {
   return (
     <div className="relative -mx-6 -mt-8 flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-6">
-      <div className="absolute inset-0 -z-10 opacity-60">
-        <Galaxy speed={0.2} density={0.5} />
+      <div className="absolute inset-0">
+        <Galaxy
+          speed={0.3}
+          density={0.7}
+          mouseInteraction
+          mouseRepulsion
+          repulsionStrength={3}
+          glowIntensity={0.5}
+          twinkleIntensity={0.5}
+          rotationSpeed={0.05}
+          transparent={false}
+        />
       </div>
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/40 via-transparent to-background" />
-      <div className="flex flex-col items-center gap-8 text-center">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/80" />
+      <div className="relative z-10 flex flex-col items-center gap-8 text-center">
         <div className="flex flex-col items-center gap-3">
           <span className="text-sm font-medium uppercase tracking-[0.3em] text-primary">
             Anonymous Reporting
