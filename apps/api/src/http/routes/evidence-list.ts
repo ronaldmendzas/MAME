@@ -1,11 +1,11 @@
 import type { Context } from 'hono'
 import { z } from 'zod'
 
+import { signMediaUrl } from '../../domain/media-signature.js'
 import { ValidationError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
 import { createEvidenceRepository } from '../../infrastructure/db/evidence-repository.js'
-import { createCloudinaryStorage } from '../../infrastructure/storage/cloudinary.js'
 
 const uuidSchema = z.string().uuid()
 
@@ -19,16 +19,15 @@ export async function handleEvidenceList(c: Context<AppEnv>) {
   const evidenceRepo = createEvidenceRepository(db)
   const rows = await evidenceRepo.findByReportId(reportId)
 
-  const storage = createCloudinaryStorage({
-    cloudName: c.env.CLOUDINARY_CLOUD_NAME,
-    apiKey: c.env.CLOUDINARY_API_KEY,
-    apiSecret: c.env.CLOUDINARY_API_SECRET,
-  })
+  const baseUrl = new URL(c.req.url).origin
+  const secret = c.env.ENCRYPTION_MASTER_KEY
 
-  const data = rows.map((row) => ({
-    ...row,
-    url: storage.getSignedUrl(row.fileKey),
-  }))
+  const data = await Promise.all(
+    rows.map(async (row) => ({
+      ...row,
+      url: await signMediaUrl(baseUrl, row.fileKey, secret),
+    })),
+  )
 
   return c.json({ success: true, data })
 }
