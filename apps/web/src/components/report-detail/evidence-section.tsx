@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/nextjs'
 import { useCallback, useEffect, useState } from 'react'
 
 import { EvidenceUpload } from './evidence-upload'
+import { LinkForm } from './link-form'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetchEvidence, type EvidenceItem } from '@/lib/api'
@@ -44,26 +45,38 @@ export function EvidenceSection({ reportId }: { reportId: string }) {
           <EvidenceRow key={item.id} item={item} />
         ))}
         {isSignedIn && <EvidenceUpload reportId={reportId} onUploaded={onUploaded} />}
+        {isSignedIn && <LinkForm reportId={reportId} onAdded={onUploaded} />}
       </CardContent>
     </Card>
   )
 }
 
+function getIcon(item: EvidenceItem): string {
+  if (item.type === 'external_link') return '🔗'
+  if (item.mimeType.startsWith('image/')) return '🖼️'
+  return '📎'
+}
+
+function getLabel(item: EvidenceItem): string {
+  if (item.type === 'external_link') return item.fileKey
+  return item.fileKey.split('/').pop() ?? item.fileKey
+}
+
 function EvidenceRow({ item }: { item: EvidenceItem }) {
-  const isImage = item.mimeType.startsWith('image/')
+  const href = item.type === 'external_link' ? item.fileKey : item.url
 
   return (
     <a
-      href={item.url}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
     >
-      <span className="text-lg">{isImage ? '🖼️' : '📎'}</span>
+      <span className="text-lg">{getIcon(item)}</span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{item.fileKey.split('/').pop()}</p>
+        <p className="truncate text-sm font-medium">{getLabel(item)}</p>
         <p className="text-xs text-muted-foreground">
-          {item.mimeType} — {formatSize(item.sizeBytes)}
+          {item.type === 'external_link' ? 'External link' : `${item.mimeType} — ${formatSize(item.sizeBytes)}`}
         </p>
       </div>
     </a>

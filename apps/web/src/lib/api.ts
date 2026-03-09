@@ -77,3 +77,11 @@ export async function uploadEvidence(reportId: string, file: File, token: string
   if (!res.ok) throw new Error(json.error ?? 'Upload failed')
   return json as ApiResponse<EvidenceItem>
 }
+
+export async function addExternalLink(reportId: string, url: string, token: string) {
+  return apiFetch<ApiResponse<EvidenceItem>>(`/reports/${reportId}/evidence/link`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ url }),
+  })
+}
