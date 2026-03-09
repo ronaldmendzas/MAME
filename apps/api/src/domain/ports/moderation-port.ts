@@ -6,4 +6,5 @@ export interface ModerationResult {
 
 export interface ModerationPort {
   classifyText(text: string): Promise<ModerationResult>
+  classifyImage(buffer: ArrayBuffer): Promise<ModerationResult>
 }

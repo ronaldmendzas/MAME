@@ -2,17 +2,18 @@ import type {
   ModerationPort,
   ModerationResult,
 } from '../../domain/ports/moderation-port.js'
-
-interface AiBinding {
-  run(model: string, inputs: Record<string, unknown>): Promise<unknown>
-}
+import type { AiBinding } from './ai-binding.js'
+import { classifyImage } from './workers-ai-image.js'
 
 interface GuardResponse {
   response?: { safe?: boolean; categories?: string[] } | string
 }
 
 export function createWorkersAiModeration(ai: AiBinding): ModerationPort {
-  return { classifyText: (text) => classifyText(ai, text) }
+  return {
+    classifyText: (text) => classifyText(ai, text),
+    classifyImage: (buffer) => classifyImage(ai, buffer),
+  }
 }
 
 async function classifyText(
