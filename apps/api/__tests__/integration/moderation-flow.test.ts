@@ -10,7 +10,7 @@ const TOKEN = 'tok-123'
 function makeReport(overrides: Partial<ReportRow> = {}): ReportRow {
   return {
     id: 'r-1', tokenId: TOKEN, title: 'Test', body: 'Body text',
-    category: 'fraud', faculty: 'CS', status: 'pending',
+    category: 'fraud', faculty: 'CS', status: 'draft',
     votes: 0, createdAt: new Date(), updatedAt: new Date(), publishedAt: null,
     ...overrides,
   }
@@ -94,8 +94,8 @@ describe('moderation flow integration', () => {
     await expect(submitReport(input, deps)).rejects.toThrow('evidence')
   })
 
-  it('rejects non-pending report', async () => {
+  it('rejects non-draft report', async () => {
     const deps = makeDeps(makeReport({ status: 'published' }), [makeEvidence()], safeResult())
-    await expect(submitReport(input, deps)).rejects.toThrow('pending')
+    await expect(submitReport(input, deps)).rejects.toThrow('draft')
   })
 })

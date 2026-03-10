@@ -17,5 +17,5 @@ export async function createReport(
   input: CreateReportInput,
   deps: CreateReportDeps,
 ): Promise<ReportRow> {
-  return deps.reportRepo.insert({ ...input, status: 'pending' })
+  return deps.reportRepo.insert({ ...input, status: 'draft' })
 }

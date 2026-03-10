@@ -32,7 +32,7 @@ export async function submitReport(
   const report = await deps.reportRepo.findById(input.reportId)
   if (!report) throw new NotFoundError('Report not found')
   if (report.tokenId !== input.tokenId) throw new ForbiddenError('Not the author')
-  if (report.status !== 'pending') throw new ValidationError('Report is not in pending status')
+  if (report.status !== 'draft') throw new ValidationError('Report is not in draft status')
 
   const evidence = await deps.evidenceRepo.findByReportId(report.id)
   if (evidence.length === 0) throw new ValidationError('At least one evidence required')
@@ -49,6 +49,7 @@ export async function submitReport(
     return rejectReport(report.id, input.tokenId, imageResult, 'image-content', deps)
   }
 
+  await deps.reportRepo.update(input.reportId, { status: 'pending' })
   return { outcome: 'submitted' }
 }
 

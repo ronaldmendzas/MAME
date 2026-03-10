@@ -13,7 +13,7 @@ function mockDeps(overrides?: Partial<CreateReportDeps>): CreateReportDeps {
         body: 'A'.repeat(100),
         category: 'fraud',
         faculty: 'Engineering',
-        status: 'pending',
+        status: 'draft',
         votes: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -37,16 +37,16 @@ describe('createReport', () => {
     faculty: 'Engineering',
   }
 
-  it('inserts report with pending status', async () => {
+  it('inserts report with draft status', async () => {
     const deps = mockDeps()
     const result = await createReport(input, deps)
 
     expect(deps.reportRepo.insert).toHaveBeenCalledWith({
       ...input,
-      status: 'pending',
+      status: 'draft',
     })
     expect(result.id).toBe('report-uuid')
-    expect(result.status).toBe('pending')
+    expect(result.status).toBe('draft')
   })
 
   it('returns the created report row', async () => {

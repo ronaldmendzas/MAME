@@ -14,7 +14,7 @@ function makeReport(overrides: Partial<ReportRow> = {}): ReportRow {
     body: 'A'.repeat(100),
     category: 'academic_fraud',
     faculty: 'Engineering',
-    status: 'pending',
+    status: 'draft',
     votes: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -60,6 +60,7 @@ describe('submitReport', () => {
     const deps = makeDeps()
     const result = await submitReport(input, deps)
     expect(result).toEqual({ outcome: 'submitted' })
+    expect(deps.reportRepo.update).toHaveBeenCalledWith('r-1', { status: 'pending' })
   })
 
   it('throws if report not found', async () => {
