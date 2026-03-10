@@ -10,7 +10,7 @@ const Galaxy = dynamic(() => import('@/components/backgrounds/galaxy'), { ssr: f
 
 export default function HomePage() {
   return (
-    <div className="relative -mx-6 -mt-8 flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-6">
+    <section className="relative -mt-8 ml-[calc(-50vw+50%)] flex h-[calc(100dvh-4rem)] w-screen items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
         <Galaxy
           speed={0.3}
@@ -24,16 +24,16 @@ export default function HomePage() {
           transparent={false}
         />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/80" />
-      <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/70" />
+      <div className="pointer-events-none relative z-10 flex flex-col items-center gap-6 px-4 text-center sm:gap-8">
         <div className="flex flex-col items-center gap-3">
-          <span className="text-sm font-medium uppercase tracking-[0.3em] text-primary">
+          <span className="text-xs font-medium uppercase tracking-[0.3em] text-primary sm:text-sm">
             Anonymous Reporting
           </span>
-          <h1 className="bg-gradient-to-b from-foreground via-foreground/90 to-foreground/60 bg-clip-text text-6xl font-bold tracking-tighter text-transparent sm:text-8xl">
+          <h1 className="bg-gradient-to-b from-foreground via-foreground/90 to-foreground/60 bg-clip-text text-5xl font-bold tracking-tighter text-transparent sm:text-7xl md:text-8xl">
             MAME
           </h1>
-          <p className="mt-2 max-w-md text-base leading-relaxed text-muted-foreground">
+          <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground sm:max-w-md sm:text-base">
             Secure, anonymous, and verified reporting platform for university communities.
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function HomePage() {
             v0.0.1
           </Badge>
         </div>
-        <div className="mt-2 flex gap-4">
+        <div className="pointer-events-auto mt-2 flex flex-col gap-3 sm:flex-row sm:gap-4">
           <Button asChild size="lg" className="bg-primary px-8 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30">
             <Link href="/reports">View Reports</Link>
           </Button>
@@ -54,6 +54,6 @@ export default function HomePage() {
           </Button>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

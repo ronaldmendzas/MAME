@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en" className="dark">
-        <body className="min-h-screen bg-background text-foreground antialiased">
+        <body className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased">
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
           <Footer />
