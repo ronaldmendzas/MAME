@@ -7,7 +7,7 @@ import {
   MIN_BODY_LENGTH,
   MIN_TITLE_LENGTH,
   REPORT_CATEGORIES,
-} from '../constants/index.js'
+} from '../constants'
 
 export const createReportSchema = z.object({
   title: z.string().min(MIN_TITLE_LENGTH).max(MAX_TITLE_LENGTH),
@@ -17,6 +17,22 @@ export const createReportSchema = z.object({
 })
 
 export type CreateReportInput = z.infer<typeof createReportSchema>
+
+export const updateReportSchema = z.object({
+  title: z.string().min(MIN_TITLE_LENGTH).max(MAX_TITLE_LENGTH).optional(),
+  body: z.string().min(MIN_BODY_LENGTH).max(MAX_BODY_LENGTH).optional(),
+})
+
+export type UpdateReportInput = z.infer<typeof updateReportSchema>
+
+export const reportFiltersSchema = z.object({
+  category: z.enum(REPORT_CATEGORIES).optional(),
+  faculty: z.string().min(1).optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
+})
+
+export type ReportFiltersInput = z.infer<typeof reportFiltersSchema>
 
 export const createCommentSchema = z.object({
   reportId: z.string().uuid(),

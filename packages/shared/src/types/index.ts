@@ -5,7 +5,7 @@ import type {
   ReportCategory,
   ReportStatus,
   UserRole,
-} from '../constants/index.js'
+} from '../constants'
 
 export interface User {
   id: string
@@ -68,6 +68,15 @@ export interface ModerationLogEntry {
   reportId: string
   moderatorToken: string
   action: ModerationAction
+  reason: string | null
+  createdAt: Date
+}
+
+export interface StatusHistoryEntry {
+  id: string
+  reportId: string
+  oldStatus: ReportStatus
+  newStatus: ReportStatus
   reason: string | null
   createdAt: Date
 }

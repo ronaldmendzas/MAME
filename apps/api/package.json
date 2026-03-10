@@ -15,14 +15,17 @@
   },
   "dependencies": {
     "@mame/shared": "*",
-    "hono": "^4.7.0",
-    "drizzle-orm": "^0.39.0",
     "@neondatabase/serverless": "^0.10.0",
+    "drizzle-orm": "^0.39.0",
+    "hono": "^4.7.0",
+    "svix": "^1.86.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250214.0",
+    "@hono/node-server": "^1.19.11",
     "drizzle-kit": "^0.30.0",
+    "postgres": "^3.4.8",
     "wrangler": "^3.109.0"
   }
 }

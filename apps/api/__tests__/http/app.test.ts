@@ -72,5 +72,34 @@ describe('Hono App', () => {
       const res = await app.request('/health')
       expect(res.headers.get('x-content-type-options')).toBe('nosniff')
     })
+
+    it('includes Content-Security-Policy', async () => {
+      const res = await app.request('/health')
+      const csp = res.headers.get('content-security-policy')
+      expect(csp).toContain("default-src 'self'")
+      expect(csp).toContain("script-src 'self'")
+      expect(csp).toContain("frame-ancestors 'none'")
+    })
+
+    it('includes Permissions-Policy', async () => {
+      const res = await app.request('/health')
+      const pp = res.headers.get('permissions-policy')
+      expect(pp).toContain('camera=()')
+      expect(pp).toContain('microphone=()')
+      expect(pp).toContain('geolocation=()')
+    })
+
+    it('includes Strict-Transport-Security', async () => {
+      const res = await app.request('/health')
+      const hsts = res.headers.get('strict-transport-security')
+      expect(hsts).toContain('max-age=31536000')
+    })
+
+    it('includes Referrer-Policy', async () => {
+      const res = await app.request('/health')
+      expect(res.headers.get('referrer-policy')).toBe(
+        'strict-origin-when-cross-origin'
+      )
+    })
   })
 })

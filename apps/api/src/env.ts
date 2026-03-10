@@ -3,6 +3,7 @@ export interface Env {
   ENCRYPTION_MASTER_KEY: string
   ENCRYPTION_RELATION_KEY: string
   ENVIRONMENT: string
+  ALLOWED_ORIGINS?: string
   CLERK_SECRET_KEY: string
   CLERK_WEBHOOK_SECRET: string
   CLOUDINARY_CLOUD_NAME: string
@@ -11,4 +12,13 @@ export interface Env {
   RESEND_API_KEY: string
   SENTRY_DSN: string
   RATE_LIMIT_KV: KVNamespace
+  AI: Ai
 }
+
+export interface AppVariables {
+  userId: string
+  tokenId: string
+  userRole: string
+}
+
+export type AppEnv = { Bindings: Env; Variables: AppVariables }

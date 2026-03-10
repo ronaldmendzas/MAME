@@ -1,1 +1,6 @@
 export { health } from './health.js'
+export { webhooks } from './webhooks.js'
+export { me } from './me.js'
+export { reportRoutes } from './reports.js'
+export { moderationRoutes } from './moderation-routes.js'
+export { mediaRoutes } from './media-routes.js'

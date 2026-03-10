@@ -253,7 +253,30 @@ class ValidationError extends DomainError {
 | **Branch naming**    | `sprint-N/feature-name` — `sprint-1/scaffolding` |
 | **Commit messages**  | Conventional Commits: `feat(scope): description` |
 | **Commit frequency** | Every logical unit of work (not at end of day)   |
+| **Commit granularity** | Atomic — one concern per commit (see below)    |
 | **PR rule**          | At least 1 reviewer approval before merge        |
+
+### Atomic Commit Rule
+
+NEVER bundle an entire feature in a single commit. Each commit must be:
+
+- **Small**: one port, one adapter, one use case, one route, or one test file
+- **Buildable**: `tsc --noEmit` must pass after each commit
+- **Testable**: tests pass after each commit (no broken intermediate states)
+- **Reviewable**: a teammate can understand the commit in under 2 minutes
+- **Bisectable**: `git bisect` can pinpoint exactly where a bug was introduced
+
+**Commit sequence for a typical feature (e.g., CRUD reports):**
+
+1. `feat(reports): add report repository port (interface)`
+2. `feat(reports): add report repository adapter (drizzle)`
+3. `feat(reports): add create-report use case`
+4. `feat(reports): add POST /reports route`
+5. `test(reports): add create-report unit tests`
+6. `feat(reports): add get-report use case + GET route`
+7. `test(reports): add get-report tests`
+
+**Anti-pattern**: `feat(reports): complete CRUD + tests + middleware` (40 files, +1300 lines)
 
 ### Commit Types
 
@@ -312,8 +335,12 @@ export function getConfig(env: Env): Config {
 | **hono**          | `apps/api`        | HTTP framework for Workers                    |
 | **@clerk/nextjs** | `apps/web`        | Auth UI components                            |
 | **tailwindcss**   | `apps/web`        | Styling                                       |
+| **shadcn/ui**     | `apps/web`        | Accessible UI primitives (source code, not runtime dep) |
+| **react-bits**    | `apps/web`        | Animated backgrounds/effects (source code, not runtime dep) |
 | **vitest**        | root              | Testing                                       |
 | **playwright**    | `apps/web`        | E2E testing                                   |
+
+> **Note on shadcn/ui & React Bits:** These are NOT traditional npm dependencies. Their CLI copies component source code into the project (`src/components/ui/` and `src/components/backgrounds/`). The code is fully owned and modifiable — no external runtime. Only their peer dependencies (Radix primitives, utility libs like `clsx`, `tailwind-merge`) are installed as real npm packages.
 
 **Rule:** Before adding ANY new dependency, check if it works in Cloudflare Workers (V8 isolate, no Node.js APIs).
 
@@ -369,10 +396,16 @@ MAME/
 │   │   ├── src/
 │   │   │   ├── app/          # App Router pages
 │   │   │   ├── components/   # React components
+│   │   │   │   ├── ui/       # shadcn/ui primitives (Button, Input, Card, Sidebar, etc.)
+│   │   │   │   ├── backgrounds/ # React Bits backgrounds (Galaxy, etc.)
+│   │   │   │   ├── feed/     # Report feed feature components
+│   │   │   │   ├── report-form/  # Report creation form
+│   │   │   │   ├── report-detail/ # Report detail view
+│   │   │   │   └── my-reports/    # User's reports list
 │   │   │   ├── hooks/        # Custom hooks
-│   │   │   └── lib/          # Utils, config
+│   │   │   └── lib/          # Utils, config (includes shadcn cn() helper)
 │   │   ├── public/
-│   │   ├── tailwind.config.ts
+│   │   ├── components.json   # shadcn/ui configuration
 │   │   ├── next.config.ts
 │   │   └── tsconfig.json
 │   └── api/                  # Hono.js (Cloudflare Worker)

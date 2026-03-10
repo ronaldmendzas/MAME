@@ -51,6 +51,7 @@ export const MAX_BODY_LENGTH = 5000
 export const MIN_BODY_LENGTH = 100
 export const MAX_COMMENT_LENGTH = 1000
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024
+export const MAX_IMAGE_COMPRESSED_BYTES = 200 * 1024
 export const MAX_REPORTS_PER_DAY = 10
 export const FLAG_THRESHOLD = 5
 export const PUBLICATION_DELAY_MIN_SECONDS = 3600
