@@ -1,5 +1,6 @@
 import { ValidationError } from '../domain/errors.js'
 import { hasExifData } from '../domain/exif-check.js'
+import { hasPdfMetadata } from '../domain/pdf-metadata-check.js'
 import { detectMimeType, isAllowedType } from '../domain/magic-bytes.js'
 import type { EvidenceRepository, EvidenceRow } from '../domain/ports/evidence-repository.js'
 import type { StoragePort } from '../domain/ports/storage-port.js'
@@ -32,6 +33,10 @@ export async function uploadEvidence(input: UploadInput, deps: Deps): Promise<Ev
 
   if (detectedMime === 'image/jpeg' && hasExifData(input.file)) {
     throw new ValidationError('JPEG contains residual EXIF metadata')
+  }
+
+  if (detectedMime === 'application/pdf' && hasPdfMetadata(input.file)) {
+    throw new ValidationError('PDF contains residual metadata')
   }
 
   const fileKey = `evidence/${crypto.randomUUID()}`

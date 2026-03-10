@@ -84,4 +84,28 @@ describe('uploadEvidence', () => {
       ),
     ).rejects.toThrow('EXIF metadata')
   })
+
+  it('rejects PDF with residual metadata', async () => {
+    const pdfContent = '%PDF-1.4\n/Author (John Doe)\n%%EOF'
+    const pdfBuffer = new TextEncoder().encode(pdfContent).buffer
+    await expect(
+      uploadEvidence(
+        { reportId: 'r1', file: pdfBuffer, filename: 'doc.pdf' },
+        { storage: makeStorage(), evidenceRepo: makeRepo() },
+      ),
+    ).rejects.toThrow('PDF contains residual metadata')
+  })
+
+  it('uploads clean PDF without metadata', async () => {
+    const pdfContent = '%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF'
+    const pdfBuffer = new TextEncoder().encode(pdfContent).buffer
+    const storage = makeStorage()
+    const repo = makeRepo()
+    const result = await uploadEvidence(
+      { reportId: 'report-1', file: pdfBuffer, filename: 'clean.pdf' },
+      { storage, evidenceRepo: repo },
+    )
+    expect(result.type).toBe('file')
+    expect(storage.upload).toHaveBeenCalledOnce()
+  })
 })
