@@ -2,10 +2,23 @@ import type { Context, Next } from 'hono'
 
 import { UnauthorizedError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
+import { base64UrlToArrayBuffer } from './jwt-utils.js'
 
 const CLERK_JWKS_URL = 'https://vocal-longhorn-17.clerk.accounts.dev/.well-known/jwks.json'
 
 let cachedKey: CryptoKey | null = null
+
+export interface TokenMetadata {
+  token_id?: string
+  role?: string
+}
+
+export interface JwtPayload {
+  sub: string
+  exp: number
+  iat: number
+  metadata?: TokenMetadata
+}
 
 export async function authMiddleware(c: Context<AppEnv>, next: Next) {
   const authHeader = c.req.header('Authorization')
@@ -23,19 +36,7 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
   await next()
 }
 
-interface TokenMetadata {
-  token_id?: string
-  role?: string
-}
-
-interface JwtPayload {
-  sub: string
-  exp: number
-  iat: number
-  metadata?: TokenMetadata
-}
-
-async function verifyJwt(token: string): Promise<JwtPayload> {
+export async function verifyJwt(token: string): Promise<JwtPayload> {
   const parts = token.split('.')
   if (parts.length !== 3) throw new UnauthorizedError('Malformed JWT')
 
@@ -78,15 +79,4 @@ async function getVerificationKey(kid?: string): Promise<CryptoKey> {
   )
 
   return cachedKey
-}
-
-function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
-  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
-  const padding = '='.repeat((4 - (base64.length % 4)) % 4)
-  const binary = atob(base64 + padding)
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i)
-  }
-  return bytes.buffer as ArrayBuffer
 }
