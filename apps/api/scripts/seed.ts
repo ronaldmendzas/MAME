@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto'
 
-import { neon } from '@neondatabase/serverless'
-import { drizzle } from 'drizzle-orm/neon-http'
+import postgres from 'postgres'
+import { drizzle } from 'drizzle-orm/postgres-js'
 
 import * as schema from '../src/infrastructure/db/schema/index'
 
 const DATABASE_URL = process.env.DATABASE_URL
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required')
 
-const sql = neon(DATABASE_URL)
+const sql = postgres(DATABASE_URL)
 const db = drizzle(sql, { schema })
 
 function uuid() {
@@ -99,4 +99,4 @@ async function seed() {
   console.log('Seed complete!')
 }
 
-seed().catch(console.error)
+seed().then(() => sql.end()).catch(console.error)
