@@ -1,7 +1,7 @@
 import type { Context } from 'hono'
 import { z } from 'zod'
 
-import { NotFoundError, ValidationError } from '../../domain/errors.js'
+import { ValidationError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
@@ -47,18 +47,6 @@ export async function handleFeed(c: Context<AppEnv>) {
     : null
 
   return c.json({ success: true, data, nextCursor, hasMore })
-}
-
-export async function handleReportDetail(c: Context<AppEnv>) {
-  const db = createDb(c.env.DATABASE_URL)
-  const repo = createReportRepository(db)
-  const report = await repo.findById(c.req.param('id'))
-
-  if (!report || report.status !== 'published') {
-    throw new NotFoundError('Report')
-  }
-
-  return c.json({ success: true, data: report })
 }
 
 export async function handleMyReports(c: Context<AppEnv>) {

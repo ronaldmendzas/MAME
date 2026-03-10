@@ -8,14 +8,15 @@ import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { optionalAuthMiddleware } from '../middleware/optional-auth.js'
 import { rateLimitWrite } from '../middleware/rate-limit.js'
 
 import {
   REPORT_CATEGORIES,
   handleFeed,
   handleMyReports,
-  handleReportDetail,
 } from './report-feed.js'
+import { handleReportDetail } from './report-detail.js'
 import { handleEvidenceList } from './evidence-list.js'
 import { handleEvidenceUpload } from './evidence.js'
 import { handleSearch } from './report-search.js'
@@ -40,7 +41,7 @@ const reportRoutes = new Hono<AppEnv>()
 reportRoutes.get('/', handleFeed)
 reportRoutes.get('/search', handleSearch)
 reportRoutes.get('/mine', authMiddleware, handleMyReports)
-reportRoutes.get('/:id', handleReportDetail)
+reportRoutes.get('/:id', optionalAuthMiddleware, handleReportDetail)
 reportRoutes.get('/:id/history', handleStatusHistory)
 reportRoutes.get('/:id/evidence', handleEvidenceList)
 reportRoutes.post('/:id/evidence', authMiddleware, rateLimitWrite(), handleEvidenceUpload)
