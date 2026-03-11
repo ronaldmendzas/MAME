@@ -46,38 +46,25 @@ function createMockDeps(
 }
 
 describe('ensureRegistered', () => {
-  it('returns existing tokenId when user is already registered', async () => {
+  it('returns tokenId from Clerk metadata without DB queries', async () => {
     const deps = createMockDeps({
-      userRepo: {
-        findByClerkId: vi.fn().mockResolvedValue({
-          id: 'existing-user',
-          clerkId: 'clerk_123',
-          emailHash: 'hashed-email',
-          role: 'user',
-          createdAt: new Date(),
-        }),
-        insertUser: vi.fn(),
-      },
-      linkRepo: {
-        insertLink: vi.fn(),
-        findByEmailHash: vi.fn().mockResolvedValue({
-          tokenId: 'existing-token',
+      clerkService: {
+        updateUserMetadata: vi.fn(),
+        getUser: vi.fn().mockResolvedValue({
+          email: 'test@uni.edu',
+          tokenId: 'clerk-token',
         }),
       },
     })
 
     const tokenId = await ensureRegistered('clerk_123', deps)
 
-    expect(tokenId).toBe('existing-token')
-    expect(deps.clerkService.updateUserMetadata).toHaveBeenCalledWith(
-      'clerk_123',
-      'existing-token',
-    )
-    expect(deps.clerkService.getUser).not.toHaveBeenCalled()
-    expect(deps.userRepo.insertUser).not.toHaveBeenCalled()
+    expect(tokenId).toBe('clerk-token')
+    expect(deps.userRepo.findByClerkId).not.toHaveBeenCalled()
+    expect(deps.linkRepo.findByEmailHash).not.toHaveBeenCalled()
   })
 
-  it('registers new user when not found in database', async () => {
+  it('registers new user when not in Clerk or DB', async () => {
     const deps = createMockDeps()
 
     const tokenId = await ensureRegistered('clerk_new', deps)
@@ -87,15 +74,16 @@ describe('ensureRegistered', () => {
     expect(deps.userRepo.insertUser).toHaveBeenCalledOnce()
     expect(deps.profileRepo.insertProfile).toHaveBeenCalledOnce()
     expect(deps.linkRepo.insertLink).toHaveBeenCalledOnce()
+    expect(deps.linkRepo.findByEmailHash).not.toHaveBeenCalled()
   })
 
-  it('syncs Clerk metadata for existing user', async () => {
+  it('recovers tokenId from identity_links when Clerk metadata lost', async () => {
     const deps = createMockDeps({
       userRepo: {
         findByClerkId: vi.fn().mockResolvedValue({
           id: 'user-1',
-          clerkId: 'clerk_sync',
-          emailHash: 'hash-sync',
+          clerkId: 'clerk_recover',
+          emailHash: 'hash-recover',
           role: 'user',
           createdAt: new Date(),
         }),
@@ -104,16 +92,63 @@ describe('ensureRegistered', () => {
       linkRepo: {
         insertLink: vi.fn(),
         findByEmailHash: vi.fn().mockResolvedValue({
-          tokenId: 'sync-token',
+          tokenId: 'recovered-token',
         }),
       },
     })
 
-    await ensureRegistered('clerk_sync', deps)
+    const tokenId = await ensureRegistered('clerk_recover', deps)
 
+    expect(tokenId).toBe('recovered-token')
     expect(deps.clerkService.updateUserMetadata).toHaveBeenCalledWith(
-      'clerk_sync',
-      'sync-token',
+      'clerk_recover',
+      'recovered-token',
     )
+  })
+
+  it('handles race condition on concurrent registration', async () => {
+    const deps = createMockDeps({
+      userRepo: {
+        findByClerkId: vi.fn().mockResolvedValue(null),
+        insertUser: vi.fn().mockRejectedValue(
+          new Error('duplicate key value violates unique constraint'),
+        ),
+      },
+      clerkService: {
+        updateUserMetadata: vi.fn(),
+        getUser: vi
+          .fn()
+          .mockResolvedValueOnce({ email: 'test@uni.edu' })
+          .mockResolvedValueOnce({ email: 'test@uni.edu', tokenId: 'race-token' }),
+      },
+    })
+
+    const tokenId = await ensureRegistered('clerk_race', deps)
+
+    expect(tokenId).toBe('race-token')
+    expect(deps.clerkService.getUser).toHaveBeenCalledTimes(2)
+  })
+
+  it('throws on data inconsistency during recovery', async () => {
+    const deps = createMockDeps({
+      userRepo: {
+        findByClerkId: vi.fn().mockResolvedValue({
+          id: 'user-1',
+          clerkId: 'clerk_broken',
+          emailHash: 'hash-broken',
+          role: 'user',
+          createdAt: new Date(),
+        }),
+        insertUser: vi.fn(),
+      },
+      linkRepo: {
+        insertLink: vi.fn(),
+        findByEmailHash: vi.fn().mockResolvedValue(null),
+      },
+    })
+
+    await expect(
+      ensureRegistered('clerk_broken', deps),
+    ).rejects.toThrow('Identity link missing')
   })
 })

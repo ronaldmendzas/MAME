@@ -1,5 +1,6 @@
 export interface ClerkUser {
   email: string
+  tokenId?: string
 }
 
 export interface ClerkService {

@@ -7,28 +7,48 @@ export async function ensureRegistered(
   clerkId: string,
   deps: EnsureRegisteredDeps,
 ): Promise<string> {
-  const existing = await findExistingTokenId(clerkId, deps)
-  if (existing) {
-    await deps.clerkService.updateUserMetadata(clerkId, existing)
-    return existing
-  }
-
   const clerkUser = await deps.clerkService.getUser(clerkId)
-  const result = await registerUser(
-    { clerkId, email: clerkUser.email },
-    deps,
-  )
+  if (clerkUser.tokenId) return clerkUser.tokenId
 
-  return result.tokenId
+  const user = await deps.userRepo.findByClerkId(clerkId)
+  if (!user) return registerNewUser(clerkId, clerkUser.email, deps)
+
+  return recoverTokenId(clerkId, user.emailHash, deps)
 }
 
-async function findExistingTokenId(
+async function registerNewUser(
   clerkId: string,
-  deps: Pick<EnsureRegisteredDeps, 'userRepo' | 'linkRepo'>,
-): Promise<string | null> {
-  const user = await deps.userRepo.findByClerkId(clerkId)
-  if (!user) return null
+  email: string,
+  deps: EnsureRegisteredDeps,
+): Promise<string> {
+  try {
+    const result = await registerUser({ clerkId, email }, deps)
+    return result.tokenId
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error
+    const clerkUser = await deps.clerkService.getUser(clerkId)
+    if (clerkUser.tokenId) return clerkUser.tokenId
 
-  const link = await deps.linkRepo.findByEmailHash(user.emailHash)
-  return link?.tokenId ?? null
+    const user = await deps.userRepo.findByClerkId(clerkId)
+    if (!user) throw error
+    return recoverTokenId(clerkId, user.emailHash, deps)
+  }
+}
+
+async function recoverTokenId(
+  clerkId: string,
+  emailHash: string,
+  deps: Pick<EnsureRegisteredDeps, 'linkRepo' | 'clerkService'>,
+): Promise<string> {
+  const link = await deps.linkRepo.findByEmailHash(emailHash)
+  if (!link) throw new Error('Identity link missing — data inconsistency')
+
+  await deps.clerkService.updateUserMetadata(clerkId, link.tokenId)
+  return link.tokenId
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const msg = error.message.toLowerCase()
+  return msg.includes('unique') || msg.includes('duplicate key')
 }
