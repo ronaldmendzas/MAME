@@ -23,6 +23,9 @@ import { handleSearch } from './report-search.js'
 import { handleStatusHistory } from './report-history.js'
 import { handleSubmitReport } from './report-submit.js'
 import { handleAddLink } from './evidence-link.js'
+import { handleGetComments } from './comment-list.js'
+import { handleCreateComment } from './comment-create.js'
+import { handleDeleteComment } from './comment-delete.js'
 
 const createSchema = z.object({
   title: z.string().min(10).max(200),
@@ -47,6 +50,9 @@ reportRoutes.get('/:id/evidence', handleEvidenceList)
 reportRoutes.post('/:id/evidence', authMiddleware, rateLimitWrite(), handleEvidenceUpload)
 reportRoutes.post('/:id/evidence/link', authMiddleware, rateLimitWrite(), handleAddLink)
 reportRoutes.post('/:id/submit', authMiddleware, rateLimitWrite(), handleSubmitReport)
+reportRoutes.get('/:id/comments', handleGetComments)
+reportRoutes.post('/:id/comments', authMiddleware, rateLimitWrite(), handleCreateComment)
+reportRoutes.delete('/:id/comments/:commentId', authMiddleware, rateLimitWrite(), handleDeleteComment)
 
 reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
   const raw = await c.req.json()
