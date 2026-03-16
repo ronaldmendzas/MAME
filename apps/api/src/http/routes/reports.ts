@@ -8,6 +8,7 @@ import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { ensureRegisteredMiddleware } from '../middleware/ensure-registered.js'
 import { optionalAuthMiddleware } from '../middleware/optional-auth.js'
 import { rateLimitWrite } from '../middleware/rate-limit.js'
 
@@ -40,15 +41,15 @@ const reportRoutes = new Hono<AppEnv>()
 
 reportRoutes.get('/', handleFeed)
 reportRoutes.get('/search', handleSearch)
-reportRoutes.get('/mine', authMiddleware, handleMyReports)
+reportRoutes.get('/mine', authMiddleware, ensureRegisteredMiddleware, handleMyReports)
 reportRoutes.get('/:id', optionalAuthMiddleware, handleReportDetail)
 reportRoutes.get('/:id/history', handleStatusHistory)
 reportRoutes.get('/:id/evidence', handleEvidenceList)
 reportRoutes.post('/:id/evidence', authMiddleware, rateLimitWrite(), handleEvidenceUpload)
 reportRoutes.post('/:id/evidence/link', authMiddleware, rateLimitWrite(), handleAddLink)
-reportRoutes.post('/:id/submit', authMiddleware, rateLimitWrite(), handleSubmitReport)
+reportRoutes.post('/:id/submit', authMiddleware, ensureRegisteredMiddleware, rateLimitWrite(), handleSubmitReport)
 
-reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
+reportRoutes.post('/', authMiddleware, ensureRegisteredMiddleware, rateLimitWrite(), async (c) => {
   const raw = await c.req.json()
   const parsed = createSchema.safeParse(raw)
   if (!parsed.success) {
@@ -67,7 +68,7 @@ reportRoutes.post('/', authMiddleware, rateLimitWrite(), async (c) => {
   return c.json({ success: true, data: report }, 201)
 })
 
-reportRoutes.patch('/:id', authMiddleware, rateLimitWrite(), async (c) => {
+reportRoutes.patch('/:id', authMiddleware, ensureRegisteredMiddleware, rateLimitWrite(), async (c) => {
   const raw = await c.req.json()
   const parsed = updateSchema.safeParse(raw)
   if (!parsed.success) {
