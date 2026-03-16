@@ -21,5 +21,24 @@ export function createClerkService(secretKey: string): ClerkService {
         throw new Error(`Clerk metadata update failed: ${response.status} ${text}`)
       }
     },
+
+    getUser: async (clerkUserId) => {
+      const response = await fetch(`${baseUrl}/users/${clerkUserId}`, {
+        headers: { Authorization: `Bearer ${secretKey}` },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Clerk user fetch failed: ${response.status}`)
+      }
+
+      const data = (await response.json()) as {
+        email_addresses?: Array<{ email_address: string }>
+        public_metadata?: { token_id?: string }
+      }
+      const email = data.email_addresses?.[0]?.email_address
+      if (!email) throw new Error('No email found for Clerk user')
+
+      return { email, tokenId: data.public_metadata?.token_id }
+    },
   }
 }

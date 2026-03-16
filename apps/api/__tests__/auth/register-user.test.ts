@@ -27,6 +27,7 @@ function createMockDeps(overrides?: Partial<RegisterUserDeps>): RegisterUserDeps
     },
     linkRepo: {
       insertLink: vi.fn().mockResolvedValue(undefined),
+      findByEmailHash: vi.fn().mockResolvedValue(null),
     },
     cryptoService: {
       hashEmail: vi.fn().mockResolvedValue('abcdef1234567890'),
@@ -36,6 +37,7 @@ function createMockDeps(overrides?: Partial<RegisterUserDeps>): RegisterUserDeps
     },
     clerkService: {
       updateUserMetadata: vi.fn().mockResolvedValue(undefined),
+      getUser: vi.fn().mockResolvedValue({ email: 'test@uni.edu' }),
     },
     ...overrides,
   }
