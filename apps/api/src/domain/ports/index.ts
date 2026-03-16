@@ -7,3 +7,4 @@ export type { ReportRepository, ReportRow, InsertReportData, ReportFilters } fro
 export type { StatusHistoryRepository, StatusHistoryRow, InsertStatusHistoryData } from './status-history-repository'
 export type { ModerationPort, ModerationResult } from './moderation-port'
 export type { ForensicLogPort, ForensicEntry } from './forensic-log-port'
+export type { CommentRepository, CommentRow, InsertCommentData } from './comment-repository'
