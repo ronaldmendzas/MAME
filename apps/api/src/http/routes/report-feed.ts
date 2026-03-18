@@ -49,12 +49,21 @@ export async function handleFeed(c: Context<AppEnv>) {
   return c.json({ success: true, data, nextCursor, hasMore })
 }
 
+const myReportsSchema = z.object({
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+})
+
 export async function handleMyReports(c: Context<AppEnv>) {
   const tokenId = c.get('tokenId')
   if (!tokenId) throw new ValidationError('Missing token_id in JWT')
 
-  const cursor = c.req.query('cursor') ?? null
-  const limit = Number(c.req.query('limit') ?? '20')
+  const parsed = myReportsSchema.safeParse(c.req.query())
+  if (!parsed.success) {
+    throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid params')
+  }
+
+  const { cursor = null, limit } = parsed.data
   const db = createDb(c.env.DATABASE_URL)
   const repo = createReportRepository(db)
 
