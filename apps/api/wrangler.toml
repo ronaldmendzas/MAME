@@ -5,6 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "development"
+CLERK_JWT_ISSUER = "https://vocal-longhorn-17.clerk.accounts.dev"
+CLERK_JWT_AUDIENCE = "mame-api"
 
 # [kv_namespaces]
 [[kv_namespaces]]

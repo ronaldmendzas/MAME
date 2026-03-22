@@ -5,8 +5,12 @@ import type { AppEnv } from '../../env.js'
 import { base64UrlToArrayBuffer } from './jwt-utils.js'
 
 const CLERK_JWKS_URL = 'https://vocal-longhorn-17.clerk.accounts.dev/.well-known/jwks.json'
+const DEFAULT_ISSUER = 'https://vocal-longhorn-17.clerk.accounts.dev'
+const DEFAULT_AUDIENCE = 'mame-api'
+const CLOCK_SKEW_SECONDS = 60
+const JWKS_CACHE_TTL_SECONDS = 300
 
-let cachedKey: CryptoKey | null = null
+const keyCache = new Map<string, { key: CryptoKey; expiresAt: number }>()
 
 export interface TokenMetadata {
   token_id?: string
@@ -15,9 +19,17 @@ export interface TokenMetadata {
 
 export interface JwtPayload {
   sub: string
+  iss: string
+  aud: string | string[]
   exp: number
+  nbf: number
   iat: number
   metadata?: TokenMetadata
+}
+
+interface VerifyOptions {
+  expectedIssuer?: string
+  expectedAudience?: string
 }
 
 export async function authMiddleware(c: Context<AppEnv>, next: Next) {
@@ -27,7 +39,10 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
   }
 
   const token = authHeader.slice(7)
-  const payload = await verifyJwt(token)
+  const payload = await verifyJwt(token, {
+    expectedIssuer: c.env?.CLERK_JWT_ISSUER,
+    expectedAudience: c.env?.CLERK_JWT_AUDIENCE,
+  })
 
   c.set('userId', payload.sub as string)
   c.set('tokenId', (payload.metadata as TokenMetadata)?.token_id ?? '')
@@ -36,47 +51,96 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
   await next()
 }
 
-export async function verifyJwt(token: string): Promise<JwtPayload> {
+export async function verifyJwt(token: string, options?: VerifyOptions): Promise<JwtPayload> {
   const parts = token.split('.')
   if (parts.length !== 3) throw new UnauthorizedError('Malformed JWT')
 
-  const header = JSON.parse(atob(parts[0]!)) as { alg: string; kid?: string }
+  const header = decodePart<{ alg: string; kid?: string }>(parts[0]!)
   if (header.alg !== 'RS256') throw new UnauthorizedError('Unsupported algorithm')
+  if (!header.kid) throw new UnauthorizedError('Missing JWT kid')
 
-  const key = await getVerificationKey(header.kid)
   const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`)
   const signature = base64UrlToArrayBuffer(parts[2]!)
+  const key = await getVerificationKey(header.kid)
 
-  const isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data)
+  let isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data)
+  if (!isValid) {
+    const refreshed = await getVerificationKey(header.kid, true)
+    isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', refreshed, signature, data)
+  }
+
   if (!isValid) throw new UnauthorizedError('Invalid JWT signature')
 
-  const payload = JSON.parse(atob(parts[1]!)) as JwtPayload
-  const now = Math.floor(Date.now() / 1000)
-  if (payload.exp < now) throw new UnauthorizedError('JWT expired')
+  const payload = decodePart<JwtPayload>(parts[1]!)
+  validateClaims(payload, {
+    expectedIssuer: options?.expectedIssuer ?? DEFAULT_ISSUER,
+    expectedAudience: options?.expectedAudience ?? DEFAULT_AUDIENCE,
+  })
 
   return payload
 }
 
-async function getVerificationKey(kid?: string): Promise<CryptoKey> {
-  if (cachedKey) return cachedKey
+function decodePart<T>(value: string): T {
+  try {
+    const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+    const padding = '='.repeat((4 - (base64.length % 4)) % 4)
+    return JSON.parse(atob(base64 + padding)) as T
+  } catch {
+    throw new UnauthorizedError('Malformed JWT payload')
+  }
+}
+
+function validateClaims(payload: JwtPayload, options: Required<VerifyOptions>) {
+  const now = Math.floor(Date.now() / 1000)
+
+  if (!payload.sub || !payload.iss || payload.aud === undefined) {
+    throw new UnauthorizedError('Missing required JWT claims')
+  }
+  if (typeof payload.exp !== 'number' || typeof payload.nbf !== 'number' || typeof payload.iat !== 'number') {
+    throw new UnauthorizedError('Invalid JWT time claims')
+  }
+
+  if (payload.iss !== options.expectedIssuer) {
+    throw new UnauthorizedError('Invalid JWT issuer')
+  }
+
+  const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud]
+  if (!audiences.includes(options.expectedAudience)) {
+    throw new UnauthorizedError('Invalid JWT audience')
+  }
+
+  if (payload.nbf > now + CLOCK_SKEW_SECONDS) {
+    throw new UnauthorizedError('JWT not active yet')
+  }
+  if (payload.iat > now + CLOCK_SKEW_SECONDS) {
+    throw new UnauthorizedError('JWT issued in the future')
+  }
+  if (payload.exp <= now - CLOCK_SKEW_SECONDS) {
+    throw new UnauthorizedError('JWT expired')
+  }
+}
+
+async function getVerificationKey(kid: string, forceRefresh = false): Promise<CryptoKey> {
+  const now = Math.floor(Date.now() / 1000)
+  const cached = keyCache.get(kid)
+  if (!forceRefresh && cached && cached.expiresAt > now) return cached.key
 
   const response = await fetch(CLERK_JWKS_URL)
   if (!response.ok) throw new UnauthorizedError('Failed to fetch JWKS')
 
   const jwks = (await response.json()) as { keys: (JsonWebKey & { kid?: string })[] }
-  const jwk = kid
-    ? jwks.keys.find((k) => k.kid === kid)
-    : jwks.keys[0]
+  const jwk = jwks.keys.find((k) => k.kid === kid)
 
   if (!jwk) throw new UnauthorizedError('No matching key found')
 
-  cachedKey = await crypto.subtle.importKey(
+  const importedKey = await crypto.subtle.importKey(
     'jwk',
     jwk,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false,
     ['verify'],
   )
+  keyCache.set(kid, { key: importedKey, expiresAt: now + JWKS_CACHE_TTL_SECONDS })
 
-  return cachedKey
+  return importedKey
 }
