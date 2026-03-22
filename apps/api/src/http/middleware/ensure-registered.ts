@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono'
 
+import { ForbiddenError } from '../../domain/errors.js'
 import { ensureRegistered } from '../../application/ensure-registered.js'
 import type { AppEnv } from '../../env.js'
 import { createClerkService } from '../../infrastructure/auth/clerk-service.js'
@@ -30,6 +31,11 @@ export async function ensureRegisteredMiddleware(
     ),
     clerkService: createClerkService(c.env.CLERK_SECRET_KEY),
   })
+
+  const profile = await createProfileRepository(db).findByTokenId(resolved)
+  if (profile?.isSuspended) {
+    throw new ForbiddenError('Account suspended')
+  }
 
   c.set('tokenId', resolved)
   await next()

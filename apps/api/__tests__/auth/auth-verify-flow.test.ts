@@ -47,6 +47,19 @@ function createTestApp() {
 describe('auth full verification flow', () => {
   let keyPair: CryptoKeyPair
   let publicJwk: JsonWebKey
+  const now = () => Math.floor(Date.now() / 1000)
+
+  function validClaims(overrides?: Record<string, unknown>) {
+    return {
+      sub: 'user_42',
+      iss: 'https://vocal-longhorn-17.clerk.accounts.dev',
+      aud: 'mame-api',
+      exp: now() + 3600,
+      nbf: now() - 30,
+      iat: now() - 30,
+      ...overrides,
+    }
+  }
 
   beforeAll(async () => {
     keyPair = await generateRsaKeyPair()
@@ -65,7 +78,7 @@ describe('auth full verification flow', () => {
     )
 
     const token = await signJwt(
-      { sub: 'user_42', exp: Math.floor(Date.now() / 1000) + 3600, iat: Math.floor(Date.now() / 1000), metadata: { token_id: 'tok_abc', role: 'admin' } },
+      validClaims({ metadata: { token_id: 'tok_abc', role: 'admin' } }),
       keyPair.privateKey,
     )
 
@@ -87,7 +100,12 @@ describe('auth full verification flow', () => {
     )
 
     const token = await signJwt(
-      { sub: 'user_1', exp: 1000000000, iat: 999999000 },
+      validClaims({
+        sub: 'user_1',
+        exp: 1000000000,
+        nbf: 999999000,
+        iat: 999999000,
+      }),
       keyPair.privateKey,
     )
 
@@ -113,5 +131,45 @@ describe('auth full verification flow', () => {
     expect(res.status).toBe(401)
     const body = (await res.json()) as { error: string }
     expect(body.error).toContain('algorithm')
+  })
+
+  it('rejects invalid issuer', async () => {
+    const app = createTestApp()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ keys: [publicJwk] }), { status: 200 }),
+    )
+
+    const token = await signJwt(
+      validClaims({ iss: 'https://evil-issuer.example.com' }),
+      keyPair.privateKey,
+    )
+
+    const res = await app.request('/p/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    expect(res.status).toBe(401)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toContain('issuer')
+  })
+
+  it('rejects invalid audience', async () => {
+    const app = createTestApp()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ keys: [publicJwk] }), { status: 200 }),
+    )
+
+    const token = await signJwt(
+      validClaims({ aud: 'other-api' }),
+      keyPair.privateKey,
+    )
+
+    const res = await app.request('/p/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    expect(res.status).toBe(401)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toContain('audience')
   })
 })

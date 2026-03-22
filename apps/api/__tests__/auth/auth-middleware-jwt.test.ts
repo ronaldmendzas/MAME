@@ -21,11 +21,23 @@ function createTestApp() {
 
 function makeRs256Token(
   payload: Record<string, unknown>,
-  header: Record<string, unknown> = { alg: 'RS256', typ: 'JWT' },
+  header: Record<string, unknown> = { alg: 'RS256', typ: 'JWT', kid: 'test-kid' },
 ) {
   const h = btoa(JSON.stringify(header))
   const p = btoa(JSON.stringify(payload))
   return `${h}.${p}.fake-sig`
+}
+
+function requiredClaims(overrides?: Record<string, unknown>) {
+  return {
+    sub: 'u1',
+    iss: 'https://vocal-longhorn-17.clerk.accounts.dev',
+    aud: 'mame-api',
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    nbf: Math.floor(Date.now() / 1000) - 30,
+    iat: Math.floor(Date.now() / 1000) - 30,
+    ...overrides,
+  }
 }
 
 describe('authMiddleware JWT edge cases', () => {
@@ -53,7 +65,7 @@ describe('authMiddleware JWT edge cases', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response('', { status: 500 }),
     )
-    const token = makeRs256Token({ sub: 'u1', exp: 9999999999 })
+    const token = makeRs256Token(requiredClaims())
     const res = await app.request('/p/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -67,7 +79,7 @@ describe('authMiddleware JWT edge cases', () => {
       new Response(JSON.stringify({ keys: [] }), { status: 200 }),
     )
     const token = makeRs256Token(
-      { sub: 'u1', exp: 9999999999 },
+      requiredClaims(),
       { alg: 'RS256', kid: 'nonexistent' },
     )
     const res = await app.request('/p/me', {
@@ -76,5 +88,15 @@ describe('authMiddleware JWT edge cases', () => {
     expect(res.status).toBe(401)
     const body = (await res.json()) as { error: string }
     expect(body.error).toContain('key')
+  })
+
+  it('rejects RS256 token without kid', async () => {
+    const token = makeRs256Token(requiredClaims(), { alg: 'RS256', typ: 'JWT' })
+    const res = await app.request('/p/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    expect(res.status).toBe(401)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toContain('kid')
   })
 })
