@@ -61,12 +61,15 @@ authLocalRoutes.post('/register', async (c) => {
   const existing = await localAuthRepo.findByLoginHash(loginHash)
   if (existing) throw new ConflictError('Local login')
 
+  const existingUser = await userRepo.findByEmailHash(loginHash)
   const passwordHash = await passwordHasher.hashPassword(password)
-  const user = await userRepo.insertUser({
-    clerkId: `local:${crypto.randomUUID()}`,
-    emailHash: loginHash,
-    role: 'user',
-  })
+  const user =
+    existingUser ??
+    (await userRepo.insertUser({
+      clerkId: `local:${crypto.randomUUID()}`,
+      emailHash: loginHash,
+      role: 'user',
+    }))
 
   await localAuthRepo.insertCredential({
     userId: user.id,
@@ -80,7 +83,7 @@ authLocalRoutes.post('/register', async (c) => {
     outcome: 'allowed',
     source: 'auth_local_register',
     target: c.req.path,
-    details: { userId: user.id },
+    details: { userId: user.id, linkedExistingUser: Boolean(existingUser) },
   })
 
   return c.json({

@@ -1,5 +1,6 @@
 export interface UserRepository {
   findByClerkId(clerkId: string): Promise<UserRecord | null>
+  findByEmailHash(emailHash: string): Promise<UserRecord | null>
   insertUser(data: InsertUserData): Promise<UserRecord>
   listUsers(limit: number): Promise<UserRecord[]>
   updateRole(userId: string, role: UserRole): Promise<UserRecord | null>

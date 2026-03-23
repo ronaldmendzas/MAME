@@ -19,6 +19,18 @@ export function createUserRepository(db: Database): UserRepository {
       return mapToRecord(row)
     },
 
+    findByEmailHash: async (emailHash) => {
+      const rows = await db
+        .select()
+        .from(users)
+        .where(eq(users.emailHash, emailHash))
+        .limit(1)
+
+      const row = rows[0]
+      if (!row) return null
+      return mapToRecord(row)
+    },
+
     insertUser: async (data) => {
       const rows = await db
         .insert(users)

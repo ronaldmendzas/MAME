@@ -11,6 +11,7 @@ const {
   confirmMfaEnrollmentMock,
   verifyMfaChallengeMock,
   findByLoginHashMock,
+  findByEmailHashMock,
   insertCredentialMock,
   insertUserMock,
   hashEmailMock,
@@ -22,6 +23,7 @@ const {
     confirmMfaEnrollmentMock: vi.fn(),
     verifyMfaChallengeMock: vi.fn(),
     findByLoginHashMock: vi.fn(),
+    findByEmailHashMock: vi.fn(),
     insertCredentialMock: vi.fn(),
     insertUserMock: vi.fn(),
     hashEmailMock: vi.fn(),
@@ -59,6 +61,7 @@ vi.mock('../../src/infrastructure/db/local-auth-repository.js', () => ({
 
 vi.mock('../../src/infrastructure/db/user-repository.js', () => ({
   createUserRepository: vi.fn(() => ({
+    findByEmailHash: findByEmailHashMock,
     insertUser: insertUserMock,
   })),
 }))
@@ -117,6 +120,7 @@ describe('auth local routes', () => {
     hashEmailMock.mockResolvedValue('hash:demo@example.com')
     hashPasswordMock.mockResolvedValue('$2b$12$hashed')
     findByLoginHashMock.mockResolvedValue(null)
+    findByEmailHashMock.mockResolvedValue(null)
     insertUserMock.mockResolvedValue({ id: 'user_1', role: 'user' })
     insertCredentialMock.mockResolvedValue({})
 
@@ -160,6 +164,24 @@ describe('auth local routes', () => {
     )
 
     expect(res.status).toBe(409)
+  })
+
+  it('links local credential to an existing user with same email hash', async () => {
+    findByEmailHashMock.mockResolvedValueOnce({ id: 'existing_user_1', role: 'user' })
+
+    const res = await app.request(
+      '/auth/local/register',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ login: 'demo@example.com', password: 'Str0ng!Password#2026' }),
+      },
+      makeEnv(),
+    )
+
+    expect(res.status).toBe(201)
+    expect(insertUserMock).not.toHaveBeenCalled()
+    expect(insertCredentialMock).toHaveBeenCalledTimes(1)
   })
 
   it('returns mfa_required on successful login with MFA enabled', async () => {
@@ -211,5 +233,36 @@ describe('auth local routes', () => {
     )
 
     expect(res.status).toBe(401)
+  })
+
+  it('starts and confirms MFA enrollment', async () => {
+    const beginRes = await app.request(
+      '/auth/local/mfa/begin',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          userId: '11111111-1111-1111-1111-111111111111',
+          accountName: 'demo@example.com',
+        }),
+      },
+      makeEnv(),
+    )
+
+    expect(beginRes.status).toBe(200)
+
+    const confirmRes = await app.request(
+      '/auth/local/mfa/confirm',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ userId: '11111111-1111-1111-1111-111111111111', code: '123456' }),
+      },
+      makeEnv(),
+    )
+
+    expect(confirmRes.status).toBe(200)
+    expect(beginMfaEnrollmentMock).toHaveBeenCalledTimes(1)
+    expect(confirmMfaEnrollmentMock).toHaveBeenCalledTimes(1)
   })
 })
