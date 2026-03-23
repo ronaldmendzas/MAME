@@ -17,3 +17,4 @@ export type {
 	SecurityEventType,
 	SecurityEventOutcome,
 } from './security-event-repository'
+export type { LocalAuthRepository, InsertLocalAuthCredential, LocalAuthCredential } from './local-auth-repository'

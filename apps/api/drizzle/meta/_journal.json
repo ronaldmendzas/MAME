@@ -43,6 +43,13 @@
       "when": 1774400000000,
       "tag": "0005_make_audit_logs_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774500000000,
+      "tag": "0006_add_local_auth_credentials",
+      "breakpoints": true
     }
   ]
 }
