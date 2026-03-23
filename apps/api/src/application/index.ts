@@ -19,3 +19,19 @@ export type {
 	AuthenticateLocalLoginDeps,
 	AuthenticateLocalLoginResult,
 } from './auth-local/authenticate-local-login'
+
+export {
+	beginMfaEnrollment,
+	confirmMfaEnrollment,
+	verifyMfaChallenge,
+} from './auth-local/mfa-enrollment'
+export type {
+	BeginMfaEnrollmentInput,
+	BeginMfaEnrollmentDeps,
+	BeginMfaEnrollmentResult,
+	ConfirmMfaEnrollmentInput,
+	ConfirmMfaEnrollmentDeps,
+	VerifyMfaChallengeInput,
+	VerifyMfaChallengeDeps,
+	VerifyMfaChallengeResult,
+} from './auth-local/mfa-enrollment'

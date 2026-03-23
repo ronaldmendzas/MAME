@@ -19,3 +19,5 @@ export type {
 } from './security-event-repository'
 export type { LocalAuthRepository, InsertLocalAuthCredential, LocalAuthCredential } from './local-auth-repository'
 export type { PasswordHasher } from './password-hasher'
+export type { TotpService, BuildOtpAuthUriInput, VerifyTotpCodeInput } from './totp-service'
+export type { SecretCipher } from './secret-cipher'
