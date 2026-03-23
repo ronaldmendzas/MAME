@@ -3,7 +3,7 @@ import type { ApiResponse, PaginatedResponse, Report, StatusHistoryEntry } from 
 
 import { sanitizeText } from './sanitize'
 
-const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:8787'
+const API_BASE = resolveApiBase(process.env['NEXT_PUBLIC_API_URL'])
 
 export class ApiError extends Error {
   status: number
@@ -17,6 +17,32 @@ export class ApiError extends Error {
 
 function sanitizeReport(r: Report): Report {
   return { ...r, title: sanitizeText(r.title), body: sanitizeText(r.body) }
+}
+
+function resolveApiBase(rawBase: string | undefined): string {
+  const fallback = 'http://localhost:8787'
+  const base = rawBase?.trim() || fallback
+
+  let parsed: URL
+  try {
+    parsed = new URL(base)
+  } catch {
+    throw new Error('Invalid NEXT_PUBLIC_API_URL')
+  }
+
+  const isLocalhost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1'
+  const isSecure = parsed.protocol === 'https:'
+  const isDevelopment = process.env['NODE_ENV'] !== 'production'
+
+  if (!isSecure && !(isDevelopment && isLocalhost)) {
+    throw new Error('NEXT_PUBLIC_API_URL must use https in production')
+  }
+
+  return parsed.origin
+}
+
+function encodePathSegment(value: string): string {
+  return encodeURIComponent(value)
 }
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -36,7 +62,7 @@ export async function fetchFeed(params?: URLSearchParams) {
 }
 
 export async function fetchReport(id: string, token?: string) {
-  const res = await apiFetch<ApiResponse<Report>>(`/reports/${id}`, token
+  const res = await apiFetch<ApiResponse<Report>>(`/reports/${encodePathSegment(id)}`, token
     ? { headers: { Authorization: `Bearer ${token}` } }
     : undefined)
   return res.data ? { ...res, data: sanitizeReport(res.data) } : res
@@ -59,7 +85,7 @@ export async function createReport(data: CreateReportInput, token: string) {
 }
 
 export async function fetchStatusHistory(reportId: string) {
-  return apiFetch<ApiResponse<StatusHistoryEntry[]>>(`/reports/${reportId}/history`)
+  return apiFetch<ApiResponse<StatusHistoryEntry[]>>(`/reports/${encodePathSegment(reportId)}/history`)
 }
 
 export interface EvidenceItem {
@@ -74,13 +100,13 @@ export interface EvidenceItem {
 }
 
 export async function fetchEvidence(reportId: string) {
-  return apiFetch<ApiResponse<EvidenceItem[]>>(`/reports/${reportId}/evidence`)
+  return apiFetch<ApiResponse<EvidenceItem[]>>(`/reports/${encodePathSegment(reportId)}/evidence`)
 }
 
 export async function uploadEvidence(reportId: string, file: File, token: string) {
   const form = new FormData()
   form.append('file', file)
-  const res = await fetch(`${API_BASE}/reports/${reportId}/evidence`, {
+  const res = await fetch(`${API_BASE}/reports/${encodePathSegment(reportId)}/evidence`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: form,
@@ -91,7 +117,7 @@ export async function uploadEvidence(reportId: string, file: File, token: string
 }
 
 export async function addExternalLink(reportId: string, url: string, token: string) {
-  return apiFetch<ApiResponse<EvidenceItem>>(`/reports/${reportId}/evidence/link`, {
+  return apiFetch<ApiResponse<EvidenceItem>>(`/reports/${encodePathSegment(reportId)}/evidence/link`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ url }),
@@ -104,7 +130,7 @@ export interface SubmitResult {
 }
 
 export async function submitForReview(reportId: string, token: string) {
-  return apiFetch<ApiResponse<SubmitResult>>(`/reports/${reportId}/submit`, {
+  return apiFetch<ApiResponse<SubmitResult>>(`/reports/${encodePathSegment(reportId)}/submit`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -175,7 +201,7 @@ export async function fetchModerationQueue(token: string, limit = 50) {
 }
 
 export async function moderateReport(reportId: string, payload: ModerateReportPayload, token: string) {
-  return apiFetch<ApiResponse<Report>>(`/moderation/${reportId}`, {
+  return apiFetch<ApiResponse<Report>>(`/moderation/${encodePathSegment(reportId)}`, {
     method: 'PATCH',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
@@ -194,7 +220,7 @@ export async function updateAdminUserRole(
   userId: string,
   role: 'user' | 'moderator' | 'admin' | 'auditor',
 ) {
-  return apiFetch<ApiResponse<AdminUser>>(`/admin/users/${userId}/role`, {
+  return apiFetch<ApiResponse<AdminUser>>(`/admin/users/${encodePathSegment(userId)}/role`, {
     method: 'PATCH',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ role }),
