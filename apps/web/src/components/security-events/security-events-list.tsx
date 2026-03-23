@@ -1,17 +1,53 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useSecurityEvents } from '@/hooks/use-security-events'
 
 const LIMITS = [25, 50, 100, 200]
+const ALL = 'all'
+const EVENT_TYPES = ['auth_success', 'auth_failure', 'access_denied', 'sensitive_endpoint_attempt'] as const
+const OUTCOMES = ['allowed', 'denied', 'error'] as const
 
 export function SecurityEventsList() {
   const { events, loading, error, limit, setLimit, refresh } = useSecurityEvents()
+  const [eventTypeFilter, setEventTypeFilter] = useState<string>(ALL)
+  const [outcomeFilter, setOutcomeFilter] = useState<string>(ALL)
+  const [query, setQuery] = useState('')
 
-  const empty = useMemo(() => !loading && !error && events.length === 0, [loading, error, events.length])
+  const normalizedQuery = query.trim().toLowerCase()
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      if (eventTypeFilter !== ALL && event.eventType !== eventTypeFilter) return false
+      if (outcomeFilter !== ALL && event.outcome !== outcomeFilter) return false
+      if (!normalizedQuery) return true
+
+      const searchable = [
+        event.eventType,
+        event.outcome,
+        event.actorRole ?? 'anonymous',
+        event.source,
+        event.target ?? '',
+      ].join(' ').toLowerCase()
+
+      return searchable.includes(normalizedQuery)
+    })
+  }, [events, eventTypeFilter, outcomeFilter, normalizedQuery])
+
+  const emptyBase = useMemo(() => !loading && !error && events.length === 0, [loading, error, events.length])
+  const emptyFiltered = useMemo(
+    () => !loading && !error && events.length > 0 && filteredEvents.length === 0,
+    [loading, error, events.length, filteredEvents.length],
+  )
+
+  function resetFilters() {
+    setEventTypeFilter(ALL)
+    setOutcomeFilter(ALL)
+    setQuery('')
+  }
 
   return (
     <section className="space-y-4">
@@ -20,7 +56,7 @@ export function SecurityEventsList() {
           <h2 className="text-base font-semibold">Recent Security Events</h2>
           <p className="text-sm text-muted-foreground">Read-only stream from the backend audit log.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <label className="text-sm text-muted-foreground" htmlFor="security-events-limit">Limit</label>
           <select
             id="security-events-limit"
@@ -40,11 +76,50 @@ export function SecurityEventsList() {
         </div>
       </div>
 
+      <div className="grid gap-3 rounded-lg border border-border/60 bg-card/40 p-4 md:grid-cols-4">
+        <input
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          placeholder="Search source, role, target"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <select
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          value={eventTypeFilter}
+          onChange={(event) => setEventTypeFilter(event.target.value)}
+        >
+          <option value={ALL}>All event types</option>
+          {EVENT_TYPES.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+        <select
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          value={outcomeFilter}
+          onChange={(event) => setOutcomeFilter(event.target.value)}
+        >
+          <option value={ALL}>All outcomes</option>
+          {OUTCOMES.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+        <Button variant="outline" size="sm" onClick={resetFilters}>Clear filters</Button>
+      </div>
+
       {loading && <p className="py-8 text-center text-sm text-muted-foreground">Loading security events...</p>}
       {error && <p className="py-8 text-center text-sm text-destructive">{error}</p>}
-      {empty && <p className="py-8 text-center text-sm text-muted-foreground">No security events found.</p>}
+      {emptyBase && <p className="py-8 text-center text-sm text-muted-foreground">No security events found.</p>}
+      {emptyFiltered && (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          No events match current filters. Try different values or clear filters.
+        </p>
+      )}
 
-      {!loading && !error && events.length > 0 && (
+      {!loading && !error && filteredEvents.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-border/60 bg-card/50">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/60 text-xs uppercase tracking-wide text-muted-foreground">
@@ -57,7 +132,7 @@ export function SecurityEventsList() {
               </tr>
             </thead>
             <tbody>
-              {events.map((event) => (
+              {filteredEvents.map((event) => (
                 <tr key={event.id} className="border-t border-border/60">
                   <td className="px-4 py-3 align-top text-muted-foreground">{formatDate(event.createdAt)}</td>
                   <td className="px-4 py-3 align-top">{event.eventType}</td>
