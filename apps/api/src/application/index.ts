@@ -12,3 +12,10 @@ export type { SubmitReportInput, SubmitReportDeps, SubmitResult } from './submit
 
 export { addExternalLink } from './add-external-link'
 export type { AddLinkInput, AddLinkDeps } from './add-external-link'
+
+export { authenticateLocalLogin } from './auth-local/authenticate-local-login'
+export type {
+	AuthenticateLocalLoginInput,
+	AuthenticateLocalLoginDeps,
+	AuthenticateLocalLoginResult,
+} from './auth-local/authenticate-local-login'
