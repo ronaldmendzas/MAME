@@ -176,3 +176,10 @@ TOTP MFA, RBAC, admin role assignment, and immutable audit controls.
   - docs/DEFENSE-EVIDENCE-MATRIX.md
 - Executable demo helper script for live class:
   - scripts/demo-auth-local.ps1
+
+## 15) Final Pre-Defense Runbook
+- Operational checklist before class:
+  - docs/DEFENSE-PRECHECK.md
+- Automated sanity checks:
+  - scripts/defense-sanity.ps1
+  - scripts/defense-sanity.ps1 -Fast
