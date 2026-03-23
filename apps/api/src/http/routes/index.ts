@@ -1,6 +1,7 @@
 export { health } from './health.js'
 export { webhooks } from './webhooks.js'
 export { me } from './me.js'
+export { authLocalRoutes } from './auth-local-routes.js'
 export { reportRoutes } from './reports.js'
 export { adminRoutes } from './admin-routes.js'
 export { moderationRoutes } from './moderation-routes.js'

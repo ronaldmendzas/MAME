@@ -5,7 +5,7 @@ import type { AppEnv } from '../env.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { rateLimitRead } from './middleware/rate-limit.js'
 import { createSecurityMiddleware } from './middleware/security.js'
-import { adminRoutes, health, me, mediaRoutes, moderationRoutes, reportRoutes, securityRoutes, webhooks } from './routes/index.js'
+import { adminRoutes, authLocalRoutes, health, me, mediaRoutes, moderationRoutes, reportRoutes, securityRoutes, webhooks } from './routes/index.js'
 
 export function createApp() {
   const app = new Hono<AppEnv>()
@@ -19,6 +19,7 @@ export function createApp() {
 
   app.route('/health', health)
   app.route('/webhooks', webhooks)
+  app.route('/auth/local', authLocalRoutes)
   app.route('/me', me)
   app.route('/admin', adminRoutes)
   app.route('/reports', reportRoutes)
