@@ -14,9 +14,17 @@
 ## 1:10 - 1:50 Local Login and Lockout
 1. Show login use case:
 - apps/api/src/application/auth-local/authenticate-local-login.ts
+2. Show exposed local auth endpoints:
+- apps/api/src/http/routes/auth-local-routes.ts
+	- POST /auth/local/register
+	- POST /auth/local/login
+	- POST /auth/local/mfa/begin
+	- POST /auth/local/mfa/confirm
+	- POST /auth/local/mfa/verify
 2. Explain lockout rule: 5 failed attempts = 15 minutes.
 3. Run/mention test evidence:
 - apps/api/__tests__/auth/authenticate-local-login.test.ts
+- apps/api/__tests__/auth/auth-local-routes.test.ts
 
 ## 1:50 - 2:40 MFA TOTP by Application
 1. Show TOTP service:
@@ -63,3 +71,9 @@
 3. Login failed 5 times then lockout activated.
 4. Login with MFA enabled: correct and incorrect TOTP code.
 5. USER denied on admin route, ADMIN allowed and role update recorded.
+
+## Optional Live Execution Helper
+- PowerShell script:
+	- scripts/demo-auth-local.ps1
+- Example:
+	- `./scripts/demo-auth-local.ps1 -ApiBaseUrl http://localhost:8787`

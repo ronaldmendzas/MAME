@@ -65,10 +65,11 @@ TOTP MFA, RBAC, admin role assignment, and immutable audit controls.
 - Evidence:
   - Password policy checks: apps/api/src/application/auth-local/password-policy.ts
   - Password hasher: apps/api/src/infrastructure/auth/password-hasher.ts
+  - Local auth HTTP register/login: apps/api/src/http/routes/auth-local-routes.ts
   - Local auth credential schema: apps/api/src/infrastructure/db/schema/local-auth.ts
   - Local auth migration: apps/api/drizzle/0006_add_local_auth_credentials.sql
 - Verify:
-  - npm run test -- apps/api/__tests__/auth/password-policy.test.ts apps/api/__tests__/auth/password-hasher.test.ts
+  - npm run test -- apps/api/__tests__/auth/password-policy.test.ts apps/api/__tests__/auth/password-hasher.test.ts apps/api/__tests__/auth/auth-local-routes.test.ts
 
 ## 7) Local Login Lockout Policy
 - Status: Implemented.
@@ -86,6 +87,7 @@ TOTP MFA, RBAC, admin role assignment, and immutable audit controls.
 ## 8) TOTP MFA (Generated and Verified by Application)
 - Status: Implemented.
 - Evidence:
+  - Local auth HTTP endpoints: apps/api/src/http/routes/auth-local-routes.ts
   - TOTP service (RFC 6238): apps/api/src/infrastructure/auth/totp-service.ts
   - MFA secret encryption at rest: apps/api/src/infrastructure/auth/secret-cipher.ts
   - Enrollment/challenge use cases: apps/api/src/application/auth-local/mfa-enrollment.ts
@@ -93,7 +95,21 @@ TOTP MFA, RBAC, admin role assignment, and immutable audit controls.
     apps/api/__tests__/auth/secret-cipher.test.ts
     apps/api/__tests__/auth/mfa-enrollment.test.ts
 - Verify:
-  - npm run test -- apps/api/__tests__/auth/totp-service.test.ts apps/api/__tests__/auth/secret-cipher.test.ts apps/api/__tests__/auth/mfa-enrollment.test.ts
+  - npm run test -- apps/api/__tests__/auth/totp-service.test.ts apps/api/__tests__/auth/secret-cipher.test.ts apps/api/__tests__/auth/mfa-enrollment.test.ts apps/api/__tests__/auth/auth-local-routes.test.ts
+
+## 8.1) End-to-End Local Auth Flow Exposure
+- Status: Implemented.
+- Evidence:
+  - Route export and mounting: apps/api/src/http/routes/index.ts and apps/api/src/http/app.ts
+  - Endpoints:
+    - POST /auth/local/register
+    - POST /auth/local/login
+    - POST /auth/local/mfa/begin
+    - POST /auth/local/mfa/confirm
+    - POST /auth/local/mfa/verify
+  - Route tests: apps/api/__tests__/auth/auth-local-routes.test.ts
+- Verify:
+  - npm run test -- apps/api/__tests__/auth/auth-local-routes.test.ts
 
 ## 9) Optional MFA Enforcement for Privileged Roles (JWT Claim Policy)
 - Status: Implemented as configurable control.
@@ -138,6 +154,7 @@ TOTP MFA, RBAC, admin role assignment, and immutable audit controls.
 ## 13) One-Command Sanity Pack
 - npm run test -- \
   apps/api/__tests__/admin/admin-routes.test.ts \
+  apps/api/__tests__/auth/auth-local-routes.test.ts \
   apps/api/__tests__/auth/authenticate-local-login.test.ts \
   apps/api/__tests__/auth/auth-middleware.test.ts \
   apps/api/__tests__/auth/auth-middleware-jwt.test.ts \
@@ -153,3 +170,9 @@ TOTP MFA, RBAC, admin role assignment, and immutable audit controls.
   apps/api/__tests__/db/enums.test.ts \
   apps/api/__tests__/db/tables.test.ts \
   apps/api/__tests__/db/exports.test.ts
+
+## 14) Defense Artifacts Added
+- Requirement matrix and proof map:
+  - docs/DEFENSE-EVIDENCE-MATRIX.md
+- Executable demo helper script for live class:
+  - scripts/demo-auth-local.ps1
