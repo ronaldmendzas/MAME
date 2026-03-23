@@ -1,20 +1,24 @@
 import type { PasswordHasher } from '../../domain/ports/password-hasher.js'
+import { compare as bcryptCompare, hash as bcryptHash } from 'bcryptjs'
 
 const KEY_DERIVATION_ITERATIONS = 210000
 const DERIVED_KEY_BITS = 256
 const SALT_BYTES = 16
 const HASH_PREFIX = 'pbkdf2$sha256'
+const BCRYPT_COST = 12
 
 export function createPasswordHasher(): PasswordHasher {
   return {
     hashPassword: async (password) => {
       const normalized = password.normalize('NFKC')
-      const salt = randomBytes(SALT_BYTES)
-      const hashBytes = await derivePbkdf2(normalized, salt, KEY_DERIVATION_ITERATIONS)
-      return `${HASH_PREFIX}$${KEY_DERIVATION_ITERATIONS}$${toBase64Url(salt)}$${toBase64Url(hashBytes)}`
+      return bcryptHash(normalized, BCRYPT_COST)
     },
 
     verifyPassword: async (password, encodedHash) => {
+      if (isBcryptHash(encodedHash)) {
+        return bcryptCompare(password.normalize('NFKC'), encodedHash)
+      }
+
       const parsed = parseEncodedHash(encodedHash)
       if (!parsed) return false
 
@@ -23,6 +27,10 @@ export function createPasswordHasher(): PasswordHasher {
       return constantTimeEquals(expected, parsed.hash)
     },
   }
+}
+
+function isBcryptHash(encodedHash: string): boolean {
+  return /^\$2[aby]\$\d{2}\$/.test(encodedHash)
 }
 
 async function derivePbkdf2(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
