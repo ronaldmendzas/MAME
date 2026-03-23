@@ -1,4 +1,4 @@
-import { canAccessSecurityEvents, getRoleFromSessionClaims } from './auth-role'
+import { canAccessAdminPanel, canAccessSecurityEvents, getRoleFromSessionClaims } from './auth-role'
 
 describe('getRoleFromSessionClaims', () => {
   it('reads role from metadata.role', () => {
@@ -32,5 +32,15 @@ describe('canAccessSecurityEvents', () => {
     expect(canAccessSecurityEvents('moderator')).toBe(false)
     expect(canAccessSecurityEvents('user')).toBe(false)
     expect(canAccessSecurityEvents(null)).toBe(false)
+  })
+})
+
+describe('canAccessAdminPanel', () => {
+  it('allows only admin', () => {
+    expect(canAccessAdminPanel('admin')).toBe(true)
+    expect(canAccessAdminPanel('auditor')).toBe(false)
+    expect(canAccessAdminPanel('moderator')).toBe(false)
+    expect(canAccessAdminPanel('user')).toBe(false)
+    expect(canAccessAdminPanel(null)).toBe(false)
   })
 })

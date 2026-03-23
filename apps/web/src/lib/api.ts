@@ -149,6 +149,23 @@ export interface ModerateReportPayload {
   moderatorFaculty: string
 }
 
+export interface AdminUser {
+  id: string
+  clerkId: string
+  emailHash: string
+  role: 'user' | 'moderator' | 'admin' | 'auditor'
+  createdAt: string
+}
+
+export interface AdminUsersResponse {
+  success: boolean
+  data: AdminUser[]
+  meta: {
+    limit: number
+    count: number
+  }
+}
+
 export async function fetchModerationQueue(token: string, limit = 50) {
   const qs = new URLSearchParams({ limit: String(limit) })
   const res = await apiFetch<ModerationQueueResponse>(`/moderation/queue?${qs.toString()}`, {
@@ -162,5 +179,24 @@ export async function moderateReport(reportId: string, payload: ModerateReportPa
     method: 'PATCH',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
+  })
+}
+
+export async function fetchAdminUsers(token: string, limit = 100) {
+  const qs = new URLSearchParams({ limit: String(limit) })
+  return apiFetch<AdminUsersResponse>(`/admin/users?${qs.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function updateAdminUserRole(
+  token: string,
+  userId: string,
+  role: 'user' | 'moderator' | 'admin' | 'auditor',
+) {
+  return apiFetch<ApiResponse<AdminUser>>(`/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ role }),
   })
 }

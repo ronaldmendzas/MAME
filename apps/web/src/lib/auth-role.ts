@@ -15,6 +15,10 @@ export function canAccessSecurityEvents(role: AppRole | null): boolean {
   return role === 'admin' || role === 'auditor'
 }
 
+export function canAccessAdminPanel(role: AppRole | null): boolean {
+  return role === 'admin'
+}
+
 export function canModerateReports(role: AppRole | null): boolean {
   return role === 'admin' || role === 'moderator' || role === 'auditor'
 }
