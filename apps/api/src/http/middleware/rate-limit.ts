@@ -31,7 +31,7 @@ async function applyRateLimit(
     ?? c.req.header('x-forwarded-for')
     ?? 'unknown'
   const key = `rl:${ip}:${config.maxRequests}`
-  const kv = c.env?.RATE_LIMIT_KV
+  const kv = isUsableKv(c.env?.RATE_LIMIT_KV)
 
   const { count, resetAt } = kv
     ? await incrementKV(kv, key, config)
@@ -49,6 +49,13 @@ async function applyRateLimit(
   }
 
   await next()
+}
+
+function isUsableKv(kv: KVNamespace | undefined): KVNamespace | null {
+  if (!kv) return null
+  if (typeof kv.get !== 'function') return null
+  if (typeof kv.put !== 'function') return null
+  return kv
 }
 
 async function incrementKV(

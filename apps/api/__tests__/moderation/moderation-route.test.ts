@@ -30,7 +30,7 @@ describe('moderation route', () => {
   it('returns 401 without auth', async () => {
     const app = createApp()
     const res = await app.request(
-      '/moderation',
+      '/moderation/check',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,7 +44,7 @@ describe('moderation route', () => {
   it('returns 422 with invalid body', async () => {
     const app = createApp()
     const res = await app.request(
-      '/moderation',
+      '/moderation/check',
       {
         method: 'POST',
         headers: {
