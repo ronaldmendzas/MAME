@@ -23,6 +23,13 @@ function createTestApp() {
   app.use('/mod/*', requireRole('moderator', 'admin'))
   app.get('/mod/queue', (c) => c.json({ ok: true }))
 
+  app.use('/audit/*', async (c, next) => {
+    c.set('userRole', 'auditor')
+    await next()
+  })
+  app.get('/audit/queue', requireRole('auditor', 'moderator', 'admin'), (c) => c.json({ ok: true }))
+  app.patch('/audit/report', requireRole('moderator', 'admin'), (c) => c.json({ ok: true }))
+
   return app
 }
 
@@ -39,5 +46,15 @@ describe('requireRole middleware', () => {
   it('allows moderator to access mod routes', async () => {
     const res = await app.request('/mod/queue')
     expect(res.status).toBe(200)
+  })
+
+  it('allows auditor to access read-only moderation queue', async () => {
+    const res = await app.request('/audit/queue')
+    expect(res.status).toBe(200)
+  })
+
+  it('denies auditor from moderation write actions', async () => {
+    const res = await app.request('/audit/report', { method: 'PATCH' })
+    expect(res.status).toBe(403)
   })
 })

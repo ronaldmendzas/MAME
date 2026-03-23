@@ -12,7 +12,7 @@ import { handleModerateReport } from './moderation-action.js'
 const moderationRoutes = new Hono<AppEnv>()
 
 moderationRoutes.post('/check', authMiddleware, rateLimitWrite(), handleModerate)
-moderationRoutes.get('/queue', authMiddleware, requireRole('moderator', 'admin'), handleModerationQueue)
+moderationRoutes.get('/queue', authMiddleware, requireRole('auditor', 'moderator', 'admin'), handleModerationQueue)
 moderationRoutes.patch('/:id', authMiddleware, requireRole('moderator', 'admin'), rateLimitWrite(), handleModerateReport)
 
 export { moderationRoutes }

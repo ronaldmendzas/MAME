@@ -23,8 +23,8 @@ describe('schema enums', () => {
     expect(reportStatusEnum.enumValues).toContain('resolved')
   })
 
-  it('userRoleEnum has 3 values', () => {
-    expect(userRoleEnum.enumValues).toEqual(['user', 'moderator', 'admin'])
+  it('userRoleEnum has 4 values', () => {
+    expect(userRoleEnum.enumValues).toEqual(['user', 'moderator', 'admin', 'auditor'])
   })
 
   it('evidenceTypeEnum has 2 values', () => {
