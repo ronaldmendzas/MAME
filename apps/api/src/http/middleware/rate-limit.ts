@@ -33,7 +33,7 @@ async function applyRateLimit(
   const key = `rl:${ip}:${config.maxRequests}`
   const kv = c.env?.RATE_LIMIT_KV
 
-  const { count, resetAt } = kv?.get
+  const { count, resetAt } = kv
     ? await incrementKV(kv, key, config)
     : incrementMemory(key, config)
 
