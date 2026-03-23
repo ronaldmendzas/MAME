@@ -35,8 +35,10 @@ export async function fetchFeed(params?: URLSearchParams) {
   return { ...res, data: res.data.map(sanitizeReport) }
 }
 
-export async function fetchReport(id: string) {
-  const res = await apiFetch<ApiResponse<Report>>(`/reports/${id}`)
+export async function fetchReport(id: string, token?: string) {
+  const res = await apiFetch<ApiResponse<Report>>(`/reports/${id}`, token
+    ? { headers: { Authorization: `Bearer ${token}` } }
+    : undefined)
   return res.data ? { ...res, data: sanitizeReport(res.data) } : res
 }
 
@@ -133,5 +135,32 @@ export async function fetchSecurityEvents(token: string, limit = 50) {
   const qs = new URLSearchParams({ limit: String(limit) })
   return apiFetch<SecurityEventsResponse>(`/security/events?${qs.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export interface ModerationQueueResponse {
+  success: boolean
+  data: Report[]
+}
+
+export interface ModerateReportPayload {
+  action: 'approve' | 'reject' | 'request_info' | 'escalate'
+  reason?: string | null
+  moderatorFaculty: string
+}
+
+export async function fetchModerationQueue(token: string, limit = 50) {
+  const qs = new URLSearchParams({ limit: String(limit) })
+  const res = await apiFetch<ModerationQueueResponse>(`/moderation/queue?${qs.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return { ...res, data: res.data.map(sanitizeReport) }
+}
+
+export async function moderateReport(reportId: string, payload: ModerateReportPayload, token: string) {
+  return apiFetch<ApiResponse<Report>>(`/moderation/${reportId}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
   })
 }

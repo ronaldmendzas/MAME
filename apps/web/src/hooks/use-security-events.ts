@@ -28,7 +28,7 @@ export function useSecurityEvents(): UseSecurityEventsResult {
     setError(null)
 
     try {
-      const token = await getToken()
+      const token = await getToken({ template: 'mame-api' })
       if (!token) throw new Error('Not authenticated')
 
       const response = await fetchSecurityEvents(token, limit)

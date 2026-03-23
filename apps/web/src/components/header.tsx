@@ -1,6 +1,7 @@
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 
+import { ModerationNavLink } from '@/components/moderation/moderation-nav-link'
 import { SecurityNavLink } from '@/components/security-events/security-nav-link'
 import { Button } from '@/components/ui/button'
 
@@ -19,6 +20,7 @@ export function Header() {
             <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               <Link href="/reports/mine">My Reports</Link>
             </Button>
+            <ModerationNavLink />
             <SecurityNavLink />
           </SignedIn>
         </div>

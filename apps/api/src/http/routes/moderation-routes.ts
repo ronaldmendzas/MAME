@@ -13,6 +13,6 @@ const moderationRoutes = new Hono<AppEnv>()
 
 moderationRoutes.post('/check', authMiddleware, rateLimitWrite(), handleModerate)
 moderationRoutes.get('/queue', authMiddleware, requireRole('auditor', 'moderator', 'admin'), handleModerationQueue)
-moderationRoutes.patch('/:id', authMiddleware, requireRole('moderator', 'admin'), rateLimitWrite(), handleModerateReport)
+moderationRoutes.patch('/:id', authMiddleware, requireRole('auditor', 'moderator', 'admin'), rateLimitWrite(), handleModerateReport)
 
 export { moderationRoutes }

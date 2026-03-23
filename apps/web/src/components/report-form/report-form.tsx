@@ -40,7 +40,7 @@ export function ReportForm() {
     setError(null)
     const parsed = createReportSchema.safeParse(data)
     if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? 'Invalid'); return }
-    const token = await getToken()
+    const token = await getToken({ template: 'mame-api' })
     if (!token) { setError('Not authenticated'); return }
     setSubmitting(true)
     try {

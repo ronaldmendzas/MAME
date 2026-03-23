@@ -23,7 +23,7 @@ export function LinkForm({ reportId, onAdded }: Props) {
     setError(null)
     if (!url.trim()) return
 
-    const token = await getToken()
+    const token = await getToken({ template: 'mame-api' })
     if (!token) { setError('Not authenticated'); return }
 
     setSubmitting(true)

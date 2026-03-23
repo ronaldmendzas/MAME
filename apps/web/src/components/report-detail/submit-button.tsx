@@ -19,7 +19,7 @@ export function SubmitButton({ reportId, hasEvidence }: Props) {
 
   const handleSubmit = useCallback(async () => {
     setError(null)
-    const token = await getToken()
+    const token = await getToken({ template: 'mame-api' })
     if (!token) { setError('Not authenticated'); return }
 
     setSubmitting(true)

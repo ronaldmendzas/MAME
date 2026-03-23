@@ -29,7 +29,7 @@ export function EvidenceUpload({ reportId, onUploaded }: Props) {
       setError('File exceeds 5 MB limit')
       return
     }
-    const token = await getToken()
+    const token = await getToken({ template: 'mame-api' })
     if (!token) { setError('Not authenticated'); return }
     setUploading(true)
     try {

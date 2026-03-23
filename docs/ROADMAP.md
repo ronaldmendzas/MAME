@@ -315,8 +315,8 @@
 
 | #    | Paso                                 | Detalle                                                                                                                                                                                       |
 | ---- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 9.1  | Comentarios CRUD                     | `POST /comments` (body, report_id, parent_id opcional). `GET /comments?report_id=X`. `DELETE /comments/:id` (solo autor). Max 1000 chars. Max 2 niveles de nesting.                           |
-| 9.2  | Filtro AI en comentarios             | Mismo pipeline de Workers AI (Llama Guard 3) para texto de comentarios. Rechazar si ilegal.                                                                                                   |
+| 9.1  | Comentarios CRUD                     | `POST /comments` (body, report_id, parent_id opcional). `GET /comments?report_id=X`. `DELETE /comments/:id` (solo autor). Max 1000 chars. Max 2 niveles de nesting. **Publicación automática inmediata** tras validación. |
+| 9.2  | Filtro AI en comentarios             | Mismo pipeline de Workers AI (Llama Guard 3) para texto de comentarios. Rechazar si ilegal. **Sin aprobación humana previa para cada comentario.**                                                                                                   |
 | 9.3  | Componente de comentarios (frontend) | Árbol de comentarios con 2 niveles. Botón "Responder". Textarea con contador de caracteres. Auto-refresh o polling.                                                                           |
 | 9.4  | Sistema de votos                     | `POST /reports/:id/vote` y `DELETE /reports/:id/vote`. `UNIQUE(report_id, token_id)` en DB. Incrementar/decrementar `reports.votes` **en la misma transacción** que INSERT/DELETE en `votes`. |
 | 9.5  | Botón de voto (frontend)             | Botón con ícono + contador. Toggle: click para votar, click de nuevo para quitar. Optimistic update.                                                                                          |
@@ -328,11 +328,14 @@
 | 9.11 | Feed con ISR caching                 | Configurar ISR (Incremental Static Regeneration) en pages de feed. `revalidate: 60` (1 min). Cloudflare Pages cachea las páginas estáticas.                                                   |
 | 9.12 | Filtros avanzados en feed            | Filtrar por: más votados, más recientes, más apoyados, categoría, facultad. Filtros persisten en URL params.                                                                                  |
 | 9.13 | Tests de comunidad                   | Voto duplicado → error. Comentario con texto ilegal → rechazado. Notificación llega en <5min. Search devuelve resultados en <500ms.                                                           |
+| 9.14 | Moderación por excepción             | Flags en comentarios: al superar umbral configurable, el comentario se oculta temporalmente y entra a revisión de moderación.                                                                 |
 
 ### Criterio de "Terminado"
 
 - [ ] Comentar con 2 niveles de nesting funciona
+- [ ] Comentarios válidos se publican automáticamente sin aprobación manual previa
 - [ ] Comentario con texto ilegal → rechazado por AI
+- [ ] Comentario con flags sobre umbral → ocultado y enviado a revisión
 - [ ] Votar → contador sube. Votar de nuevo → error. Quitar voto → contador baja.
 - [ ] Notificación aparece en <5 min después de cambio de estado
 - [ ] Búsqueda "corrupción" devuelve resultados en <500ms

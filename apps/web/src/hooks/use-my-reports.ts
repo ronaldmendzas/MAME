@@ -28,7 +28,7 @@ export function useMyReports(): UseMyReportsReturn {
     fetching.current = true
     setLoading(true)
     try {
-      const token = await getToken()
+      const token = await getToken({ template: 'mame-api' })
       if (!token) throw new Error('Not authenticated')
       const qs = new URLSearchParams()
       if (nextCursor) qs.set('cursor', nextCursor)

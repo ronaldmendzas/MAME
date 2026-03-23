@@ -14,29 +14,67 @@ export async function ensureRegisteredMiddleware(
   c: Context<AppEnv>,
   next: Next,
 ) {
-  const tokenId = c.get('tokenId')
-  if (tokenId) return next()
-
   const userId = c.get('userId')
   if (!userId) return next()
 
   const db = createDb(c.env.DATABASE_URL)
+  const profileRepo = createProfileRepository(db)
+  const userRepo = createUserRepository(db)
+  const linkRepo = createIdentityLinkRepository(db)
+  const clerkService = createClerkService(c.env.CLERK_SECRET_KEY)
+
+  const tokenId = c.get('tokenId')
+  if (tokenId) {
+    const profile = await profileRepo.findByTokenId(tokenId)
+    if (profile) {
+      if (profile.isSuspended) throw new ForbiddenError('Account suspended')
+      return next()
+    }
+  }
+
+  const tokenFromDb = await resolveTokenIdFromDatabase(userId, userRepo, linkRepo)
+  if (tokenFromDb) {
+    const profile = await profileRepo.findByTokenId(tokenFromDb)
+    if (profile) {
+      if (profile.isSuspended) throw new ForbiddenError('Account suspended')
+      await clerkService.updateUserMetadata(userId, tokenFromDb)
+      c.set('tokenId', tokenFromDb)
+      return next()
+    }
+  }
+
   const resolved = await ensureRegistered(userId, {
     userRepo: createUserRepository(db),
-    profileRepo: createProfileRepository(db),
-    linkRepo: createIdentityLinkRepository(db),
+    profileRepo,
+    linkRepo,
     cryptoService: createCryptoService(
       c.env.ENCRYPTION_MASTER_KEY,
       c.env.ENCRYPTION_RELATION_KEY,
     ),
-    clerkService: createClerkService(c.env.CLERK_SECRET_KEY),
+    clerkService,
   })
 
-  const profile = await createProfileRepository(db).findByTokenId(resolved)
+  const profile = await profileRepo.findByTokenId(resolved)
   if (profile?.isSuspended) {
     throw new ForbiddenError('Account suspended')
   }
 
+  if (!profile) {
+    throw new ForbiddenError('Account profile missing, please sign out and sign in again')
+  }
+
   c.set('tokenId', resolved)
   await next()
+}
+
+async function resolveTokenIdFromDatabase(
+  clerkId: string,
+  userRepo: ReturnType<typeof createUserRepository>,
+  linkRepo: ReturnType<typeof createIdentityLinkRepository>,
+): Promise<string | null> {
+  const user = await userRepo.findByClerkId(clerkId)
+  if (!user) return null
+
+  const link = await linkRepo.findByEmailHash(user.emailHash)
+  return link?.tokenId ?? null
 }

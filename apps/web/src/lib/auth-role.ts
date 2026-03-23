@@ -15,6 +15,10 @@ export function canAccessSecurityEvents(role: AppRole | null): boolean {
   return role === 'admin' || role === 'auditor'
 }
 
+export function canModerateReports(role: AppRole | null): boolean {
+  return role === 'admin' || role === 'moderator' || role === 'auditor'
+}
+
 function readRole(claims: unknown): unknown {
   const root = asRecord(claims)
   if (!root) return null
