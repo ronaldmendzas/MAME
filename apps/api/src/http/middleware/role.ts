@@ -3,7 +3,7 @@ import type { Context, Next } from 'hono'
 import { ForbiddenError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
 
-type UserRole = 'user' | 'moderator' | 'admin'
+type UserRole = 'user' | 'moderator' | 'admin' | 'auditor'
 
 export function requireRole(...roles: UserRole[]) {
   return async (c: Context<AppEnv>, next: Next) => {

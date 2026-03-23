@@ -25,6 +25,7 @@ export const userRoleEnum = pgEnum('user_role', [
   'user',
   'moderator',
   'admin',
+  'auditor',
 ])
 
 export const evidenceTypeEnum = pgEnum('evidence_type', [
