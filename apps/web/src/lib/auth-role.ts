@@ -11,6 +11,10 @@ export function getRoleFromSessionClaims(claims: unknown): AppRole | null {
   return null
 }
 
+export function canAccessSecurityEvents(role: AppRole | null): boolean {
+  return role === 'admin' || role === 'auditor'
+}
+
 function readRole(claims: unknown): unknown {
   const root = asRecord(claims)
   if (!root) return null

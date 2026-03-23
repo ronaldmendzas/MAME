@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useSecurityEvents } from '@/hooks/use-security-events'
+import { filterSecurityEvents } from '@/lib/security-events-filter'
 
 const LIMITS = [25, 50, 100, 200]
 const ALL = 'all'
@@ -17,25 +18,13 @@ export function SecurityEventsList() {
   const [outcomeFilter, setOutcomeFilter] = useState<string>(ALL)
   const [query, setQuery] = useState('')
 
-  const normalizedQuery = query.trim().toLowerCase()
-
   const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      if (eventTypeFilter !== ALL && event.eventType !== eventTypeFilter) return false
-      if (outcomeFilter !== ALL && event.outcome !== outcomeFilter) return false
-      if (!normalizedQuery) return true
-
-      const searchable = [
-        event.eventType,
-        event.outcome,
-        event.actorRole ?? 'anonymous',
-        event.source,
-        event.target ?? '',
-      ].join(' ').toLowerCase()
-
-      return searchable.includes(normalizedQuery)
+    return filterSecurityEvents(events, {
+      eventType: eventTypeFilter,
+      outcome: outcomeFilter,
+      query,
     })
-  }, [events, eventTypeFilter, outcomeFilter, normalizedQuery])
+  }, [events, eventTypeFilter, outcomeFilter, query])
 
   const emptyBase = useMemo(() => !loading && !error && events.length === 0, [loading, error, events.length])
   const emptyFiltered = useMemo(
