@@ -56,3 +56,16 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'moderator_response',
   'flag_threshold',
 ])
+
+export const securityEventTypeEnum = pgEnum('security_event_type', [
+  'auth_success',
+  'auth_failure',
+  'access_denied',
+  'sensitive_endpoint_attempt',
+])
+
+export const securityEventOutcomeEnum = pgEnum('security_event_outcome', [
+  'allowed',
+  'denied',
+  'error',
+])

@@ -6,6 +6,7 @@ import { flags } from './flags'
 import { moderationLog, reportStatusHistory } from './moderation'
 import { notifications } from './notifications'
 import { reports } from './reports'
+import { securityEventLog } from './security'
 import { anonymousProfiles, users } from './users'
 import { votes } from './votes'
 
@@ -19,6 +20,7 @@ export const anonymousProfilesRelations = relations(anonymousProfiles, ({ many }
   flags: many(flags),
   moderationLogs: many(moderationLog),
   statusChanges: many(reportStatusHistory),
+  securityEvents: many(securityEventLog),
 }))
 
 export const reportsRelations = relations(reports, ({ one, many }) => ({
@@ -110,6 +112,13 @@ export const flagsRelations = relations(flags, ({ one }) => ({
   }),
   flagger: one(anonymousProfiles, {
     fields: [flags.tokenId],
+    references: [anonymousProfiles.tokenId],
+  }),
+}))
+
+export const securityEventLogRelations = relations(securityEventLog, ({ one }) => ({
+  actor: one(anonymousProfiles, {
+    fields: [securityEventLog.actorToken],
     references: [anonymousProfiles.tokenId],
   }),
 }))

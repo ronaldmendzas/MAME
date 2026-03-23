@@ -10,3 +10,10 @@ export type { ForensicLogPort, ForensicEntry } from './forensic-log-port'
 export type { CommentRepository, CommentRow, InsertCommentData } from './comment-repository'
 export type { VoteRepository, VoteRow, InsertVoteData } from './vote-repository'
 export type { ModerationLogRepository, ModerationLogRow, InsertModerationLogData, ModerationAction } from './moderation-log-repository'
+export type {
+	SecurityEventRepository,
+	SecurityEventRow,
+	InsertSecurityEventData,
+	SecurityEventType,
+	SecurityEventOutcome,
+} from './security-event-repository'

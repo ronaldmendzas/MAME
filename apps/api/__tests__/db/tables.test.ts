@@ -7,6 +7,7 @@ import { flags } from '../../src/infrastructure/db/schema/flags'
 import { moderationLog, reportStatusHistory } from '../../src/infrastructure/db/schema/moderation'
 import { notifications } from '../../src/infrastructure/db/schema/notifications'
 import { reports } from '../../src/infrastructure/db/schema/reports'
+import { securityEventLog } from '../../src/infrastructure/db/schema/security'
 import { users, anonymousProfiles, identityLinks } from '../../src/infrastructure/db/schema/users'
 import { votes } from '../../src/infrastructure/db/schema/votes'
 
@@ -86,5 +87,13 @@ describe('schema tables', () => {
     const cols = getTableColumns(flags)
     expect(Object.keys(cols)).toHaveLength(6)
     expect(cols.category).toBeDefined()
+  })
+
+  it('securityEventLog has 9 columns', () => {
+    const cols = getTableColumns(securityEventLog)
+    expect(Object.keys(cols)).toHaveLength(9)
+    expect(cols.eventType).toBeDefined()
+    expect(cols.outcome).toBeDefined()
+    expect(cols.details).toBeDefined()
   })
 })

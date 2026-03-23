@@ -8,6 +8,8 @@ import {
   moderationActionEnum,
   flagCategoryEnum,
   notificationTypeEnum,
+  securityEventTypeEnum,
+  securityEventOutcomeEnum,
 } from '../../src/infrastructure/db/schema/enums'
 
 describe('schema enums', () => {
@@ -46,5 +48,18 @@ describe('schema enums', () => {
   it('notificationTypeEnum has 5 values', () => {
     expect(notificationTypeEnum.enumValues).toHaveLength(5)
     expect(notificationTypeEnum.enumValues).toContain('status_change')
+  })
+
+  it('securityEventTypeEnum has 4 values', () => {
+    expect(securityEventTypeEnum.enumValues).toEqual([
+      'auth_success',
+      'auth_failure',
+      'access_denied',
+      'sensitive_endpoint_attempt',
+    ])
+  })
+
+  it('securityEventOutcomeEnum has 3 values', () => {
+    expect(securityEventOutcomeEnum.enumValues).toEqual(['allowed', 'denied', 'error'])
   })
 })

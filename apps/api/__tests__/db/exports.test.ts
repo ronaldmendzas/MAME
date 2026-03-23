@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import * as schema from '../../src/infrastructure/db/schema/index'
 
 describe('schema barrel export', () => {
-  it('exports all 7 enums', () => {
+  it('exports all 9 enums', () => {
     expect(schema.reportCategoryEnum).toBeDefined()
     expect(schema.reportStatusEnum).toBeDefined()
     expect(schema.userRoleEnum).toBeDefined()
@@ -11,9 +11,11 @@ describe('schema barrel export', () => {
     expect(schema.moderationActionEnum).toBeDefined()
     expect(schema.flagCategoryEnum).toBeDefined()
     expect(schema.notificationTypeEnum).toBeDefined()
+    expect(schema.securityEventTypeEnum).toBeDefined()
+    expect(schema.securityEventOutcomeEnum).toBeDefined()
   })
 
-  it('exports all 11 tables', () => {
+  it('exports all 12 tables', () => {
     expect(schema.users).toBeDefined()
     expect(schema.anonymousProfiles).toBeDefined()
     expect(schema.identityLinks).toBeDefined()
@@ -25,6 +27,7 @@ describe('schema barrel export', () => {
     expect(schema.reportStatusHistory).toBeDefined()
     expect(schema.notifications).toBeDefined()
     expect(schema.flags).toBeDefined()
+    expect(schema.securityEventLog).toBeDefined()
   })
 
   it('exports all relations', () => {
@@ -38,5 +41,6 @@ describe('schema barrel export', () => {
     expect(schema.reportStatusHistoryRelations).toBeDefined()
     expect(schema.notificationsRelations).toBeDefined()
     expect(schema.flagsRelations).toBeDefined()
+    expect(schema.securityEventLogRelations).toBeDefined()
   })
 })
