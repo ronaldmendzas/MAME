@@ -5,6 +5,16 @@ import { sanitizeText } from './sanitize'
 
 const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:8787'
 
+export class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 function sanitizeReport(r: Report): Report {
   return { ...r, title: sanitizeText(r.title), body: sanitizeText(r.body) }
 }
@@ -15,7 +25,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })
   const json = (await res.json()) as { error?: string }
-  if (!res.ok) throw new Error(json.error ?? 'Request failed')
+  if (!res.ok) throw new ApiError(json.error ?? 'Request failed', res.status)
   return json as T
 }
 
@@ -94,6 +104,34 @@ export interface SubmitResult {
 export async function submitForReview(reportId: string, token: string) {
   return apiFetch<ApiResponse<SubmitResult>>(`/reports/${reportId}/submit`, {
     method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export interface SecurityEvent {
+  id: string
+  eventType: 'auth_success' | 'auth_failure' | 'access_denied' | 'sensitive_endpoint_attempt'
+  outcome: 'allowed' | 'denied' | 'error'
+  actorToken: string | null
+  actorRole: string | null
+  source: string
+  target: string | null
+  details: Record<string, unknown>
+  createdAt: string
+}
+
+export interface SecurityEventsResponse {
+  success: boolean
+  data: SecurityEvent[]
+  meta: {
+    limit: number
+    count: number
+  }
+}
+
+export async function fetchSecurityEvents(token: string, limit = 50) {
+  const qs = new URLSearchParams({ limit: String(limit) })
+  return apiFetch<SecurityEventsResponse>(`/security/events?${qs.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
