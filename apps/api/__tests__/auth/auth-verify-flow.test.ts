@@ -172,4 +172,57 @@ describe('auth full verification flow', () => {
     const body = (await res.json()) as { error: string }
     expect(body.error).toContain('audience')
   })
+
+  it('rejects privileged role without MFA when enforcement is enabled', async () => {
+    const app = createTestApp()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ keys: [publicJwk] }), { status: 200 }),
+    )
+
+    const token = await signJwt(
+      validClaims({ metadata: { token_id: 'tok_abc', role: 'admin' } }),
+      keyPair.privateKey,
+    )
+
+    const res = await app.request(
+      '/p/me',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+      {
+        REQUIRE_MFA_FOR_PRIVILEGED: 'true',
+      } as never,
+    )
+
+    expect(res.status).toBe(401)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toContain('MFA required')
+  })
+
+  it('allows privileged role with MFA when enforcement is enabled', async () => {
+    const app = createTestApp()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ keys: [publicJwk] }), { status: 200 }),
+    )
+
+    const token = await signJwt(
+      validClaims({
+        metadata: { token_id: 'tok_abc', role: 'admin' },
+        amr: ['pwd', 'mfa'],
+      }),
+      keyPair.privateKey,
+    )
+
+    const res = await app.request(
+      '/p/me',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+      {
+        REQUIRE_MFA_FOR_PRIVILEGED: 'true',
+      } as never,
+    )
+
+    expect(res.status).toBe(200)
+  })
 })

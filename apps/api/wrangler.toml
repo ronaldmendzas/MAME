@@ -7,6 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 ENVIRONMENT = "development"
 CLERK_JWT_ISSUER = "https://vocal-longhorn-17.clerk.accounts.dev"
 CLERK_JWT_AUDIENCE = "mame-api"
+REQUIRE_MFA_FOR_PRIVILEGED = "false"
 
 # [kv_namespaces]
 [[kv_namespaces]]

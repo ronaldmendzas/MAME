@@ -25,6 +25,8 @@ export interface JwtPayload {
   exp: number
   nbf: number
   iat: number
+  amr?: string[]
+  acr?: string
   metadata?: TokenMetadata
 }
 
@@ -68,6 +70,24 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
   c.set('userId', payload.sub as string)
   const tokenId = (payload.metadata as TokenMetadata)?.token_id ?? ''
   const role = (payload.metadata as TokenMetadata)?.role ?? 'user'
+
+  const enforcePrivilegedMfa = c.env?.REQUIRE_MFA_FOR_PRIVILEGED === 'true'
+  if (enforcePrivilegedMfa && isPrivilegedRole(role) && !hasMfaClaim(payload)) {
+    void recordSecurityEvent(c.env, {
+      eventType: 'access_denied',
+      outcome: 'denied',
+      source: 'auth_middleware',
+      target: c.req.path,
+      actorToken: tokenId || null,
+      actorRole: role,
+      details: {
+        method: c.req.method,
+        reason: 'mfa_required_for_privileged_role',
+      },
+    })
+    throw new UnauthorizedError('MFA required for privileged role')
+  }
+
   c.set('tokenId', tokenId)
   c.set('userRole', role)
 
@@ -82,6 +102,23 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
   })
 
   await next()
+}
+
+function isPrivilegedRole(role: string): boolean {
+  return role === 'admin' || role === 'moderator' || role === 'auditor'
+}
+
+function hasMfaClaim(payload: JwtPayload): boolean {
+  const amr = payload.amr
+  if (Array.isArray(amr) && amr.some((value) => value.toLowerCase().includes('mfa'))) {
+    return true
+  }
+
+  if (typeof payload.acr === 'string' && payload.acr.toLowerCase().includes('mfa')) {
+    return true
+  }
+
+  return false
 }
 
 export async function verifyJwt(token: string, options?: VerifyOptions): Promise<JwtPayload> {
