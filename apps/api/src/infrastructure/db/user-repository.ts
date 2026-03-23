@@ -33,6 +33,23 @@ export function createUserRepository(db: Database): UserRepository {
       if (!row) throw new Error('Insert user returned no rows')
       return mapToRecord(row)
     },
+
+    listUsers: async (limit) => {
+      const rows = await db.select().from(users).limit(limit)
+      return rows.map(mapToRecord)
+    },
+
+    updateRole: async (userId, role) => {
+      const rows = await db
+        .update(users)
+        .set({ role, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning()
+
+      const row = rows[0]
+      if (!row) return null
+      return mapToRecord(row)
+    },
   }
 }
 
