@@ -18,3 +18,4 @@ export type {
 	SecurityEventOutcome,
 } from './security-event-repository'
 export type { LocalAuthRepository, InsertLocalAuthCredential, LocalAuthCredential } from './local-auth-repository'
+export type { PasswordHasher } from './password-hasher'

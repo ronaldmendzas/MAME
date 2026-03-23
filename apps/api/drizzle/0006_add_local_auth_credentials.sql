@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "local_auth_credentials" (
 	"user_id" uuid NOT NULL,
 	"login_hash" text NOT NULL,
 	"password_hash" text NOT NULL,
-	"password_algo" text DEFAULT 'argon2id' NOT NULL,
+	"password_algo" text DEFAULT 'pbkdf2-sha256' NOT NULL,
 	"failed_attempts" integer DEFAULT 0 NOT NULL,
 	"locked_until" timestamp with time zone,
 	"mfa_secret_ciphertext" text,
