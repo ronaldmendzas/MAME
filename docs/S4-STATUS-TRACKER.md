@@ -6,7 +6,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 ## Overall Status
 
 - [x] Phase A: Baseline and evidence setup
-- [ ] Phase B: Security hardening
+- [ ] Phase B: Security hardening (in progress)
 - [ ] Phase C: Performance and capacity
 - [ ] Phase D: UX, responsive, accessibility
 - [ ] Phase E: API docs and operations
@@ -27,8 +27,8 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 
 ### Security
 - Path: docs/evidence/s4/security/
-- Latest artifact:
-- Notes:
+- Latest artifact: docs/evidence/s4/security/2026-04-21-security-baseline.md
+- Notes: baseline security tests passed; OWASP ZAP execution blocked by missing local CLI.
 
 ### Performance
 - Path: docs/evidence/s4/performance/
@@ -62,3 +62,9 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 	- authenticate-local-login: 6/6 passed
 - Executed workspace typecheck: api/web/shared passed.
 - Phase A closed. Next: start Phase B (OWASP ZAP + security hardening cycle).
+- Executed Phase B security baseline test packs:
+	- http security + app headers: 21/21 passed
+	- security events + route: 6/6 passed
+	- auth middleware + jwt verify flow: 17/17 passed
+- Recorded evidence at docs/evidence/s4/security/2026-04-21-security-baseline.md.
+- OWASP ZAP CLI not found locally; pending installation or CI-based scan to close criterion.
