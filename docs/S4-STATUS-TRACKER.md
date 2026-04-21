@@ -69,3 +69,4 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - Recorded evidence at docs/evidence/s4/security/2026-04-21-security-baseline.md.
 - OWASP ZAP CLI not found locally; attempted Docker fallback.
 - GHCR image pull failed due host resolution; Docker Hub image pull started and remains pending completion.
+- Docker Hub pull also proved too slow for this local session window; recommended to run ZAP scan in CI/staging runner.

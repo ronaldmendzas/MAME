@@ -13,7 +13,8 @@ Branch: sprint-4/release-hardening
   - Result: failed to resolve ghcr.io host in current environment.
 - OWASP ZAP via Docker Hub fallback:
   - Command: docker run --rm zaproxy/zap-stable zap.sh -version
-  - Result: image pull started successfully and is in progress.
+  - Result: image pull started successfully but download speed is too slow for current session window.
+  - Action: process stopped after partial pull to avoid blocking Sprint 4 execution.
 
 ## Executed Security Test Packs
 
@@ -49,6 +50,7 @@ Branch: sprint-4/release-hardening
 ## Next Actions
 
 1. Install OWASP ZAP or run ZAP in CI/staging pipeline.
-2. Execute automated scan against staging target.
-3. Record critical/high findings and remediation cycle.
-4. Re-run until critical/high = 0.
+2. Prefer CI/staging runner with stable bandwidth for container pull.
+3. Execute automated scan against staging target.
+4. Record critical/high findings and remediation cycle.
+5. Re-run until critical/high = 0.
