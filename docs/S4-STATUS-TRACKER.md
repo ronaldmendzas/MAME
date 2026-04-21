@@ -67,4 +67,5 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 	- security events + route: 6/6 passed
 	- auth middleware + jwt verify flow: 17/17 passed
 - Recorded evidence at docs/evidence/s4/security/2026-04-21-security-baseline.md.
-- OWASP ZAP CLI not found locally; pending installation or CI-based scan to close criterion.
+- OWASP ZAP CLI not found locally; attempted Docker fallback.
+- GHCR image pull failed due host resolution; Docker Hub image pull started and remains pending completion.

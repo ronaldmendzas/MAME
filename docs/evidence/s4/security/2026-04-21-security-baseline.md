@@ -8,6 +8,12 @@ Branch: sprint-4/release-hardening
 - OWASP ZAP CLI availability check:
   - Command: where zap.bat && where zap.sh
   - Result: not found on this machine.
+- OWASP ZAP via container (GHCR):
+  - Command: docker run --rm ghcr.io/zaproxy/zaproxy:stable zap.sh -version
+  - Result: failed to resolve ghcr.io host in current environment.
+- OWASP ZAP via Docker Hub fallback:
+  - Command: docker run --rm zaproxy/zap-stable zap.sh -version
+  - Result: image pull started successfully and is in progress.
 
 ## Executed Security Test Packs
 
