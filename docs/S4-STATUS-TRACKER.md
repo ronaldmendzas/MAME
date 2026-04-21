@@ -7,7 +7,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 
 - [x] Phase A: Baseline and evidence setup
 - [ ] Phase B: Security hardening (in progress)
-- [ ] Phase C: Performance and capacity
+- [ ] Phase C: Performance and capacity (in progress)
 - [ ] Phase D: UX, responsive, accessibility
 - [ ] Phase E: API docs and operations
 - [ ] Phase F: Final validation and release readiness
@@ -32,8 +32,8 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 
 ### Performance
 - Path: docs/evidence/s4/performance/
-- Latest artifact:
-- Notes:
+- Latest artifact: docs/evidence/s4/performance/2026-04-21-performance-baseline.md
+- Notes: repository-level performance tests passed; k6/lighthouse CLI missing locally.
 
 ### UX
 - Path: docs/evidence/s4/ux/
@@ -70,3 +70,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - OWASP ZAP CLI not found locally; attempted Docker fallback.
 - GHCR image pull failed due host resolution; Docker Hub image pull started and remains pending completion.
 - Docker Hub pull also proved too slow for this local session window; recommended to run ZAP scan in CI/staging runner.
+- Executed Phase C baseline tests:
+	- performance test pack: 17/17 passed
+- Recorded evidence at docs/evidence/s4/performance/2026-04-21-performance-baseline.md.
+- k6 and Lighthouse CLI are not available locally; pending CI/staging execution.
