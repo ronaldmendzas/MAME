@@ -8,7 +8,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - [x] Phase A: Baseline and evidence setup
 - [x] Phase B: Security hardening (complete — pending ZAP scan in CI)
 - [x] Phase C: Performance and capacity (complete — pending k6 run in CI)
-- [ ] Phase D: UX, responsive, accessibility
+- [x] Phase D: UX, responsive, accessibility (complete — pending Lighthouse in CI)
 - [ ] Phase E: API docs and operations
 - [ ] Phase F: Final validation and release readiness
 
@@ -16,7 +16,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 
 - [ ] OWASP ZAP critical/high findings = 0 (code hardening done; ZAP scan pending CI)
 - [ ] Peak load target validated (k6 script ready; pending CI execution)
-- [ ] Lighthouse mobile >= 85
+- [ ] Lighthouse mobile >= 85 (code changes applied; measurement pending CI)
 - [ ] DSS controls completed with evidence
 - [ ] OpenAPI docs complete and accessible
 - [ ] Beta full-flow evidence captured
@@ -37,8 +37,8 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 
 ### UX
 - Path: docs/evidence/s4/ux/
-- Latest artifact:
-- Notes:
+- Latest artifact: docs/evidence/s4/ux/2026-05-08-phase-d-ux-audit.md
+- Notes: 9 findings resolved (header overflow, 14 touch targets, 5 error live-regions, skip link, aria-hidden, aria-expanded, feed landmark). Lighthouse pending CI.
 
 ### API
 - Path: docs/evidence/s4/api/
@@ -53,6 +53,20 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 ## Work Log
 
 ## 2026-05-08
+- Phase D UX, responsive and accessibility hardening complete.
+- Resolved header overflow on 320px (hidden sm:contents on My Reports).
+- Fixed 14 touch targets to WCAG 2.5.5 minimum 44px across 8 files.
+- Added role=alert live-regions to 5 error message components.
+- Added skip-to-content link and id=main-content anchor to layout.
+- Added viewport metadata export (maximumScale: 5 for user zoom, WCAG 1.4.4).
+- Added aria-hidden to decorative SVGs, aria-label to vote counts.
+- Added aria-label to lightbox close button.
+- Added section landmark with aria-label to report feed.
+- Added aria-expanded + aria-controls to privacy notice toggle.
+- Full test suite: 69 files, 430 tests, 0 failures.
+- Evidence: docs/evidence/s4/ux/2026-05-08-phase-d-ux-audit.md
+- Lighthouse mobile score pending CI/staging measurement.
+
 - Phase C performance hardening complete.
 - Lazy loaded 5 heavy/role-gated components (AdminNavLink, ModerationNavLink, SecurityNavLink, EvidenceUpload, ReportForm).
 - Added `loading="lazy"` to evidence thumbnail images.
