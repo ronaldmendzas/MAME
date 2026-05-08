@@ -27,9 +27,7 @@ describe('security middleware CORS', () => {
     const res = await app.request('/test', {
       headers: { Origin: 'http://localhost:3000' },
     })
-    expect(res.headers.get('access-control-allow-origin')).toBe(
-      'http://localhost:3000',
-    )
+    expect(res.headers.get('access-control-allow-origin')).toBe('http://localhost:3000')
   })
 
   it('rejects unlisted origin', async () => {
@@ -48,9 +46,7 @@ describe('security middleware CORS', () => {
     const res = await app.request('/test', {
       headers: { Origin: 'https://mame.app' },
     })
-    expect(res.headers.get('access-control-allow-origin')).toBe(
-      'https://mame.app',
-    )
+    expect(res.headers.get('access-control-allow-origin')).toBe('https://mame.app')
   })
 })
 
@@ -89,8 +85,45 @@ describe('security middleware headers', () => {
 
   it('sets Referrer-Policy', async () => {
     const res = await app.request('/test')
-    expect(res.headers.get('referrer-policy')).toBe(
-      'strict-origin-when-cross-origin',
-    )
+    expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin')
+  })
+
+  it('sets X-XSS-Protection to 0 (disables legacy auditor)', async () => {
+    const res = await app.request('/test')
+    expect(res.headers.get('x-xss-protection')).toBe('0')
+  })
+
+  it('includes api.clerk.dev in connect-src directive', async () => {
+    const res = await app.request('/test')
+    const csp = res.headers.get('content-security-policy')
+    expect(csp).toContain('https://api.clerk.dev')
+  })
+})
+
+describe('security middleware CORS credentials', () => {
+  it('sets access-control-allow-credentials for allowed origin', async () => {
+    const app = createTestApp()
+    const res = await app.request('/test', {
+      headers: { Origin: 'http://localhost:3000' },
+    })
+    expect(res.headers.get('access-control-allow-credentials')).toBe('true')
+  })
+
+  it('does not set credentials header for rejected origin', async () => {
+    const app = createTestApp()
+    const res = await app.request('/test', {
+      headers: { Origin: 'https://evil.com' },
+    })
+    expect(res.headers.get('access-control-allow-origin')).toBeNull()
+  })
+
+  it('never allows wildcard origin regardless of environment', async () => {
+    const app = createTestApp({ ENVIRONMENT: 'development' } as unknown as Partial<
+      AppEnv['Bindings']
+    >)
+    const res = await app.request('/test', {
+      headers: { Origin: 'https://attacker.com' },
+    })
+    expect(res.headers.get('access-control-allow-origin')).toBeNull()
   })
 })

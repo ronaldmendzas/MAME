@@ -4,9 +4,13 @@ import { handleEvidenceUpload } from '../../src/http/routes/evidence.js'
 
 vi.mock('../../src/application/upload-evidence.js', () => ({
   uploadEvidence: vi.fn().mockResolvedValue({
-    id: 'ev-1', reportId: 'r-1', type: 'file',
-    fileKey: 'evidence/abc', mimeType: 'image/jpeg',
-    sizeBytes: 200, createdAt: new Date(),
+    id: 'ev-1',
+    reportId: 'r-1',
+    type: 'file',
+    fileKey: 'evidence/abc',
+    mimeType: 'image/jpeg',
+    sizeBytes: 200,
+    createdAt: new Date(),
   }),
 }))
 
@@ -39,6 +43,11 @@ function makeContext(id: string, file?: File) {
 }
 
 describe('handleEvidenceUpload', () => {
+  it('rejects missing report ID', async () => {
+    const ctx = makeContext('')
+    await expect(handleEvidenceUpload(ctx as never)).rejects.toThrow('Missing report ID')
+  })
+
   it('rejects invalid report ID', async () => {
     const ctx = makeContext('not-uuid')
     await expect(handleEvidenceUpload(ctx as never)).rejects.toThrow('Invalid report ID')

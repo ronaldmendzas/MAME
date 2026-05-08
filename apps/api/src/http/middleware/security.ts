@@ -14,21 +14,17 @@ const DEV_ORIGINS = [
 export function createSecurityMiddleware() {
   const corsMiddleware: MiddlewareHandler<AppEnv> = (c, next) => {
     const raw = c.env?.ALLOWED_ORIGINS
-    const isDevelopment = c.env?.ENVIRONMENT === 'development'
-    const origins = raw
-      ? raw.split(',').map((o) => o.trim())
-      : DEV_ORIGINS
+    const origins = raw ? raw.split(',').map((o) => o.trim()) : DEV_ORIGINS
     const allowedOrigins = new Set(origins)
 
     return cors({
-      origin: isDevelopment
-        ? '*'
-        : (requestOrigin) => {
-            if (allowedOrigins.has(requestOrigin)) return requestOrigin
-            return ''
-          },
+      origin: (requestOrigin) => {
+        if (allowedOrigins.has(requestOrigin)) return requestOrigin
+        return ''
+      },
       allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
       maxAge: 86400,
     })(c, next)
   }
@@ -38,6 +34,7 @@ export function createSecurityMiddleware() {
     headers: secureHeaders({
       xFrameOptions: 'DENY',
       xContentTypeOptions: 'nosniff',
+      xXssProtection: '0',
       referrerPolicy: 'strict-origin-when-cross-origin',
       strictTransportSecurity: 'max-age=31536000; includeSubDomains',
       contentSecurityPolicy: {
@@ -45,7 +42,7 @@ export function createSecurityMiddleware() {
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", 'blob:', 'data:'],
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", 'https://api.clerk.dev'],
         frameAncestors: ["'none'"],
       },
       permissionsPolicy: {
