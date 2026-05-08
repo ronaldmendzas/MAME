@@ -9,6 +9,7 @@ import { createReportRepository } from '../../infrastructure/db/report-repositor
 
 export async function handleRemoveVote(c: Context<AppEnv>) {
   const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
   const tokenId = c.get('tokenId')
   if (!tokenId) throw new ValidationError('Missing token_id in JWT')
 

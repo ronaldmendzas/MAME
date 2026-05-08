@@ -1,6 +1,6 @@
 import type { Context } from 'hono'
 
-import { NotFoundError } from '../../domain/errors.js'
+import { NotFoundError, ValidationError } from '../../domain/errors.js'
 import { signMediaUrl } from '../../domain/media-signature.js'
 import type { AppEnv } from '../../env.js'
 import { createDb, type Database } from '../../infrastructure/db/connection.js'
@@ -9,9 +9,12 @@ import { createEvidenceRepository } from '../../infrastructure/db/evidence-repos
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 
 export async function handleReportDetail(c: Context<AppEnv>) {
+  const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
+
   const db = createDb(c.env.DATABASE_URL)
   const repo = createReportRepository(db)
-  const report = await repo.findById(c.req.param('id'))
+  const report = await repo.findById(reportId)
 
   if (!report) throw new NotFoundError('Report')
 

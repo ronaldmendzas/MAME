@@ -17,6 +17,7 @@ const moderateSchema = z.object({
 
 export async function handleModerateReport(c: Context<AppEnv>) {
   const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
   const raw = await c.req.json()
   const parsed = moderateSchema.safeParse(raw)
   if (!parsed.success) {

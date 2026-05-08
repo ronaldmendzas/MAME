@@ -11,6 +11,7 @@ const uuidSchema = z.string().uuid()
 
 export async function handleEvidenceList(c: Context<AppEnv>) {
   const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
   if (!uuidSchema.safeParse(reportId).success) {
     throw new ValidationError('Invalid report ID')
   }

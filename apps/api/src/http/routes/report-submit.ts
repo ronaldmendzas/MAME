@@ -10,12 +10,15 @@ import { createWorkersAiModeration } from '../../infrastructure/ai/workers-ai-mo
 import { createCloudinaryStorage } from '../../infrastructure/storage/cloudinary.js'
 
 export async function handleSubmitReport(c: Context<AppEnv>): Promise<Response> {
+  const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
+
   const tokenId = c.get('tokenId')
   if (!tokenId) throw new ValidationError('Missing token_id in JWT')
 
   const db = createDb(c.env.DATABASE_URL)
   const result = await submitReport(
-    { reportId: c.req.param('id'), tokenId },
+    { reportId, tokenId },
     {
       reportRepo: createReportRepository(db),
       evidenceRepo: createEvidenceRepository(db),

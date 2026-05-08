@@ -15,6 +15,7 @@ const commentSchema = z.object({
 
 export async function handleCreateComment(c: Context<AppEnv>) {
   const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
   const raw = await c.req.json()
   const parsed = commentSchema.safeParse(raw)
   if (!parsed.success) {

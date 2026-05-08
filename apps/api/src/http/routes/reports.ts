@@ -69,6 +69,9 @@ reportRoutes.post('/', authMiddleware, ensureRegisteredMiddleware, rateLimitWrit
 })
 
 reportRoutes.patch('/:id', authMiddleware, ensureRegisteredMiddleware, rateLimitWrite(), async (c) => {
+  const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
+
   const raw = await c.req.json()
   const parsed = updateSchema.safeParse(raw)
   if (!parsed.success) {
@@ -80,7 +83,7 @@ reportRoutes.patch('/:id', authMiddleware, ensureRegisteredMiddleware, rateLimit
 
   const db = createDb(c.env.DATABASE_URL)
   const report = await updateReport(
-    { reportId: c.req.param('id'), tokenId, ...parsed.data },
+    { reportId, tokenId, ...parsed.data },
     { reportRepo: createReportRepository(db) },
   )
 

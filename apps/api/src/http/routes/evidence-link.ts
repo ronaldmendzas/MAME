@@ -12,6 +12,7 @@ const uuidSchema = z.string().uuid()
 
 export async function handleAddLink(c: Context<AppEnv>): Promise<Response> {
   const reportId = c.req.param('id')
+  if (!reportId) throw new ValidationError('Missing report ID')
   if (!uuidSchema.safeParse(reportId).success) {
     throw new ValidationError('Invalid report ID')
   }
