@@ -27,7 +27,10 @@ export function ModerationQueue() {
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [localError, setLocalError] = useState<string | null>(null)
 
-  const visible = useMemo(() => reports.filter((r) => r.status === 'pending' || r.status === 'under_review'), [reports])
+  const visible = useMemo(
+    () => reports.filter((r) => r.status === 'pending' || r.status === 'under_review'),
+    [reports],
+  )
 
   async function onApply(reportId: string) {
     setLocalError(null)
@@ -56,13 +59,18 @@ export function ModerationQueue() {
   }
 
   if (loading) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">Loading moderation queue...</p>
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground">Loading moderation queue...</p>
+    )
   }
 
   return (
     <section className="space-y-4">
       <div className="rounded-lg border border-border/60 bg-card/40 p-4">
-        <label className="mb-2 block text-sm font-medium text-muted-foreground" htmlFor="moderator-faculty">
+        <label
+          className="mb-2 block text-sm font-medium text-muted-foreground"
+          htmlFor="moderator-faculty"
+        >
           Your faculty (required)
         </label>
         <Input
@@ -79,13 +87,21 @@ export function ModerationQueue() {
 
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold">Pending Reports</h2>
-        <Button variant="outline" size="sm" onClick={() => void refresh()} disabled={acting}>
+        <Button
+          variant="outline"
+          onClick={() => void refresh()}
+          disabled={acting}
+          className="min-h-[44px]"
+        >
           Refresh
         </Button>
       </div>
 
       {(error || localError) && (
-        <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {localError ?? error}
         </p>
       )}
@@ -105,7 +121,9 @@ export function ModerationQueue() {
                 <Badge variant="outline" className={statusClass(report.status)}>
                   {report.status}
                 </Badge>
-                <span className="text-xs text-muted-foreground">{formatDate(report.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDate(report.createdAt)}
+                </span>
                 <span className="text-xs text-muted-foreground">{report.faculty}</span>
               </div>
 
@@ -121,19 +139,25 @@ export function ModerationQueue() {
                       const next = e.target.value as ModerationAction
                       setActions((prev) => ({ ...prev, [report.id]: next }))
                     }}
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
                   >
                     {ACTIONS.map((item) => (
-                      <option key={item} value={item}>{item}</option>
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="text-sm">
-                  <span className="mb-1 block text-xs text-muted-foreground">Reason (required for reject)</span>
+                  <span className="mb-1 block text-xs text-muted-foreground">
+                    Reason (required for reject)
+                  </span>
                   <Textarea
                     value={reasons[report.id] ?? ''}
-                    onChange={(e) => setReasons((prev) => ({ ...prev, [report.id]: e.target.value }))}
+                    onChange={(e) =>
+                      setReasons((prev) => ({ ...prev, [report.id]: e.target.value }))
+                    }
                     placeholder="Optional note for request_info/escalate; mandatory for reject"
                     className="min-h-20"
                   />
@@ -142,7 +166,7 @@ export function ModerationQueue() {
                 <Button
                   onClick={() => void onApply(report.id)}
                   disabled={acting}
-                  className="sm:mt-6"
+                  className="min-h-[44px] sm:mt-6"
                 >
                   Apply
                 </Button>

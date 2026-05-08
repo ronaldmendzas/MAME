@@ -22,7 +22,10 @@ export function EvidenceLightbox({ src, alt }: Props) {
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
         <Dialog.Content className="fixed inset-4 z-50 flex items-center justify-center">
           <img src={src} alt={alt} loading="eager" className="max-h-full max-w-full rounded-lg" />
-          <Dialog.Close className="absolute right-6 top-6 rounded bg-black/50 px-3 py-1 text-white">
+          <Dialog.Close
+            aria-label="Close image"
+            className="absolute right-6 top-6 flex min-h-[44px] min-w-[44px] items-center justify-center rounded bg-black/50 text-white"
+          >
             ✕
           </Dialog.Close>
         </Dialog.Content>

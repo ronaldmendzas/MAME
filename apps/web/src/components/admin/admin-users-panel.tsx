@@ -31,9 +31,17 @@ export function AdminUsersPanel() {
       <div className="mb-4 flex items-center justify-between gap-2">
         <div>
           <h2 className="text-base font-semibold">User Role Management</h2>
-          <p className="text-sm text-muted-foreground">Admin can assign user, moderator, auditor or admin roles.</p>
+          <p className="text-sm text-muted-foreground">
+            Admin can assign user, moderator, auditor or admin roles.
+          </p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => void refresh()} disabled={loading || acting}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void refresh()}
+          disabled={loading || acting}
+          className="min-h-[44px]"
+        >
           Refresh
         </Button>
       </div>
@@ -49,13 +57,16 @@ export function AdminUsersPanel() {
       ) : (
         <div className="space-y-3">
           {viewModels.map((user) => (
-            <div key={user.id} className="grid gap-2 rounded-md border p-3 md:grid-cols-[1fr_auto_auto] md:items-center">
+            <div
+              key={user.id}
+              className="grid gap-2 rounded-md border p-3 md:grid-cols-[1fr_auto_auto] md:items-center"
+            >
               <div>
                 <p className="text-sm font-medium">{user.id}</p>
                 <p className="text-xs text-muted-foreground">Clerk: {user.clerkId}</p>
               </div>
               <select
-                className="h-9 rounded-md border bg-background px-3 text-sm"
+                className="h-11 rounded-md border bg-background px-3 text-sm"
                 value={user.draftRole}
                 aria-label={`Role for user ${user.id}`}
                 disabled={acting}
@@ -72,8 +83,8 @@ export function AdminUsersPanel() {
               </select>
               <Button
                 type="button"
-                size="sm"
                 disabled={acting || user.draftRole === user.role}
+                className="min-h-[44px]"
                 onClick={() => void handleSave(user.id)}
               >
                 Save Role

@@ -23,24 +23,32 @@ export function EvidenceUpload({ reportId, onUploaded }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleFile = useCallback(async (file: File) => {
-    setError(null)
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError('File exceeds 5 MB limit')
-      return
-    }
-    const token = await getToken({ template: 'mame-api' })
-    if (!token) { setError('Not authenticated'); return }
-    setUploading(true)
-    try {
-      const cleaned = await stripMetadata(file)
-      const optimized = await compressImage(cleaned)
-      const res = await uploadEvidence(reportId, optimized, token)
-      if (res.data) onUploaded(res.data)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Upload failed')
-    } finally { setUploading(false) }
-  }, [reportId, getToken, onUploaded])
+  const handleFile = useCallback(
+    async (file: File) => {
+      setError(null)
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setError('File exceeds 5 MB limit')
+        return
+      }
+      const token = await getToken({ template: 'mame-api' })
+      if (!token) {
+        setError('Not authenticated')
+        return
+      }
+      setUploading(true)
+      try {
+        const cleaned = await stripMetadata(file)
+        const optimized = await compressImage(cleaned)
+        const res = await uploadEvidence(reportId, optimized, token)
+        if (res.data) onUploaded(res.data)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Upload failed')
+      } finally {
+        setUploading(false)
+      }
+    },
+    [reportId, getToken, onUploaded],
+  )
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault()
@@ -57,18 +65,38 @@ export function EvidenceUpload({ reportId, onUploaded }: Props) {
 
   return (
     <div
-      onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+      onDragOver={(e) => {
+        e.preventDefault()
+        setDragging(true)
+      }}
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
       className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${dragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}`}
     >
-      <input ref={inputRef} type="file" accept={ACCEPTED} onChange={onInputChange} className="hidden" />
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPTED}
+        onChange={onInputChange}
+        className="hidden"
+      />
       <p className="mb-2 text-sm text-muted-foreground">Drag & drop a file or</p>
-      <Button variant="outline" size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
+      <Button
+        variant="outline"
+        disabled={uploading}
+        className="min-h-[44px]"
+        onClick={() => inputRef.current?.click()}
+      >
         {uploading ? 'Uploading...' : 'Choose File'}
       </Button>
-      <p className="mt-2 text-xs text-muted-foreground">JPEG, PNG, WebP, PDF, MP4, MP3 — max 5 MB</p>
-      {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+      <p className="mt-2 text-xs text-muted-foreground">
+        JPEG, PNG, WebP, PDF, MP4, MP3 — max 5 MB
+      </p>
+      {error && (
+        <p role="alert" className="mt-2 text-xs text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

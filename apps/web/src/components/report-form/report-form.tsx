@@ -39,16 +39,24 @@ export function ReportForm() {
   async function handleSubmit() {
     setError(null)
     const parsed = createReportSchema.safeParse(data)
-    if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? 'Invalid'); return }
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? 'Invalid')
+      return
+    }
     const token = await getToken({ template: 'mame-api' })
-    if (!token) { setError('Not authenticated'); return }
+    if (!token) {
+      setError('Not authenticated')
+      return
+    }
     setSubmitting(true)
     try {
       await createReport(parsed.data, token)
       setSuccess(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to submit')
-    } finally { setSubmitting(false) }
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (success) return <SuccessMessage />
@@ -58,15 +66,29 @@ export function ReportForm() {
       <StepIndicator current={step} labels={STEP_LABELS} />
       <div className="mt-6">
         {step === 0 && <StepContent title={data.title} body={data.body} onUpdate={update} />}
-        {step === 1 && <StepCategory category={data.category} faculty={data.faculty} onUpdate={update} />}
+        {step === 1 && (
+          <StepCategory category={data.category} faculty={data.faculty} onUpdate={update} />
+        )}
         {step === 2 && <StepPreview {...data} />}
       </div>
-      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-destructive">
+          {error}
+        </p>
+      )}
       <div className="mt-6 flex justify-between">
-        <Button onClick={back} disabled={isFirst} variant="outline">Back</Button>
-        {isLast
-          ? <Button onClick={handleSubmit} disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Report'}</Button>
-          : <Button onClick={next} disabled={!canAdvance}>Next</Button>}
+        <Button onClick={back} disabled={isFirst} variant="outline" className="min-h-[44px]">
+          Back
+        </Button>
+        {isLast ? (
+          <Button onClick={handleSubmit} disabled={submitting} className="min-h-[44px]">
+            {submitting ? 'Submitting...' : 'Submit Report'}
+          </Button>
+        ) : (
+          <Button onClick={next} disabled={!canAdvance} className="min-h-[44px]">
+            Next
+          </Button>
+        )}
       </div>
     </div>
   )
@@ -77,8 +99,14 @@ function StepIndicator({ current, labels }: { current: number; labels: string[] 
     <div className="flex items-center gap-2">
       {labels.map((label, i) => (
         <div key={label} className="flex items-center gap-2">
-          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${i <= current ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>{i + 1}</span>
-          <span className={`text-sm ${i <= current ? 'font-medium' : 'text-muted-foreground'}`}>{label}</span>
+          <span
+            className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${i <= current ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+          >
+            {i + 1}
+          </span>
+          <span className={`text-sm ${i <= current ? 'font-medium' : 'text-muted-foreground'}`}>
+            {label}
+          </span>
           {i < labels.length - 1 && <div className="mx-1 h-px w-8 bg-border" />}
         </div>
       ))}
@@ -90,7 +118,10 @@ function SuccessMessage() {
   return (
     <div className="mx-auto max-w-2xl rounded-lg border border-green-200 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-950">
       <h2 className="text-lg font-semibold text-green-800 dark:text-green-200">Report Submitted</h2>
-      <p className="mt-2 text-sm text-green-700 dark:text-green-300">Your report has been submitted for review. You can track its status in &quot;My Reports&quot;.</p>
+      <p className="mt-2 text-sm text-green-700 dark:text-green-300">
+        Your report has been submitted for review. You can track its status in &quot;My
+        Reports&quot;.
+      </p>
     </div>
   )
 }

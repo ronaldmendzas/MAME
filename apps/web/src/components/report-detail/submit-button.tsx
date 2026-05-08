@@ -20,7 +20,10 @@ export function SubmitButton({ reportId, hasEvidence }: Props) {
   const handleSubmit = useCallback(async () => {
     setError(null)
     const token = await getToken({ template: 'mame-api' })
-    if (!token) { setError('Not authenticated'); return }
+    if (!token) {
+      setError('Not authenticated')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -28,7 +31,9 @@ export function SubmitButton({ reportId, hasEvidence }: Props) {
       if (res.data) setResult(res.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submission failed')
-    } finally { setSubmitting(false) }
+    } finally {
+      setSubmitting(false)
+    }
   }, [reportId, getToken])
 
   if (result?.outcome === 'submitted') {
@@ -41,16 +46,17 @@ export function SubmitButton({ reportId, hasEvidence }: Props) {
 
   return (
     <div className="flex flex-col gap-1">
-      <Button
-        onClick={handleSubmit}
-        disabled={!hasEvidence || submitting}
-      >
+      <Button onClick={handleSubmit} disabled={!hasEvidence || submitting} className="min-h-[44px]">
         {submitting ? 'Submitting...' : 'Submit for Review'}
       </Button>
       {!hasEvidence && (
         <p className="text-xs text-muted-foreground">Add at least one evidence to submit</p>
       )}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && (
+        <p role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
