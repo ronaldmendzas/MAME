@@ -26,13 +26,18 @@ function DetailsPanel({ open }: { open: boolean }) {
   const gridClass = open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
 
   return (
-    <div className={cn('grid transition-all duration-300 ease-in-out', gridClass)}>
+    <div
+      id="privacy-details"
+      className={cn('grid transition-all duration-300 ease-in-out', gridClass)}
+    >
       <div className="overflow-hidden">
         <div className="space-y-2.5 rounded-b-xl border border-t-0 border-border/40 bg-card/50 px-4 pb-4 pt-2 backdrop-blur-sm">
-          {FEATURES.map(f => <FeatureItem key={f.label} icon={f.icon} label={f.label} />)}
+          {FEATURES.map((f) => (
+            <FeatureItem key={f.label} icon={f.icon} label={f.label} />
+          ))}
           <p className="pt-1 text-[11px] leading-relaxed text-muted-foreground/50">
-            MAME utiliza cifrado avanzado y anonimización total.
-            Ni siquiera nosotros podemos vincular tu cuenta con tu identidad real.
+            MAME utiliza cifrado avanzado y anonimización total. Ni siquiera nosotros podemos
+            vincular tu cuenta con tu identidad real.
           </p>
         </div>
       </div>
@@ -47,7 +52,9 @@ export function PrivacyNotice() {
     <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-3 duration-700">
       <button
         type="button"
-        onClick={() => setOpen(v => !v)}
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="privacy-details"
         className={cn(
           'flex w-full items-center gap-2.5 rounded-xl border border-border/40 px-4 py-3',
           'bg-card/50 text-left backdrop-blur-sm transition-all duration-300',

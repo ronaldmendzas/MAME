@@ -23,14 +23,18 @@ export function ReportFeed({ params }: { params?: URLSearchParams }) {
   }
 
   return (
-    <>
+    <section aria-label="Published reports">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {reports.map((r) => (
           <ReportCard key={r.id} report={r} />
         ))}
       </div>
-      {loading && <div className="mt-4"><SkeletonFeed count={3} /></div>}
+      {loading && (
+        <div className="mt-4">
+          <SkeletonFeed count={3} />
+        </div>
+      )}
       <div ref={sentinelRef} className="h-4" />
-    </>
+    </section>
   )
 }
