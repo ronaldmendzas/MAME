@@ -20,11 +20,14 @@ const SecurityNavLink = dynamic(
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+      <nav
+        className="mx-auto flex max-w-6xl items-center justify-between px-6 py-1"
+        aria-label="Main navigation"
+      >
         <div className="flex items-center gap-1">
           <Link
             href="/"
-            className="mr-4 text-lg font-bold tracking-tight text-foreground transition-colors hover:text-primary"
+            className="mr-4 flex min-h-[44px] items-center text-lg font-bold tracking-tight text-foreground transition-colors hover:text-primary"
           >
             MAME
           </Link>
@@ -32,19 +35,21 @@ export function Header() {
             asChild
             variant="ghost"
             size="sm"
-            className="text-muted-foreground hover:text-foreground"
+            className="min-h-[44px] text-muted-foreground hover:text-foreground"
           >
             <Link href="/reports">Reports</Link>
           </Button>
           <SignedIn>
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Link href="/reports/mine">My Reports</Link>
-            </Button>
+            <span className="hidden sm:contents">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="min-h-[44px] text-muted-foreground hover:text-foreground"
+              >
+                <Link href="/reports/mine">My Reports</Link>
+              </Button>
+            </span>
             <AdminNavLink />
             <ModerationNavLink />
             <SecurityNavLink />
@@ -56,14 +61,14 @@ export function Header() {
               asChild
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="min-h-[44px] text-muted-foreground hover:text-foreground"
             >
               <Link href="/sign-in">Sign In</Link>
             </Button>
             <Button
               asChild
               size="sm"
-              className="bg-primary text-primary-foreground shadow-sm shadow-primary/25 hover:shadow-primary/40"
+              className="min-h-[44px] bg-primary text-primary-foreground shadow-sm shadow-primary/25 hover:shadow-primary/40"
             >
               <Link href="/sign-up">Sign Up</Link>
             </Button>
@@ -72,7 +77,7 @@ export function Header() {
             <Button
               asChild
               size="sm"
-              className="bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+              className="min-h-[44px] bg-primary text-primary-foreground shadow-sm shadow-primary/25"
             >
               <Link href="/reports/create">New Report</Link>
             </Button>
