@@ -1,12 +1,16 @@
 'use client'
 
 import { useAuth } from '@clerk/nextjs'
+import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useState } from 'react'
 
 import { EvidenceGallery } from './evidence-gallery'
-import { EvidenceUpload } from './evidence-upload'
 import { LinkForm } from './link-form'
 import { SubmitButton } from './submit-button'
+
+const EvidenceUpload = dynamic(() => import('./evidence-upload').then((m) => m.EvidenceUpload), {
+  ssr: false,
+})
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetchEvidence, type EvidenceItem } from '@/lib/api'
