@@ -22,6 +22,7 @@ export async function handleSearch(c: Context<AppEnv>) {
   const searchRepo = createSearchRepository(db)
   const results = await searchRepo.search(parsed.data.q, parsed.data.limit, parsed.data.offset)
 
+  c.header('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60')
   return c.json({
     success: true,
     data: results,

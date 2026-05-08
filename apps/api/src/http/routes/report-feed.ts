@@ -35,17 +35,18 @@ export async function handleFeed(c: Context<AppEnv>) {
   const db = createDb(c.env.DATABASE_URL)
   const repo = createReportRepository(db)
 
-  const rows = await repo.findPublished(
-    query.cursor ?? null, query.limit + 1,
-    { category: query.category, faculty: query.faculty, dateFrom: query.date_from, dateTo: query.date_to },
-  )
+  const rows = await repo.findPublished(query.cursor ?? null, query.limit + 1, {
+    category: query.category,
+    faculty: query.faculty,
+    dateFrom: query.date_from,
+    dateTo: query.date_to,
+  })
 
   const hasMore = rows.length > query.limit
   const data = hasMore ? rows.slice(0, query.limit) : rows
-  const nextCursor = hasMore
-    ? data[data.length - 1]?.publishedAt?.toISOString() ?? null
-    : null
+  const nextCursor = hasMore ? (data[data.length - 1]?.publishedAt?.toISOString() ?? null) : null
 
+  c.header('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
   return c.json({ success: true, data, nextCursor, hasMore })
 }
 
@@ -70,9 +71,7 @@ export async function handleMyReports(c: Context<AppEnv>) {
   const rows = await repo.findByTokenId(tokenId, cursor, limit + 1)
   const hasMore = rows.length > limit
   const data = hasMore ? rows.slice(0, limit) : rows
-  const nextCursor = hasMore
-    ? data[data.length - 1]?.createdAt.toISOString() ?? null
-    : null
+  const nextCursor = hasMore ? (data[data.length - 1]?.createdAt.toISOString() ?? null) : null
 
   return c.json({ success: true, data, nextCursor, hasMore })
 }
