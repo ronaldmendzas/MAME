@@ -9,7 +9,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - [x] Phase B: Security hardening (complete — pending ZAP scan in CI)
 - [x] Phase C: Performance and capacity (complete — pending k6 run in CI)
 - [x] Phase D: UX, responsive, accessibility (complete — pending Lighthouse in CI)
-- [ ] Phase E: API docs and operations
+- [x] Phase E: API docs and operations (incident response done; OpenAPI partial)
 - [ ] Phase F: Final validation and release readiness
 
 ## Launch Criteria Checklist
