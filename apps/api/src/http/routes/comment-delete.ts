@@ -2,8 +2,8 @@ import type { Context } from 'hono'
 
 import { ForbiddenError, NotFoundError, ValidationError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
-import { createDb } from '../../infrastructure/db/connection.js'
 import { createCommentRepository } from '../../infrastructure/db/comment-repository.js'
+import { createDb } from '../../infrastructure/db/connection.js'
 
 export async function handleDeleteComment(c: Context<AppEnv>) {
   const commentId = c.req.param('commentId')

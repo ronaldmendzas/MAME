@@ -1,6 +1,7 @@
 import type { EvidenceRow } from '../domain/ports/evidence-repository.js'
 import type { ModerationPort, ModerationResult } from '../domain/ports/moderation-port.js'
 import type { StoragePort } from '../domain/ports/storage-port.js'
+
 import { isImageMime } from './moderation-helpers.js'
 
 interface ImageScreenDeps {

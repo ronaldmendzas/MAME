@@ -6,6 +6,7 @@ import { NotFoundError, ValidationError } from '../../domain/errors.js'
 import type { UserRole } from '../../domain/ports/user-repository.js'
 import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
+import { getAdminStats } from '../../infrastructure/db/stats-repository.js'
 import { createUserRepository } from '../../infrastructure/db/user-repository.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole } from '../middleware/role.js'
@@ -32,6 +33,23 @@ adminRoutes.get('/users', async (c) => {
     data: users,
     meta: { limit, count: users.length },
   })
+})
+
+adminRoutes.get('/stats', async (c) => {
+  const db = createDb(c.env.DATABASE_URL)
+  const stats = await getAdminStats(db)
+
+  void recordSecurityEvent(c.env, {
+    eventType: 'sensitive_endpoint_attempt',
+    outcome: 'allowed',
+    source: 'admin_stats_route',
+    target: c.req.path,
+    actorToken: c.get('tokenId') || null,
+    actorRole: c.get('userRole') || null,
+    details: { action: 'view_stats' },
+  })
+
+  return c.json({ success: true, data: stats })
 })
 
 adminRoutes.patch('/users/:id/role', async (c) => {

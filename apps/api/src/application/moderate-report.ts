@@ -1,7 +1,7 @@
+import { ForbiddenError, NotFoundError, ValidationError } from '../domain/errors.js'
 import type { ModerationAction, ModerationLogRepository } from '../domain/ports/moderation-log-repository.js'
 import type { ReportRepository, ReportRow } from '../domain/ports/report-repository.js'
 import type { StatusHistoryRepository } from '../domain/ports/status-history-repository.js'
-import { ForbiddenError, NotFoundError, ValidationError } from '../domain/errors.js'
 import type { ReportStatus } from '../domain/types.js'
 
 export interface ModerateReportInput {
@@ -77,6 +77,7 @@ async function logModerationAction(
   })
 }
 
+// eslint-disable-next-line max-params
 async function logStatusChange(
   report: ReportRow,
   newStatus: ReportStatus,

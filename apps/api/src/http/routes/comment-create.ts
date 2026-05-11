@@ -4,8 +4,8 @@ import { z } from 'zod'
 import { createComment } from '../../application/create-comment.js'
 import { ValidationError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
-import { createDb } from '../../infrastructure/db/connection.js'
 import { createCommentRepository } from '../../infrastructure/db/comment-repository.js'
+import { createDb } from '../../infrastructure/db/connection.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 
 const commentSchema = z.object({

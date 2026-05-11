@@ -1,4 +1,5 @@
 import type { ForensicEntry, ForensicLogPort } from '../../domain/ports/forensic-log-port'
+
 import type { Database } from './connection'
 import { moderationLog } from './schema/moderation'
 

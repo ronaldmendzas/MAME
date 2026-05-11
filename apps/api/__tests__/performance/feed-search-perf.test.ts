@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it , vi } from 'vitest'
 
 import { createReportRepository } from '../../src/infrastructure/db/report-repository'
 import { createSearchRepository } from '../../src/infrastructure/db/search-repository'
@@ -45,7 +45,7 @@ function mockSearchDb(returnRows: unknown[] = [], artificialDelayMs = 0) {
   return chain as unknown
 }
 
-import { vi } from 'vitest'
+
 
 describe('DoD #5 — Feed pagination performance', () => {
   it('uses cursor-based pagination, not offset', async () => {

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
 
 import type { SearchRepository, SearchResult } from '../../domain/ports/search-repository'
+
 import type { Database } from './connection'
 import { reports } from './schema/reports'
 

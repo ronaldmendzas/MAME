@@ -3,6 +3,7 @@ import type { Context, Next } from 'hono'
 import { recordSecurityEvent } from '../../application/security-events.js'
 import { UnauthorizedError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
+
 import { base64UrlToArrayBuffer } from './jwt-utils.js'
 
 const CLERK_JWKS_URL = 'https://vocal-longhorn-17.clerk.accounts.dev/.well-known/jwks.json'

@@ -1,8 +1,9 @@
 'use client'
 
+import { EvidenceLightbox } from './evidence-lightbox'
+
 import type { EvidenceItem } from '@/lib/api'
 
-import { EvidenceLightbox } from './evidence-lightbox'
 
 const YT_HOSTS = ['youtube.com', 'www.youtube.com', 'youtu.be']
 

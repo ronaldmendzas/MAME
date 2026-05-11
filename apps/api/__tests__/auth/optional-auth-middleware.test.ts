@@ -2,8 +2,8 @@ import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 
 import type { AppEnv } from '../../src/env'
-import { optionalAuthMiddleware } from '../../src/http/middleware/optional-auth'
 import { errorHandler } from '../../src/http/middleware/error-handler'
+import { optionalAuthMiddleware } from '../../src/http/middleware/optional-auth'
 
 function createTestApp() {
   const app = new Hono<AppEnv>()

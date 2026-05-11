@@ -4,8 +4,8 @@ import { voteOnReport } from '../../application/vote-on-report.js'
 import { ValidationError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
-import { createVoteRepository } from '../../infrastructure/db/vote-repository.js'
 import { createReportRepository } from '../../infrastructure/db/report-repository.js'
+import { createVoteRepository } from '../../infrastructure/db/vote-repository.js'
 
 export async function handleAddVote(c: Context<AppEnv>) {
   const reportId = c.req.param('id')

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import type { EvidenceRepository, EvidenceRow } from '../domain/ports/evidence-repository.js'
 import { ValidationError } from '../domain/errors.js'
+import type { EvidenceRepository, EvidenceRow } from '../domain/ports/evidence-repository.js'
 
 const ALLOWED_HOSTS = [
   'youtube.com',

@@ -1,6 +1,6 @@
-import type { VoteRepository } from '../domain/ports/vote-repository.js'
-import type { ReportRepository } from '../domain/ports/report-repository.js'
 import { ConflictError, NotFoundError, ValidationError } from '../domain/errors.js'
+import type { ReportRepository } from '../domain/ports/report-repository.js'
+import type { VoteRepository } from '../domain/ports/vote-repository.js'
 
 export interface VoteOnReportInput {
   reportId: string

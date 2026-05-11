@@ -1,7 +1,7 @@
 import type { Context } from 'hono'
 
-import { verifyMediaSignature } from '../../domain/media-signature.js'
 import { NotFoundError, ValidationError } from '../../domain/errors.js'
+import { verifyMediaSignature } from '../../domain/media-signature.js'
 import type { AppEnv } from '../../env.js'
 
 export async function handleMediaProxy(c: Context<AppEnv>) {

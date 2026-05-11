@@ -1,4 +1,4 @@
-import type { BuildOtpAuthUriInput, TotpService, VerifyTotpCodeInput } from '../../domain/ports/totp-service.js'
+import type { TotpService, VerifyTotpCodeInput } from '../../domain/ports/totp-service.js'
 
 const TIME_STEP_SECONDS = 30
 const TOTP_DIGITS = 6

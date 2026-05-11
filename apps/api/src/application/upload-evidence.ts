@@ -1,7 +1,7 @@
 import { ValidationError } from '../domain/errors.js'
 import { hasExifData } from '../domain/exif-check.js'
-import { hasPdfMetadata } from '../domain/pdf-metadata-check.js'
 import { detectMimeType, isAllowedType } from '../domain/magic-bytes.js'
+import { hasPdfMetadata } from '../domain/pdf-metadata-check.js'
 import type { EvidenceRepository, EvidenceRow } from '../domain/ports/evidence-repository.js'
 import type { StoragePort } from '../domain/ports/storage-port.js'
 

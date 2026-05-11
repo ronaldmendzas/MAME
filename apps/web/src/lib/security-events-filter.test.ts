@@ -1,5 +1,4 @@
 import type { SecurityEvent } from './api'
-
 import { filterSecurityEvents } from './security-events-filter'
 
 const EVENTS: SecurityEvent[] = [

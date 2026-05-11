@@ -99,8 +99,8 @@ describe('handleReportDetail permissions', () => {
   it('author can see their own draft report', async () => {
     mockFindById.mockResolvedValueOnce(makeReport({ status: 'draft', tokenId: 'author-token-123' }))
 
-    const header = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
-    const payload = btoa(JSON.stringify({
+    btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
+    btoa(JSON.stringify({
       sub: 'user_1',
       exp: Math.floor(Date.now() / 1000) + 3600,
       metadata: { token_id: 'author-token-123', role: 'user' },

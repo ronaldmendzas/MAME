@@ -5,8 +5,8 @@ import { moderateReport } from '../../application/moderate-report.js'
 import { ValidationError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
 import { createDb } from '../../infrastructure/db/connection.js'
-import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 import { createModerationLogRepository } from '../../infrastructure/db/moderation-log-repository.js'
+import { createReportRepository } from '../../infrastructure/db/report-repository.js'
 import { createStatusHistoryRepository } from '../../infrastructure/db/status-history-repository.js'
 
 const moderateSchema = z.object({

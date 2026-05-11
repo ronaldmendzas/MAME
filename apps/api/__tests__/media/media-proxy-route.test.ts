@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { createApp } from '../../src/http/app'
 import { signMediaUrl } from '../../src/domain/media-signature'
+import { createApp } from '../../src/http/app'
 
 const MASTER_KEY = 'a'.repeat(64)
 

@@ -1,5 +1,6 @@
 const DEFAULT_EXPIRY_SECONDS = 3600
 
+// eslint-disable-next-line max-params
 export async function signMediaUrl(
   baseUrl: string,
   fileKey: string,
@@ -13,6 +14,7 @@ export async function signMediaUrl(
   return `${baseUrl}/media/${encoded}?expires=${expires}&sig=${signature}`
 }
 
+// eslint-disable-next-line max-params
 export async function verifyMediaSignature(
   fileKey: string,
   expires: string,

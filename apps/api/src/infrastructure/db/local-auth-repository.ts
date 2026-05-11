@@ -1,7 +1,6 @@
 import { eq } from 'drizzle-orm'
 
 import type {
-  InsertLocalAuthCredential,
   LocalAuthCredential,
   LocalAuthRepository,
 } from '../../domain/ports/local-auth-repository'

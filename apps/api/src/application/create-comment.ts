@@ -1,6 +1,6 @@
+import { NotFoundError, ValidationError } from '../domain/errors.js'
 import type { CommentRepository, CommentRow } from '../domain/ports/comment-repository.js'
 import type { ReportRepository } from '../domain/ports/report-repository.js'
-import { NotFoundError, ValidationError } from '../domain/errors.js'
 
 export interface CreateCommentInput {
   reportId: string

@@ -5,9 +5,9 @@ import { authMiddleware } from '../middleware/auth.js'
 import { rateLimitWrite } from '../middleware/rate-limit.js'
 import { requireRole } from '../middleware/role.js'
 
-import { handleModerate } from './moderation.js'
-import { handleModerationQueue } from './moderation-queue.js'
 import { handleModerateReport } from './moderation-action.js'
+import { handleModerationQueue } from './moderation-queue.js'
+import { handleModerate } from './moderation.js'
 
 const moderationRoutes = new Hono<AppEnv>()
 

@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono'
 
-import { ForbiddenError } from '../../domain/errors.js'
 import { ensureRegistered } from '../../application/ensure-registered.js'
+import { ForbiddenError } from '../../domain/errors.js'
 import type { AppEnv } from '../../env.js'
 import { createClerkService } from '../../infrastructure/auth/clerk-service.js'
 import { createCryptoService } from '../../infrastructure/auth/crypto-service.js'
@@ -26,17 +26,15 @@ export async function ensureRegisteredMiddleware(
   const tokenId = c.get('tokenId')
   if (tokenId) {
     const profile = await profileRepo.findByTokenId(tokenId)
-    if (profile) {
-      if (profile.isSuspended) throw new ForbiddenError('Account suspended')
-      return next()
-    }
+    if (profile && profile.isSuspended) throw new ForbiddenError('Account suspended')
+    if (profile) return next()
   }
 
   const tokenFromDb = await resolveTokenIdFromDatabase(userId, userRepo, linkRepo)
   if (tokenFromDb) {
     const profile = await profileRepo.findByTokenId(tokenFromDb)
+    if (profile && profile.isSuspended) throw new ForbiddenError('Account suspended')
     if (profile) {
-      if (profile.isSuspended) throw new ForbiddenError('Account suspended')
       await clerkService.updateUserMetadata(userId, tokenFromDb)
       c.set('tokenId', tokenFromDb)
       return next()

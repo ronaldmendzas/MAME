@@ -32,6 +32,7 @@ function flaggedResult(cats = ['violence']): ModerationResult {
   return { flagged: true, categories: cats, score: 0.95 }
 }
 
+// eslint-disable-next-line max-params
 function makeDeps(
   report: ReportRow,
   evidence: EvidenceRow[],

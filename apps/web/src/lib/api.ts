@@ -226,3 +226,27 @@ export async function updateAdminUserRole(
     body: JSON.stringify({ role }),
   })
 }
+
+export interface AdminStats {
+  reportsByCategory: { category: string; count: number }[]
+  reportsByMonth: { month: string; count: number }[]
+  reportsByFaculty: { faculty: string; count: number }[]
+  reportsByStatus: { status: string; count: number }[]
+  averageModerationTimeMinutes: number | null
+  totalReports: number
+  totalVotes: number
+  totalComments: number
+  activeTokens: number
+  suspendedTokens: number
+}
+
+export interface AdminStatsResponse {
+  success: boolean
+  data: AdminStats
+}
+
+export async function fetchAdminStats(token: string) {
+  return apiFetch<AdminStatsResponse>('/admin/stats', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}

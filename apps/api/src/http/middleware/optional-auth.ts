@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono'
 
 import type { AppEnv } from '../../env.js'
+
 import { verifyJwt, type TokenMetadata } from './auth.js'
 
 export async function optionalAuthMiddleware(c: Context<AppEnv>, next: Next) {

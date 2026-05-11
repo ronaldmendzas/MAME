@@ -1,10 +1,11 @@
-import type { ReportRepository } from '../domain/ports/report-repository.js'
-import type { EvidenceRepository } from '../domain/ports/evidence-repository.js'
-import type { ModerationPort } from '../domain/ports/moderation-port.js'
-import type { ForensicLogPort } from '../domain/ports/forensic-log-port.js'
-import type { StoragePort } from '../domain/ports/storage-port.js'
-import { ValidationError, NotFoundError, ForbiddenError } from '../domain/errors.js'
 import { computeContentHash } from '../domain/content-hash.js'
+import { ValidationError, NotFoundError, ForbiddenError } from '../domain/errors.js'
+import type { EvidenceRepository } from '../domain/ports/evidence-repository.js'
+import type { ForensicLogPort } from '../domain/ports/forensic-log-port.js'
+import type { ModerationPort } from '../domain/ports/moderation-port.js'
+import type { ReportRepository } from '../domain/ports/report-repository.js'
+import type { StoragePort } from '../domain/ports/storage-port.js'
+
 import { buildTextPayload } from './moderation-helpers.js'
 import { screenImages } from './screen-images.js'
 
@@ -53,6 +54,7 @@ export async function submitReport(
   return { outcome: 'submitted' }
 }
 
+// eslint-disable-next-line max-params
 async function rejectReport(
   reportId: string,
   tokenId: string,

@@ -1,9 +1,8 @@
-import type { PasswordHasher } from '../../domain/ports/password-hasher.js'
 import { compare as bcryptCompare, hash as bcryptHash } from 'bcryptjs'
 
-const KEY_DERIVATION_ITERATIONS = 210000
+import type { PasswordHasher } from '../../domain/ports/password-hasher.js'
+
 const DERIVED_KEY_BITS = 256
-const SALT_BYTES = 16
 const HASH_PREFIX = 'pbkdf2$sha256'
 const BCRYPT_COST = 12
 
@@ -59,12 +58,6 @@ function parseEncodedHash(encodedHash: string): { iterations: number; salt: Uint
   return { iterations, salt: saltBytes, hash: hashBytes }
 }
 
-function randomBytes(size: number): Uint8Array {
-  const bytes = new Uint8Array(size)
-  crypto.getRandomValues(bytes)
-  return bytes
-}
-
 function constantTimeEquals(left: Uint8Array, right: Uint8Array): boolean {
   if (left.length !== right.length) return false
   let diff = 0
@@ -72,10 +65,6 @@ function constantTimeEquals(left: Uint8Array, right: Uint8Array): boolean {
     diff |= left[i]! ^ right[i]!
   }
   return diff === 0
-}
-
-function toBase64Url(value: Uint8Array): string {
-  return btoa(String.fromCharCode(...value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
 }
 
 function fromBase64Url(value: string): Uint8Array {

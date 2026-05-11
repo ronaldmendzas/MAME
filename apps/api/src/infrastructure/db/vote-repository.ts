@@ -3,8 +3,8 @@ import { and, eq } from 'drizzle-orm'
 import type { InsertVoteData, VoteRepository, VoteRow } from '../../domain/ports/vote-repository.js'
 
 import type { Database } from './connection.js'
-import { votes } from './schema/votes.js'
 import { reports } from './schema/reports.js'
+import { votes } from './schema/votes.js'
 
 export function createVoteRepository(db: Database): VoteRepository {
   return {

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
-import postgres from 'postgres'
 import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 
 import * as schema from '../src/infrastructure/db/schema/index'
 
