@@ -26,15 +26,7 @@ function resolveApiBase(rawBase: string | undefined): string {
   try {
     parsed = new URL(base)
   } catch {
-    throw new Error('Invalid NEXT_PUBLIC_API_URL')
-  }
-
-  const isLocalhost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1'
-  const isSecure = parsed.protocol === 'https:'
-  const isDevelopment = process.env['NODE_ENV'] !== 'production'
-
-  if (!isSecure && !(isDevelopment && isLocalhost)) {
-    throw new Error('NEXT_PUBLIC_API_URL must use https in production')
+    return fallback
   }
 
   return parsed.origin
