@@ -6,6 +6,7 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   clerkId: text('clerk_id').notNull().unique(),
   emailHash: text('email_hash').notNull().unique(),
+  anonymousTokenId: text('anonymous_token_id'),
   role: userRoleEnum('role').notNull().default('user'),
   faculty: text('faculty'),
   verified: boolean('verified').notNull().default(false),
@@ -23,8 +24,6 @@ export const anonymousProfiles = pgTable('anonymous_profiles', {
 
 export const identityLinks = pgTable('identity_links', {
   id: uuid('id').primaryKey().defaultRandom(),
-  emailHash: text('email_hash').notNull(),
-  tokenId: text('token_id').notNull(),
-  relationProof: text('relation_proof').notNull(),
+  relationProof: text('relation_proof').notNull().unique(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

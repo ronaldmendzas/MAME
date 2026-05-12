@@ -41,12 +41,13 @@ export async function registerUser(
   const user = await deps.userRepo.insertUser({
     clerkId: input.clerkId,
     emailHash,
+    anonymousTokenId: tokenId,
     role: 'user',
   })
 
   await deps.profileRepo.insertProfile({ tokenId, displayName })
 
-  await deps.linkRepo.insertLink({ emailHash, tokenId, relationProof })
+  await deps.linkRepo.insertLink({ relationProof })
 
   await deps.clerkService.updateUserMetadata(input.clerkId, tokenId)
 

@@ -28,6 +28,7 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
     payload = await verifyJwt(token, {
       expectedIssuer: c.env?.CLERK_JWT_ISSUER,
       expectedAudience: c.env?.CLERK_JWT_AUDIENCE,
+      expectedJwksUrl: c.env?.CLERK_JWKS_URL,
     })
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'jwt_verification_failed'

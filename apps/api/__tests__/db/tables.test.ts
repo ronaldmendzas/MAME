@@ -12,11 +12,12 @@ import { users, anonymousProfiles, identityLinks } from '../../src/infrastructur
 import { votes } from '../../src/infrastructure/db/schema/votes'
 
 describe('schema tables', () => {
-  it('users has 8 columns', () => {
+  it('users has 9 columns', () => {
     const cols = getTableColumns(users)
-    expect(Object.keys(cols)).toHaveLength(8)
+    expect(Object.keys(cols)).toHaveLength(9)
     expect(cols.id).toBeDefined()
     expect(cols.clerkId).toBeDefined()
+    expect(cols.anonymousTokenId).toBeDefined()
     expect(cols.role).toBeDefined()
   })
 
@@ -27,10 +28,12 @@ describe('schema tables', () => {
     expect(cols.reputationScore).toBeDefined()
   })
 
-  it('identityLinks has 5 columns', () => {
+  it('identityLinks has 3 columns', () => {
     const cols = getTableColumns(identityLinks)
-    expect(Object.keys(cols)).toHaveLength(5)
+    expect(Object.keys(cols)).toHaveLength(3)
     expect(cols.relationProof).toBeDefined()
+    expect(cols.emailHash).toBeUndefined()
+    expect(cols.tokenId).toBeUndefined()
   })
 
   it('reports has 12 columns', () => {

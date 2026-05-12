@@ -29,6 +29,7 @@ export function createUserRepository(db: Database): UserRepository {
         .values({
           clerkId: data.clerkId,
           emailHash: data.emailHash,
+          anonymousTokenId: data.anonymousTokenId ?? null,
           role: data.role,
         })
         .returning()
@@ -62,6 +63,7 @@ function mapToRecord(row: typeof users.$inferSelect): UserRecord {
     id: row.id,
     clerkId: row.clerkId,
     emailHash: row.emailHash,
+    anonymousTokenId: row.anonymousTokenId ?? null,
     role: row.role,
     createdAt: row.createdAt,
   }

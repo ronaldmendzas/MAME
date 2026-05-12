@@ -2,7 +2,7 @@ import { UnauthorizedError } from '../../domain/errors.js'
 
 import { base64UrlToArrayBuffer } from './jwt-utils.js'
 
-const CLERK_JWKS_URL = 'https://vocal-longhorn-17.clerk.accounts.dev/.well-known/jwks.json'
+const DEFAULT_JWKS_URL = 'https://vocal-longhorn-17.clerk.accounts.dev/.well-known/jwks.json'
 const DEFAULT_ISSUER = 'https://vocal-longhorn-17.clerk.accounts.dev'
 const DEFAULT_AUDIENCE = 'mame-api'
 const CLOCK_SKEW_SECONDS = 60
@@ -30,6 +30,7 @@ export interface JwtPayload {
 interface VerifyOptions {
   expectedIssuer?: string | undefined
   expectedAudience?: string | undefined
+  expectedJwksUrl?: string | undefined
 }
 
 export async function verifyJwt(token: string, options?: VerifyOptions): Promise<JwtPayload> {
@@ -42,11 +43,12 @@ export async function verifyJwt(token: string, options?: VerifyOptions): Promise
 
   const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`)
   const signature = base64UrlToArrayBuffer(parts[2]!)
-  const key = await getVerificationKey(header.kid)
+  const jwksUrl = options?.expectedJwksUrl ?? DEFAULT_JWKS_URL
+  const key = await getVerificationKey(header.kid, jwksUrl)
 
   let isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data)
   if (!isValid) {
-    const refreshed = await getVerificationKey(header.kid, true)
+    const refreshed = await getVerificationKey(header.kid, jwksUrl, true)
     isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', refreshed, signature, data)
   }
 
@@ -108,12 +110,16 @@ function validateClaims(
   }
 }
 
-async function getVerificationKey(kid: string, forceRefresh = false): Promise<CryptoKey> {
+async function getVerificationKey(
+  kid: string,
+  jwksUrl: string,
+  forceRefresh = false,
+): Promise<CryptoKey> {
   const now = Math.floor(Date.now() / 1000)
   const cached = keyCache.get(kid)
   if (!forceRefresh && cached && cached.expiresAt > now) return cached.key
 
-  const response = await fetch(CLERK_JWKS_URL)
+  const response = await fetch(jwksUrl)
   if (!response.ok) throw new UnauthorizedError('Failed to fetch JWKS')
 
   const jwks = (await response.json()) as { keys: (JsonWebKey & { kid?: string })[] }

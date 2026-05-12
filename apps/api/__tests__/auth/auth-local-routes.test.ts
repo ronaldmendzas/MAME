@@ -121,7 +121,7 @@ describe('auth local routes', () => {
     hashPasswordMock.mockResolvedValue('$2b$12$hashed')
     findByLoginHashMock.mockResolvedValue(null)
     findByEmailHashMock.mockResolvedValue(null)
-    insertUserMock.mockResolvedValue({ id: 'user_1', role: 'user' })
+    insertUserMock.mockResolvedValue({ id: 'user_1', role: 'user', anonymousTokenId: null })
     insertCredentialMock.mockResolvedValue({})
 
     authenticateLocalLoginMock.mockResolvedValue({
@@ -167,7 +167,7 @@ describe('auth local routes', () => {
   })
 
   it('links local credential to an existing user with same email hash', async () => {
-    findByEmailHashMock.mockResolvedValueOnce({ id: 'existing_user_1', role: 'user' })
+    findByEmailHashMock.mockResolvedValueOnce({ id: 'existing_user_1', role: 'user', anonymousTokenId: null })
 
     const res = await app.request(
       '/auth/local/register',

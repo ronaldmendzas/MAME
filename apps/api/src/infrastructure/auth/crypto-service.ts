@@ -70,8 +70,20 @@ function bytesToHex(bytes: Uint8Array): string {
 }
 
 function buildDisplayName(): string {
-  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]
-  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)]
-  const num = Math.floor(1000 + Math.random() * 9000)
+  const adj = ADJECTIVES[randomIndex(ADJECTIVES.length)]
+  const noun = NOUNS[randomIndex(NOUNS.length)]
+  const num = 1000 + randomInt(9000)
   return `${adj}-${noun}-${num}`
+}
+
+function randomIndex(max: number): number {
+  const buf = new Uint32Array(1)
+  crypto.getRandomValues(buf)
+  return buf[0]! % max
+}
+
+function randomInt(max: number): number {
+  const buf = new Uint32Array(1)
+  crypto.getRandomValues(buf)
+  return buf[0]! % max
 }

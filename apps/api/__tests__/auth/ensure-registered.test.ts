@@ -11,6 +11,7 @@ function createMockDeps(overrides?: Partial<EnsureRegisteredDeps>): EnsureRegist
         id: 'user-uuid',
         clerkId: 'clerk_123',
         emailHash: 'hashed',
+        anonymousTokenId: 'new-token-uuid',
         role: 'user',
         createdAt: new Date(),
       }),
@@ -27,7 +28,6 @@ function createMockDeps(overrides?: Partial<EnsureRegisteredDeps>): EnsureRegist
     },
     linkRepo: {
       insertLink: vi.fn().mockResolvedValue(undefined),
-      findByEmailHash: vi.fn().mockResolvedValue(null),
     },
     cryptoService: {
       hashEmail: vi.fn().mockResolvedValue('abcdef1234567890'),
@@ -59,7 +59,6 @@ describe('ensureRegistered', () => {
 
     expect(tokenId).toBe('clerk-token')
     expect(deps.userRepo.findByClerkId).not.toHaveBeenCalled()
-    expect(deps.linkRepo.findByEmailHash).not.toHaveBeenCalled()
   })
 
   it('registers new user when not in Clerk or DB', async () => {
@@ -72,16 +71,16 @@ describe('ensureRegistered', () => {
     expect(deps.userRepo.insertUser).toHaveBeenCalledOnce()
     expect(deps.profileRepo.insertProfile).toHaveBeenCalledOnce()
     expect(deps.linkRepo.insertLink).toHaveBeenCalledOnce()
-    expect(deps.linkRepo.findByEmailHash).not.toHaveBeenCalled()
   })
 
-  it('recovers tokenId from identity_links when Clerk metadata lost', async () => {
+  it('recovers tokenId from user.anonymousTokenId when Clerk metadata lost', async () => {
     const deps = createMockDeps({
       userRepo: {
         findByClerkId: vi.fn().mockResolvedValue({
           id: 'user-1',
           clerkId: 'clerk_recover',
           emailHash: 'hash-recover',
+          anonymousTokenId: 'recovered-token',
           role: 'user',
           createdAt: new Date(),
         }),
@@ -89,9 +88,6 @@ describe('ensureRegistered', () => {
       },
       linkRepo: {
         insertLink: vi.fn(),
-        findByEmailHash: vi.fn().mockResolvedValue({
-          tokenId: 'recovered-token',
-        }),
       },
     })
 
@@ -107,7 +103,18 @@ describe('ensureRegistered', () => {
   it('handles race condition on concurrent registration', async () => {
     const deps = createMockDeps({
       userRepo: {
-        findByClerkId: vi.fn().mockResolvedValue(null),
+        findByClerkId: vi
+          .fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce({
+            id: 'user-1',
+            clerkId: 'clerk_race',
+            emailHash: 'hash-race',
+            anonymousTokenId: 'race-token',
+            role: 'user',
+            createdAt: new Date(),
+          }),
         insertUser: vi
           .fn()
           .mockRejectedValue(new Error('duplicate key value violates unique constraint')),
@@ -134,6 +141,7 @@ describe('ensureRegistered', () => {
           id: 'user-1',
           clerkId: 'clerk_broken',
           emailHash: 'hash-broken',
+          anonymousTokenId: null,
           role: 'user',
           createdAt: new Date(),
         }),
@@ -141,10 +149,11 @@ describe('ensureRegistered', () => {
       },
       linkRepo: {
         insertLink: vi.fn(),
-        findByEmailHash: vi.fn().mockResolvedValue(null),
       },
     })
 
-    await expect(ensureRegistered('clerk_broken', deps)).rejects.toThrow('Identity link missing')
+    await expect(ensureRegistered('clerk_broken', deps)).rejects.toThrow(
+      'User missing anonymous token',
+    )
   })
 })

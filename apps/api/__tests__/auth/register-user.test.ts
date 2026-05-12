@@ -11,6 +11,7 @@ function createMockDeps(overrides?: Partial<RegisterUserDeps>): RegisterUserDeps
         id: 'user-uuid',
         clerkId: 'clerk_123',
         emailHash: 'hashed',
+        anonymousTokenId: 'token-uuid',
         role: 'user',
         createdAt: new Date(),
       }),
@@ -27,7 +28,6 @@ function createMockDeps(overrides?: Partial<RegisterUserDeps>): RegisterUserDeps
     },
     linkRepo: {
       insertLink: vi.fn().mockResolvedValue(undefined),
-      findByEmailHash: vi.fn().mockResolvedValue(null),
     },
     cryptoService: {
       hashEmail: vi.fn().mockResolvedValue('abcdef1234567890'),
@@ -91,6 +91,7 @@ describe('registerUser', () => {
           id: 'existing-user',
           clerkId: 'clerk_123',
           emailHash: 'hashed',
+          anonymousTokenId: 'existing-token',
           role: 'user',
           createdAt: new Date(),
         }),

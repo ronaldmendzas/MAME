@@ -6,6 +6,7 @@ export interface Env {
   ALLOWED_ORIGINS?: string
   CLERK_JWT_ISSUER?: string
   CLERK_JWT_AUDIENCE?: string
+  CLERK_JWKS_URL?: string
   REQUIRE_MFA_FOR_PRIVILEGED?: string
   CLERK_SECRET_KEY: string
   CLERK_WEBHOOK_SECRET: string

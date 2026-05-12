@@ -11,6 +11,7 @@ export type UserRole = 'user' | 'moderator' | 'admin' | 'auditor'
 export interface InsertUserData {
   clerkId: string
   emailHash: string
+  anonymousTokenId?: string | null
   role: UserRole
 }
 
@@ -18,6 +19,7 @@ export interface UserRecord {
   id: string
   clerkId: string
   emailHash: string
+  anonymousTokenId: string | null
   role: string
   createdAt: Date
 }

@@ -27,7 +27,7 @@ export async function ensureRegisteredMiddleware(c: Context<AppEnv>, next: Next)
     if (profile) return next()
   }
 
-  const tokenFromDb = await resolveTokenIdFromDatabase(userId, userRepo, linkRepo)
+  const tokenFromDb = await resolveTokenIdFromDatabase(userId, userRepo)
   if (tokenFromDb) {
     const profile = await profileRepo.findByTokenId(tokenFromDb)
     if (profile && profile.isSuspended) throw new ForbiddenError('Account suspended')
@@ -62,11 +62,8 @@ export async function ensureRegisteredMiddleware(c: Context<AppEnv>, next: Next)
 async function resolveTokenIdFromDatabase(
   clerkId: string,
   userRepo: ReturnType<typeof createUserRepository>,
-  linkRepo: ReturnType<typeof createIdentityLinkRepository>,
 ): Promise<string | null> {
   const user = await userRepo.findByClerkId(clerkId)
   if (!user) return null
-
-  const link = await linkRepo.findByEmailHash(user.emailHash)
-  return link?.tokenId ?? null
+  return user.anonymousTokenId
 }

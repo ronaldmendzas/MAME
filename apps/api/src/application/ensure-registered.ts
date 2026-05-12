@@ -18,7 +18,7 @@ export async function ensureRegistered(
   const user = await deps.userRepo.findByClerkId(clerkId)
   if (!user) return registerNewUser(clerkId, clerkUser.email, deps)
 
-  return recoverTokenId(clerkId, user.emailHash, deps)
+  return recoverTokenId(clerkId, user, deps)
 }
 
 async function registerNewUser(
@@ -36,22 +36,22 @@ async function registerNewUser(
 
     const user = await deps.userRepo.findByClerkId(clerkId)
     if (!user) throw error
-    return recoverTokenId(clerkId, user.emailHash, deps)
+    return recoverTokenId(clerkId, user, deps)
   }
 }
 
 async function recoverTokenId(
   clerkId: string,
-  emailHash: string,
-  deps: Pick<EnsureRegisteredDeps, 'linkRepo' | 'clerkService' | 'profileRepo' | 'cryptoService'>,
+  user: { anonymousTokenId: string | null },
+  deps: Pick<EnsureRegisteredDeps, 'clerkService' | 'profileRepo' | 'cryptoService'>,
 ): Promise<string> {
-  const link = await deps.linkRepo.findByEmailHash(emailHash)
-  if (!link) throw new Error('Identity link missing — data inconsistency')
+  const tokenId = user.anonymousTokenId
+  if (!tokenId) throw new Error('User missing anonymous token — data inconsistency')
 
-  await ensureProfileExists(link.tokenId, deps)
+  await ensureProfileExists(tokenId, deps)
 
-  await deps.clerkService.updateUserMetadata(clerkId, link.tokenId)
-  return link.tokenId
+  await deps.clerkService.updateUserMetadata(clerkId, tokenId)
+  return tokenId
 }
 
 async function ensureProfileExists(
