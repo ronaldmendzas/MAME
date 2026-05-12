@@ -69,5 +69,32 @@ export const components = {
         role: { type: 'string', enum: ['user', 'moderator', 'admin', 'auditor'] },
       },
     },
+    Stats: {
+      type: 'object',
+      properties: {
+        reportsByCategory: {
+          type: 'array',
+          items: { type: 'object', properties: { category: { type: 'string' }, count: { type: 'integer' } } },
+        },
+        reportsByMonth: {
+          type: 'array',
+          items: { type: 'object', properties: { month: { type: 'string' }, count: { type: 'integer' } } },
+        },
+        reportsByFaculty: {
+          type: 'array',
+          items: { type: 'object', properties: { faculty: { type: 'string' }, count: { type: 'integer' } } },
+        },
+        reportsByStatus: {
+          type: 'array',
+          items: { type: 'object', properties: { status: { type: 'string' }, count: { type: 'integer' } } },
+        },
+        averageModerationTimeMinutes: { type: 'number', nullable: true },
+        totalReports: { type: 'integer' },
+        totalVotes: { type: 'integer' },
+        totalComments: { type: 'integer' },
+        activeTokens: { type: 'integer' },
+        suspendedTokens: { type: 'integer' },
+      },
+    },
   },
 } as const

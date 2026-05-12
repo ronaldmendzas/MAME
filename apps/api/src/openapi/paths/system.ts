@@ -211,4 +211,15 @@ export const systemPaths = {
       },
     },
   },
+  '/docs': {
+    get: {
+      summary: 'OpenAPI JSON specification',
+      responses: {
+        '200': {
+          description: 'OK',
+          content: { 'application/json': { schema: { type: 'object' } } },
+        },
+      },
+    },
+  },
 } as const

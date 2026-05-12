@@ -195,15 +195,4 @@ export const adminPaths = {
       responses: { '200': { description: 'Binary file content' }, '401': errResp, '404': errResp },
     },
   },
-  '/docs': {
-    get: {
-      summary: 'OpenAPI JSON specification',
-      responses: {
-        '200': {
-          description: 'OK',
-          content: { 'application/json': { schema: { type: 'object' } } },
-        },
-      },
-    },
-  },
 } as const
