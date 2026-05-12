@@ -11,7 +11,12 @@ function base64Url(data: string): string {
 
 async function generateRsaKeyPair() {
   return crypto.subtle.generateKey(
-    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: 'SHA-256',
+    },
     true,
     ['sign', 'verify'],
   )
@@ -159,10 +164,7 @@ describe('auth full verification flow', () => {
       new Response(JSON.stringify({ keys: [publicJwk] }), { status: 200 }),
     )
 
-    const token = await signJwt(
-      validClaims({ aud: 'other-api' }),
-      keyPair.privateKey,
-    )
+    const token = await signJwt(validClaims({ aud: 'other-api' }), keyPair.privateKey)
 
     const res = await app.request('/p/me', {
       headers: { Authorization: `Bearer ${token}` },

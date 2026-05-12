@@ -1,7 +1,6 @@
 import { ValidationError } from './errors.js'
 import type { ReportStatus } from './types.js'
 
-
 const VALID_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
   draft: ['pending'],
   pending: ['under_review', 'rejected'],

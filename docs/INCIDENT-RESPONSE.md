@@ -8,25 +8,26 @@
 
 ## 1. Clasificación de Severidad
 
-| Nivel | Descripción | Ejemplos | Tiempo de respuesta objetivo |
-|-------|-------------|----------|------------------------------|
-| **P0 — Crítico** | Compromiso de seguridad, anonimato roto, data breach | DB expuesta, claves filtradas, anonimato violado | 15 minutos |
-| **P1 — Alto** | Vulnerabilidad activa, abuso masivo | XSS/CSRF en producción, spam masivo, DDoS | 1 hora |
-| **P2 — Medio** | Degradación de servicio, falsos positivos | Performance < objetivo, moderación AI fallando | 4 horas |
-| **P3 — Bajo** | Bug menor, mejora UX | Typos, fallos cosméticos, mejoras menores | 24 horas |
+| Nivel            | Descripción                                          | Ejemplos                                         | Tiempo de respuesta objetivo |
+| ---------------- | ---------------------------------------------------- | ------------------------------------------------ | ---------------------------- |
+| **P0 — Crítico** | Compromiso de seguridad, anonimato roto, data breach | DB expuesta, claves filtradas, anonimato violado | 15 minutos                   |
+| **P1 — Alto**    | Vulnerabilidad activa, abuso masivo                  | XSS/CSRF en producción, spam masivo, DDoS        | 1 hora                       |
+| **P2 — Medio**   | Degradación de servicio, falsos positivos            | Performance < objetivo, moderación AI fallando   | 4 horas                      |
+| **P3 — Bajo**    | Bug menor, mejora UX                                 | Typos, fallos cosméticos, mejoras menores        | 24 horas                     |
 
 ---
 
 ## 2. Contactos y Escalación
 
-| Rol | Nombre / Canal | Método de contacto |
-|-----|----------------|-------------------|
-| **Líder técnico** | Canal `#mame-alerts` (Discord/Slack) | Mensaje directo + mention `@here` |
-| **Founder / Super Admin** | WhatsApp grupo `MAME Core` | Llamada directa para P0 |
-| **Equipo de seguridad** | GitHub Projects + Issues etiquetadas `security` | Auto-asignación por rotación |
-| **Proveedores** | Clerk, Cloudflare, Neon, Sentry | Ver sección 6 |
+| Rol                       | Nombre / Canal                                  | Método de contacto                |
+| ------------------------- | ----------------------------------------------- | --------------------------------- |
+| **Líder técnico**         | Canal `#mame-alerts` (Discord/Slack)            | Mensaje directo + mention `@here` |
+| **Founder / Super Admin** | WhatsApp grupo `MAME Core`                      | Llamada directa para P0           |
+| **Equipo de seguridad**   | GitHub Projects + Issues etiquetadas `security` | Auto-asignación por rotación      |
+| **Proveedores**           | Clerk, Cloudflare, Neon, Sentry                 | Ver sección 6                     |
 
 **Regla de escalación:**
+
 - P0: Notificar inmediatamente a líder técnico + founder
 - P1: Notificar a líder técnico en 15 minutos
 - P2/P3: Registrar en GitHub Projects, asignar en daily standup
@@ -103,6 +104,7 @@ Backlog estándar. Resolver en siguiente sprint.
 **Impacto:** P0
 
 **Checklist de rotación inmediata:**
+
 - [ ] Clerk.dev → Settings → API Keys → Rotate Secret Key
 - [ ] Clerk.dev → Webhooks → Regenerate Webhook Secret
 - [ ] Neon.tech → Connection string → Reset password
@@ -121,6 +123,7 @@ Backlog estándar. Resolver en siguiente sprint.
 **Hypothesis:** Alguien logró vincular `email_hash` con `token_id`.
 
 **Acciones:**
+
 1. Congelar inmediatamente el endpoint de búsqueda (`/reports/search`)
 2. Revisar `security_event_log` para accesos no autorizados a `identity_links`
 3. Verificar que `ENCRYPTION_MASTER_KEY` y `ENCRYPTION_RELATION_KEY` no hayan sido expuestas
@@ -136,6 +139,7 @@ Backlog estándar. Resolver en siguiente sprint.
 **Impacto:** P0
 
 **Acciones:**
+
 1. Rotar password de Neon inmediatamente
 2. Crear branch de Neon para forense (`neon branch create`)
 3. Revisar `security_event_log` para queries anómalas
@@ -147,6 +151,7 @@ Backlog estándar. Resolver en siguiente sprint.
 **Impacto:** P1
 
 **Acciones:**
+
 1. Identificar endpoint vulnerable
 2. Aplicar CSP más restrictivo temporalmente
 3. Sanitizar input con DOMPurify
@@ -158,6 +163,7 @@ Backlog estándar. Resolver en siguiente sprint.
 **Impacto:** P1
 
 **Acciones:**
+
 1. Activar rate limiting más agresivo en Cloudflare WAF
 2. Bloquear IPs abusivas en Cloudflare Firewall Rules
 3. Escalar Workers Paid si se supera el límite de 100K/día
@@ -197,14 +203,14 @@ neonctl branches reset --name production --parent recovery-<timestamp>
 
 ## 6. Contactos de Proveedores
 
-| Proveedor | URL de status | Soporte | Datos sensibles que manejan |
-|-----------|---------------|---------|----------------------------|
-| **Clerk.dev** | status.clerk.dev | Intercom chat | Emails (plaintext en su infra) |
-| **Cloudflare** | cloudflarestatus.com | Dashboard ticket | Workers, KV, logs de tráfico |
-| **Neon.tech** | neonstatus.com | Intercom | DB completa (solo hashes en MAME) |
-| **Cloudinary** | status.cloudinary.com | Support ticket | Archivos de evidencia |
-| **Resend** | resend.com | Email | Emails de admin alerts |
-| **Sentry** | sentry.statuspage.io | Dashboard | Stack traces (sin PII) |
+| Proveedor      | URL de status         | Soporte          | Datos sensibles que manejan       |
+| -------------- | --------------------- | ---------------- | --------------------------------- |
+| **Clerk.dev**  | status.clerk.dev      | Intercom chat    | Emails (plaintext en su infra)    |
+| **Cloudflare** | cloudflarestatus.com  | Dashboard ticket | Workers, KV, logs de tráfico      |
+| **Neon.tech**  | neonstatus.com        | Intercom         | DB completa (solo hashes en MAME) |
+| **Cloudinary** | status.cloudinary.com | Support ticket   | Archivos de evidencia             |
+| **Resend**     | resend.com            | Email            | Emails de admin alerts            |
+| **Sentry**     | sentry.statuspage.io  | Dashboard        | Stack traces (sin PII)            |
 
 ---
 
@@ -252,6 +258,7 @@ Contacto: [email de soporte]
 Cada P0 y P1 requiere post-mortem dentro de 72h.
 
 **Formato:**
+
 1. Resumen ejecutivo (2 oraciones)
 2. Timeline exacto (T+0, T+15, T+1h, etc.)
 3. Causa raíz (5 Whys)
@@ -262,6 +269,7 @@ Cada P0 y P1 requiere post-mortem dentro de 72h.
 8. Propietario de cada acción preventiva + deadline
 
 **Distribución:**
+
 - Equipo técnico completo (15+ estudiantes)
 - Founder / Super Admin
 - Asesor legal (si aplica)

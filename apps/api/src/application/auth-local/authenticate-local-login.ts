@@ -13,10 +13,7 @@ export interface AuthenticateLocalLoginInput {
 
 export interface AuthenticateLocalLoginDeps {
   cryptoService: Pick<CryptoService, 'hashEmail'>
-  localAuthRepo: Pick<
-    LocalAuthRepository,
-    'findByLoginHash' | 'setFailedAttempts'
-  >
+  localAuthRepo: Pick<LocalAuthRepository, 'findByLoginHash' | 'setFailedAttempts'>
   passwordHasher: PasswordHasher
   now?: () => Date
 }

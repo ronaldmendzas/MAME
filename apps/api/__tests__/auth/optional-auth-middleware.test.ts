@@ -25,7 +25,7 @@ describe('optionalAuthMiddleware', () => {
   it('sets empty values when no Authorization header', async () => {
     const res = await app.request('/test')
     expect(res.status).toBe(200)
-    const body = await res.json() as Record<string, string>
+    const body = (await res.json()) as Record<string, string>
     expect(body.userId).toBe('')
     expect(body.tokenId).toBe('')
     expect(body.userRole).toBe('')
@@ -36,7 +36,7 @@ describe('optionalAuthMiddleware', () => {
       headers: { Authorization: 'Basic abc123' },
     })
     expect(res.status).toBe(200)
-    const body = await res.json() as Record<string, string>
+    const body = (await res.json()) as Record<string, string>
     expect(body.userId).toBe('')
     expect(body.tokenId).toBe('')
   })
@@ -46,7 +46,7 @@ describe('optionalAuthMiddleware', () => {
       headers: { Authorization: 'Bearer invalid.jwt.token' },
     })
     expect(res.status).toBe(200)
-    const body = await res.json() as Record<string, string>
+    const body = (await res.json()) as Record<string, string>
     expect(body.userId).toBe('')
     expect(body.tokenId).toBe('')
     expect(body.userRole).toBe('')
@@ -59,7 +59,7 @@ describe('optionalAuthMiddleware', () => {
       headers: { Authorization: `Bearer ${header}.${payload}.sig` },
     })
     expect(res.status).toBe(200)
-    const body = await res.json() as Record<string, string>
+    const body = (await res.json()) as Record<string, string>
     expect(body.userId).toBe('')
   })
 })

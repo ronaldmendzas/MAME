@@ -36,10 +36,7 @@ export async function registerUser(
   const tokenId = deps.cryptoService.generateTokenId()
   const displayName = deps.cryptoService.generateDisplayName()
 
-  const relationProof = await deps.cryptoService.generateRelationProof(
-    emailHash,
-    tokenId,
-  )
+  const relationProof = await deps.cryptoService.generateRelationProof(emailHash, tokenId)
 
   const user = await deps.userRepo.insertUser({
     clerkId: input.clerkId,

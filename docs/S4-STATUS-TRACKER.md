@@ -26,26 +26,31 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 ## Evidence Index
 
 ### Security
+
 - Path: docs/evidence/s4/security/
 - Latest artifact: docs/evidence/s4/security/2026-05-08-phase-b-hardening.md
 - Notes: 5 security findings identified and fixed (see artifact). OWASP ZAP scan pending CI/staging execution.
 
 ### Performance
+
 - Path: docs/evidence/s4/performance/
 - Latest artifact: docs/evidence/s4/performance/2026-05-08-phase-c-hardening.md
 - Notes: lazy loading applied (5 components), cache-control headers on feed+search, k6 script written and ready for CI staging.
 
 ### UX
+
 - Path: docs/evidence/s4/ux/
 - Latest artifact: docs/evidence/s4/ux/2026-05-08-phase-d-ux-audit.md
 - Notes: 9 findings resolved (header overflow, 14 touch targets, 5 error live-regions, skip link, aria-hidden, aria-expanded, feed landmark). Lighthouse pending CI.
 
 ### API
+
 - Path: docs/evidence/s4/api/
 - Latest artifact:
 - Notes:
 
 ### Release
+
 - Path: docs/evidence/s4/release/
 - Latest artifact:
 - Notes:
@@ -53,13 +58,14 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 ## Work Log
 
 ## 2026-05-11
+
 - CRITICAL FIX: Removed `docs/CREDENTIALS.md` from Git history using git-filter-repo.
 - Force-pushed all branches (main, develop, sprint-4/release-hardening, sprint-2, sprint-3, task/security-mfa-rbac-audit, fix/dev-registration-script).
 - Deleted physical `docs/CREDENTIALS.md` from disk.
 - Fixed all 167 ESLint errors:
   - Added missing DOM/Workers globals to `eslint.config.mjs` (File, FileReader, Blob, BlobPart, FormData, Image, HTMLCanvasElement, HTMLInputElement, createImageBitmap, TextDecoder, caches, Ai, CryptoKeyPair, Buffer, performance, RequestInit)
   - Added Vitest test globals (describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi)
-  - Added k6 global (__ENV)
+  - Added k6 global (\_\_ENV)
   - Fixed import/order errors via `npm run lint:fix`
   - Fixed unused vars in `password-hasher.ts`, `totp-service.ts`, `local-auth-repository.ts`
   - Refactored nested blocks in `ensure-registered.ts` to comply with max-depth
@@ -75,6 +81,7 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - Lint: 0 errors, 0 warnings.
 
 ## 2026-05-08
+
 - Phase D UX, responsive and accessibility hardening complete.
 - Resolved header overflow on 320px (hidden sm:contents on My Reports).
 - Fixed 14 touch targets to WCAG 2.5.5 minimum 44px across 8 files.
@@ -102,10 +109,10 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - Phase B security hardening complete.
 - Committed 12 route handler param guard clauses (fix missing-ID early returns).
 - Fixed 5 security findings in CORS/CSP middleware:
-	- Removed wildcard CORS origin (dev and prod now always use allowlist)
-	- Added `credentials: true` to CORS (Access-Control-Allow-Credentials)
-	- Added `X-XSS-Protection: 0` security header
-	- Added `https://api.clerk.dev` to CSP `connect-src`
+  - Removed wildcard CORS origin (dev and prod now always use allowlist)
+  - Added `credentials: true` to CORS (Access-Control-Allow-Credentials)
+  - Added `X-XSS-Protection: 0` security header
+  - Added `https://api.clerk.dev` to CSP `connect-src`
 - Added 10 new route param guard tests (`route-param-guards.test.ts`)
 - Updated security middleware tests: 14 tests (5 new assertions)
 - Full test suite: 68 files, 421 tests, 0 failures.
@@ -113,24 +120,25 @@ Reference playbook: docs/S4-CLOSEOUT-PLAYBOOK.md
 - OWASP ZAP scan still pending CI/staging environment.
 
 ## 2026-04-21
+
 - Initialized S4 playbook and evidence folder structure.
 - Added tracker aligned to Sprint 4 DoD and launch criteria.
 - Captured baseline repository state on `sprint-4/release-hardening`.
 - Executed defense sanity fast checks:
-	- auth-local-routes: 7/7 passed
-	- password-policy + password-hasher: 8/8 passed
-	- authenticate-local-login: 6/6 passed
+  - auth-local-routes: 7/7 passed
+  - password-policy + password-hasher: 8/8 passed
+  - authenticate-local-login: 6/6 passed
 - Executed workspace typecheck: api/web/shared passed.
 - Phase A closed. Next: start Phase B (OWASP ZAP + security hardening cycle).
 - Executed Phase B security baseline test packs:
-	- http security + app headers: 21/21 passed
-	- security events + route: 6/6 passed
-	- auth middleware + jwt verify flow: 17/17 passed
+  - http security + app headers: 21/21 passed
+  - security events + route: 6/6 passed
+  - auth middleware + jwt verify flow: 17/17 passed
 - Recorded evidence at docs/evidence/s4/security/2026-04-21-security-baseline.md.
 - OWASP ZAP CLI not found locally; attempted Docker fallback.
 - GHCR image pull failed due host resolution; Docker Hub image pull started and remains pending completion.
 - Docker Hub pull also proved too slow for this local session window; recommended to run ZAP scan in CI/staging runner.
 - Executed Phase C baseline tests:
-	- performance test pack: 17/17 passed
+  - performance test pack: 17/17 passed
 - Recorded evidence at docs/evidence/s4/performance/2026-04-21-performance-baseline.md.
 - k6 and Lighthouse CLI are not available locally; pending CI/staging execution.

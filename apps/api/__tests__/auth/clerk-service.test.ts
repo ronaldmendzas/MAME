@@ -8,9 +8,9 @@ describe('createClerkService', () => {
   })
 
   it('calls Clerk API with correct URL and headers', async () => {
-    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('{}', { status: 200 }),
-    )
+    const spy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('{}', { status: 200 }))
 
     const service = createClerkService('sk_test_key')
     await service.updateUserMetadata('user_123', 'token_abc')
@@ -24,9 +24,7 @@ describe('createClerkService', () => {
   })
 
   it('sends token_id in public_metadata body', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('{}', { status: 200 }),
-    )
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('{}', { status: 200 }))
 
     const service = createClerkService('sk_test')
     await service.updateUserMetadata('user_1', 'tok_xyz')
@@ -39,13 +37,11 @@ describe('createClerkService', () => {
   })
 
   it('throws on non-ok response', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('Forbidden', { status: 403 }),
-    )
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('Forbidden', { status: 403 }))
 
     const service = createClerkService('sk_bad')
-    await expect(
-      service.updateUserMetadata('user_1', 'tok_1'),
-    ).rejects.toThrow('Clerk metadata update failed: 403')
+    await expect(service.updateUserMetadata('user_1', 'tok_1')).rejects.toThrow(
+      'Clerk metadata update failed: 403',
+    )
   })
 })

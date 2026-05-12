@@ -43,22 +43,25 @@ export function useAdminUsers(): UseAdminUsersResult {
     }
   }, [getToken])
 
-  const updateRole = useCallback(async (userId: string, role: AdminUser['role']) => {
-    setActing(true)
-    setError(null)
+  const updateRole = useCallback(
+    async (userId: string, role: AdminUser['role']) => {
+      setActing(true)
+      setError(null)
 
-    try {
-      const token = await getToken({ template: 'mame-api' })
-      if (!token) throw new Error('Not authenticated')
-      await updateAdminUserRole(token, userId, role)
-      await refresh()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to update user role')
-      throw e
-    } finally {
-      setActing(false)
-    }
-  }, [getToken, refresh])
+      try {
+        const token = await getToken({ template: 'mame-api' })
+        if (!token) throw new Error('Not authenticated')
+        await updateAdminUserRole(token, userId, role)
+        await refresh()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to update user role')
+        throw e
+      } finally {
+        setActing(false)
+      }
+    },
+    [getToken, refresh],
+  )
 
   useEffect(() => {
     void refresh()

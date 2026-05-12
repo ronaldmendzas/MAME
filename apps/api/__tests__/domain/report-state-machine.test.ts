@@ -39,7 +39,14 @@ describe('report state machine', () => {
   })
 
   it('resolved has no valid transitions', () => {
-    const targets = ['draft', 'pending', 'under_review', 'published', 'rejected', 'archived'] as const
+    const targets = [
+      'draft',
+      'pending',
+      'under_review',
+      'published',
+      'rejected',
+      'archived',
+    ] as const
     for (const to of targets) {
       expect(canTransition('resolved', to)).toBe(false)
     }

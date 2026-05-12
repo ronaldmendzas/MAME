@@ -33,17 +33,17 @@ function makeDeps(imageResult = safeMod) {
   }
 }
 
-vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-  arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
-}))
+vi.stubGlobal(
+  'fetch',
+  vi.fn().mockResolvedValue({
+    arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+  }),
+)
 
 describe('screenImages', () => {
   it('returns null when no images present', async () => {
     const deps = makeDeps()
-    const result = await screenImages(
-      [makeEvidence({ mimeType: 'application/pdf' })],
-      deps,
-    )
+    const result = await screenImages([makeEvidence({ mimeType: 'application/pdf' })], deps)
     expect(result).toBeNull()
     expect(deps.moderation.classifyImage).not.toHaveBeenCalled()
   })
@@ -60,9 +60,7 @@ describe('screenImages', () => {
 
   it('returns first flagged result', async () => {
     const deps = makeDeps()
-    deps.moderation.classifyImage
-      .mockResolvedValueOnce(safeMod)
-      .mockResolvedValueOnce(unsafeMod)
+    deps.moderation.classifyImage.mockResolvedValueOnce(safeMod).mockResolvedValueOnce(unsafeMod)
 
     const result = await screenImages(
       [makeEvidence(), makeEvidence({ id: 'ev-2', fileKey: 'key-2' })],

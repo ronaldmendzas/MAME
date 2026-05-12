@@ -9,8 +9,7 @@ export const notifications = pgTable('notifications', {
   tokenId: uuid('token_id')
     .notNull()
     .references(() => anonymousProfiles.tokenId),
-  reportId: uuid('report_id')
-    .references(() => reports.id, { onDelete: 'cascade' }),
+  reportId: uuid('report_id').references(() => reports.id, { onDelete: 'cascade' }),
   type: notificationTypeEnum('type').notNull(),
   message: text('message').notNull(),
   payload: jsonb('payload').notNull().default({}),

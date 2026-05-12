@@ -5,11 +5,13 @@ import { addExternalLink } from '../../src/application/add-external-link.js'
 function makeDeps() {
   return {
     evidenceRepo: {
-      insert: vi.fn().mockImplementation((data) => Promise.resolve({
-        id: 'ev-1',
-        ...data,
-        createdAt: new Date(),
-      })),
+      insert: vi.fn().mockImplementation((data) =>
+        Promise.resolve({
+          id: 'ev-1',
+          ...data,
+          createdAt: new Date(),
+        }),
+      ),
       findByReportId: vi.fn(),
     },
   }
@@ -46,17 +48,14 @@ describe('addExternalLink', () => {
 
   it('rejects invalid URLs', async () => {
     const deps = makeDeps()
-    await expect(
-      addExternalLink({ reportId: 'r-1', url: 'not-a-url' }, deps),
-    ).rejects.toThrow('Invalid URL')
+    await expect(addExternalLink({ reportId: 'r-1', url: 'not-a-url' }, deps)).rejects.toThrow(
+      'Invalid URL',
+    )
   })
 
   it('accepts youtu.be short links', async () => {
     const deps = makeDeps()
-    const row = await addExternalLink(
-      { reportId: 'r-1', url: 'https://youtu.be/abc123' },
-      deps,
-    )
+    const row = await addExternalLink({ reportId: 'r-1', url: 'https://youtu.be/abc123' }, deps)
     expect(row.fileKey).toBe('https://youtu.be/abc123')
   })
 

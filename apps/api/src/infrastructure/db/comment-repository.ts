@@ -1,6 +1,10 @@
 import { count, desc, eq } from 'drizzle-orm'
 
-import type { CommentRepository, CommentRow, InsertCommentData } from '../../domain/ports/comment-repository.js'
+import type {
+  CommentRepository,
+  CommentRow,
+  InsertCommentData,
+} from '../../domain/ports/comment-repository.js'
 
 import type { Database } from './connection.js'
 import { comments } from './schema/comments.js'

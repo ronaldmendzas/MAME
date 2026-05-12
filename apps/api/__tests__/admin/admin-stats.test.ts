@@ -8,7 +8,13 @@ import { adminRoutes } from '../../src/http/routes/admin-routes'
 const getAdminStatsMock = vi.hoisted(() => vi.fn())
 
 vi.mock('../../src/http/middleware/auth.js', () => ({
-  authMiddleware: async (c: { req: { header: (name: string) => string | undefined }; set: (key: string, value: string) => void }, next: () => Promise<void>) => {
+  authMiddleware: async (
+    c: {
+      req: { header: (name: string) => string | undefined }
+      set: (key: string, value: string) => void
+    },
+    next: () => Promise<void>,
+  ) => {
     const role = c.req.header('x-role') ?? 'user'
     c.set('userRole', role)
     c.set('tokenId', 'tok_admin')
@@ -64,7 +70,7 @@ describe('admin stats route', () => {
   it('returns stats for admin', async () => {
     const res = await app.request('/admin/stats', { headers: { 'x-role': 'admin' } }, makeEnv())
     expect(res.status).toBe(200)
-    const body = await res.json() as { success: boolean; data: { totalReports: number } }
+    const body = (await res.json()) as { success: boolean; data: { totalReports: number } }
     expect(body.success).toBe(true)
     expect(body.data.totalReports).toBe(10)
     expect(body.data.totalVotes).toBe(25)

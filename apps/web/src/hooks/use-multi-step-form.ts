@@ -12,10 +12,7 @@ export interface UseMultiStepFormReturn<T> {
   update: (fields: Partial<T>) => void
 }
 
-export function useMultiStepForm<T>(
-  initialData: T,
-  totalSteps: number,
-): UseMultiStepFormReturn<T> {
+export function useMultiStepForm<T>(initialData: T, totalSteps: number): UseMultiStepFormReturn<T> {
   const [step, setStep] = useState(0)
   const [data, setData] = useState<T>(initialData)
 

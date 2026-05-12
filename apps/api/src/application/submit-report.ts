@@ -22,9 +22,7 @@ export interface SubmitReportInput {
   tokenId: string
 }
 
-export type SubmitResult =
-  | { outcome: 'submitted' }
-  | { outcome: 'rejected'; reason: string }
+export type SubmitResult = { outcome: 'submitted' } | { outcome: 'rejected'; reason: string }
 
 export async function submitReport(
   input: SubmitReportInput,

@@ -4,6 +4,7 @@ This document is the fastest way to defend the project in class.
 For each rubric requirement, show one implementation proof and one execution proof.
 
 ## 1) Registration with Strong Password
+
 - Requirement:
   - Register users with strong password validation.
 - Implementation proof:
@@ -16,6 +17,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Weak password rejected with `VALIDATION_ERROR`.
 
 ## 2) MFA (Password + TOTP)
+
 - Requirement:
   - Factor 1: password, Factor 2: TOTP.
 - Implementation proof:
@@ -30,6 +32,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Invalid code -> denied.
 
 ## 3) RBAC (USER / ADMIN / AUDITOR)
+
 - Requirement:
   - USER limited, ADMIN manages roles, AUDITOR read-only logs.
 - Implementation proof:
@@ -43,6 +46,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Auditor can read security events only.
 
 ## 4) Route Protection by Role
+
 - Requirement:
   - Protect endpoints based on role.
 - Implementation proof:
@@ -55,6 +59,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Unauthorized role gets 403.
 
 ## 5) Access Logging (Success + Failure)
+
 - Requirement:
   - Audit successful and failed access attempts.
 - Implementation proof:
@@ -67,6 +72,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - `auth_success`, `auth_failure`, and `access_denied` events are persisted.
 
 ## 6) Least Privilege Principle
+
 - Requirement:
   - Users only see/modify what they should.
 - Implementation proof:
@@ -79,6 +85,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Non-admin cannot access admin panel.
 
 ## 7) Confidentiality + Integrity
+
 - Requirement:
   - Secure password hashing and immutable audit logs.
 - Implementation proof:
@@ -92,6 +99,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Audit tables reject UPDATE/DELETE.
 
 ## 8) Ethics and Responsible Use
+
 - Requirement:
   - Privacy policy and responsible-use framing.
 - Implementation proof:
@@ -101,6 +109,7 @@ For each rubric requirement, show one implementation proof and one execution pro
   - Show sign-up page privacy notice and mention controlled-lab scope in demo intro.
 
 ## Live Demo (5 Cases) - Ready Sequence
+
 1. Strong password registration succeeds.
 2. Weak password registration fails.
 3. Login fails 5 times and enters lockout.
@@ -108,4 +117,5 @@ For each rubric requirement, show one implementation proof and one execution pro
 5. Role-based denial on admin/security route.
 
 Use this helper script for demo execution:
+
 - `scripts/demo-auth-local.ps1`

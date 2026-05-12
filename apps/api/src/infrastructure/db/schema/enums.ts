@@ -21,17 +21,9 @@ export const reportStatusEnum = pgEnum('report_status', [
   'resolved',
 ])
 
-export const userRoleEnum = pgEnum('user_role', [
-  'user',
-  'moderator',
-  'admin',
-  'auditor',
-])
+export const userRoleEnum = pgEnum('user_role', ['user', 'moderator', 'admin', 'auditor'])
 
-export const evidenceTypeEnum = pgEnum('evidence_type', [
-  'file',
-  'external_link',
-])
+export const evidenceTypeEnum = pgEnum('evidence_type', ['file', 'external_link'])
 
 export const moderationActionEnum = pgEnum('moderation_action', [
   'approve',

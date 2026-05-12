@@ -18,17 +18,17 @@ Three atomic commits applied:
 
 ### Screens Audited
 
-| Page | 320px | 375px | 768px | 1024px | 1440px |
-|---|---|---|---|---|---|
-| Home (/) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Reports feed (/reports) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Report detail (/reports/:id) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Create report (/reports/create) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| My reports (/reports/mine) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Moderation (/moderation) | ✅* | ✅ | ✅ | ✅ | ✅ |
-| Admin (/admin) | ✅* | ✅ | ✅ | ✅ | ✅ |
+| Page                            | 320px | 375px | 768px | 1024px | 1440px |
+| ------------------------------- | ----- | ----- | ----- | ------ | ------ |
+| Home (/)                        | ✅    | ✅    | ✅    | ✅     | ✅     |
+| Reports feed (/reports)         | ✅    | ✅    | ✅    | ✅     | ✅     |
+| Report detail (/reports/:id)    | ✅    | ✅    | ✅    | ✅     | ✅     |
+| Create report (/reports/create) | ✅    | ✅    | ✅    | ✅     | ✅     |
+| My reports (/reports/mine)      | ✅    | ✅    | ✅    | ✅     | ✅     |
+| Moderation (/moderation)        | ✅\*  | ✅    | ✅    | ✅     | ✅     |
+| Admin (/admin)                  | ✅\*  | ✅    | ✅    | ✅     | ✅     |
 
-*Single-column stacking at 320px; all content accessible.
+\*Single-column stacking at 320px; all content accessible.
 
 ---
 
@@ -59,22 +59,22 @@ WCAG 2.5.5 (Success Criterion) requires touch targets to be at least 44×44 CSS 
 
 ### Elements Fixed
 
-| Component | Element | Before | After |
-|---|---|---|---|
-| `header.tsx` | All nav Buttons | h-9 (36px) | min-h-[44px] |
-| `header.tsx` | MAME logo Link | ~24px | min-h-[44px] flex |
-| `step-category.tsx` | Category select | h-9 (36px) | h-11 (44px) |
-| `link-form.tsx` | Add Link Button | h-9 (36px) | min-h-[44px] |
-| `evidence-upload.tsx` | Choose File Button | h-9 (36px) | min-h-[44px] |
-| `moderation-queue.tsx` | Refresh Button | h-9 (36px) | min-h-[44px] |
-| `moderation-queue.tsx` | Action select | h-9 (36px) | h-11 (44px) |
-| `moderation-queue.tsx` | Apply Button | h-10 (40px) | min-h-[44px] |
-| `admin-users-panel.tsx` | Role select | h-9 (36px) | h-11 (44px) |
-| `admin-users-panel.tsx` | Refresh Button | h-9 (36px) | min-h-[44px] |
-| `admin-users-panel.tsx` | Save Role Button | h-9 (36px) | min-h-[44px] |
-| `report-form.tsx` | Back/Next/Submit | h-10 (40px) | min-h-[44px] |
-| `submit-button.tsx` | Submit for Review | h-10 (40px) | min-h-[44px] |
-| `evidence-lightbox.tsx` | Close Button | ~30px | min-h-[44px] min-w-[44px] |
+| Component               | Element            | Before      | After                     |
+| ----------------------- | ------------------ | ----------- | ------------------------- |
+| `header.tsx`            | All nav Buttons    | h-9 (36px)  | min-h-[44px]              |
+| `header.tsx`            | MAME logo Link     | ~24px       | min-h-[44px] flex         |
+| `step-category.tsx`     | Category select    | h-9 (36px)  | h-11 (44px)               |
+| `link-form.tsx`         | Add Link Button    | h-9 (36px)  | min-h-[44px]              |
+| `evidence-upload.tsx`   | Choose File Button | h-9 (36px)  | min-h-[44px]              |
+| `moderation-queue.tsx`  | Refresh Button     | h-9 (36px)  | min-h-[44px]              |
+| `moderation-queue.tsx`  | Action select      | h-9 (36px)  | h-11 (44px)               |
+| `moderation-queue.tsx`  | Apply Button       | h-10 (40px) | min-h-[44px]              |
+| `admin-users-panel.tsx` | Role select        | h-9 (36px)  | h-11 (44px)               |
+| `admin-users-panel.tsx` | Refresh Button     | h-9 (36px)  | min-h-[44px]              |
+| `admin-users-panel.tsx` | Save Role Button   | h-9 (36px)  | min-h-[44px]              |
+| `report-form.tsx`       | Back/Next/Submit   | h-10 (40px) | min-h-[44px]              |
+| `submit-button.tsx`     | Submit for Review  | h-10 (40px) | min-h-[44px]              |
+| `evidence-lightbox.tsx` | Close Button       | ~30px       | min-h-[44px] min-w-[44px] |
 
 **Note:** Clerk's `UserButton` component is a third-party element we cannot control. It renders at ~36px. This is documented as a known external-component limitation.
 
@@ -92,6 +92,7 @@ Form error messages appeared in the DOM dynamically but had no `role="alert"`. S
 ### Fix
 
 Added `role="alert"` to all dynamically-inserted error `<p>` elements:
+
 - `link-form.tsx` — "Failed to add link"
 - `evidence-upload.tsx` — "Upload failed / File exceeds 5MB"
 - `report-form.tsx` — validation error
@@ -112,6 +113,7 @@ No skip-to-content link existed. Keyboard users had to tab through all header na
 ### Fix
 
 Added visually-hidden skip link in `layout.tsx`:
+
 ```
 <a href="#main-content" class="sr-only focus:not-sr-only ...">Skip to content</a>
 <main id="main-content" ...>
@@ -211,11 +213,11 @@ The error message was inline in the `flex` row alongside Input and Button. On 32
 
 ## Known Limitations
 
-| Item | Status | Reason |
-|---|---|---|
-| Clerk `UserButton` touch target (~36px) | Not fixed | Third-party component, no exposed API |
-| Lighthouse mobile score measurement | Pending CI | CLI unavailable locally |
-| Color contrast verification | Pending tooling | Requires Lighthouse/axe-core in CI |
+| Item                                    | Status          | Reason                                |
+| --------------------------------------- | --------------- | ------------------------------------- |
+| Clerk `UserButton` touch target (~36px) | Not fixed       | Third-party component, no exposed API |
+| Lighthouse mobile score measurement     | Pending CI      | CLI unavailable locally               |
+| Color contrast verification             | Pending tooling | Requires Lighthouse/axe-core in CI    |
 
 ---
 
@@ -228,16 +230,16 @@ The error message was inline in the `flex` row alongside Input and Button. On 32
 
 ## DoD Checklist Status
 
-| Criterion | Status |
-|---|---|
-| All breakpoints 320-1440px validated | ✅ |
-| Header overflow resolved | ✅ |
-| Touch targets ≥ 44px | ✅ (except Clerk UserButton, third-party) |
-| aria-hidden on decorative SVGs | ✅ |
-| role=alert on dynamic errors | ✅ |
-| Skip-to-content link | ✅ |
-| Feed landmark | ✅ |
-| aria-expanded on toggles | ✅ |
-| Lightbox close labeled | ✅ |
-| Lighthouse mobile ≥ 85 | ⏳ Pending CI run |
-| axe-core accessibility scan | ⏳ Pending CI run |
+| Criterion                            | Status                                    |
+| ------------------------------------ | ----------------------------------------- |
+| All breakpoints 320-1440px validated | ✅                                        |
+| Header overflow resolved             | ✅                                        |
+| Touch targets ≥ 44px                 | ✅ (except Clerk UserButton, third-party) |
+| aria-hidden on decorative SVGs       | ✅                                        |
+| role=alert on dynamic errors         | ✅                                        |
+| Skip-to-content link                 | ✅                                        |
+| Feed landmark                        | ✅                                        |
+| aria-expanded on toggles             | ✅                                        |
+| Lightbox close labeled               | ✅                                        |
+| Lighthouse mobile ≥ 85               | ⏳ Pending CI run                         |
+| axe-core accessibility scan          | ⏳ Pending CI run                         |

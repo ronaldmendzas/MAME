@@ -15,7 +15,7 @@ export interface InsertStatusHistoryData {
   oldStatus: ReportStatus
   newStatus: ReportStatus
   changedByToken: string
-  reason?: string
+  reason?: string | undefined
 }
 
 export interface StatusHistoryRepository {

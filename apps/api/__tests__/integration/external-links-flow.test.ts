@@ -8,8 +8,12 @@ function makeRepo() {
   return {
     insert: vi.fn().mockImplementation((data) => {
       const row: EvidenceRow = {
-        id: `ev-${rows.length + 1}`, reportId: data.reportId, type: data.type,
-        fileKey: data.fileKey, mimeType: data.mimeType, sizeBytes: 0,
+        id: `ev-${rows.length + 1}`,
+        reportId: data.reportId,
+        type: data.type,
+        fileKey: data.fileKey,
+        mimeType: data.mimeType,
+        sizeBytes: 0,
         createdAt: new Date(),
       }
       rows.push(row)
@@ -23,7 +27,10 @@ function makeRepo() {
 describe('external link integration', () => {
   it('adds youtube link and counts evidence', async () => {
     const repo = makeRepo()
-    await addExternalLink({ reportId: 'r-1', url: 'https://youtube.com/watch?v=abc' }, { evidenceRepo: repo })
+    await addExternalLink(
+      { reportId: 'r-1', url: 'https://youtube.com/watch?v=abc' },
+      { evidenceRepo: repo },
+    )
     expect(repo.rows).toHaveLength(1)
     expect(repo.rows[0]?.type).toBe('external_link')
     expect(repo.rows[0]?.mimeType).toBe('text/uri-list')

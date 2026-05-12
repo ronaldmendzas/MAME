@@ -12,8 +12,9 @@ Branch: sprint-4/release-hardening
 ## Executed Performance Test Packs
 
 1. Repository-level load query tests
+
 - Command:
-  - npm run test -- apps/api/__tests__/performance/load-queries.test.ts apps/api/__tests__/performance/feed-search-perf.test.ts
+  - npm run test -- apps/api/**tests**/performance/load-queries.test.ts apps/api/**tests**/performance/feed-search-perf.test.ts
 - Result:
   - 2 files passed
   - 17 tests passed

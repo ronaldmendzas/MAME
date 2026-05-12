@@ -2,6 +2,7 @@
 
 This playbook defines the exact execution order to complete Sprint 4 and release v1.0.
 It is aligned with:
+
 - docs/SPRINTS.md
 - docs/CODING-STANDARDS.md
 - docs/ARCHITECTURE.md
@@ -21,6 +22,7 @@ It is aligned with:
 ## 1) Sprint 4 Definition of Done (Target)
 
 Complete all launch criteria from Sprint 4:
+
 1. OWASP ZAP: zero critical/high findings.
 2. Peak load validated with acceptable degradation.
 3. Lighthouse mobile >= 85.
@@ -50,6 +52,7 @@ Follow this order exactly to reduce rework.
 3. Open a tracking issue/checklist for S4 completion.
 
 Suggested commit:
+
 - `docs(s4): add sprint 4 evidence structure and baseline checklist`
 
 ### Phase B: Security Hardening
@@ -63,6 +66,7 @@ Suggested commit:
 7. Verify no sensitive data in logs and Sentry events.
 
 Suggested commit sequence:
+
 1. `fix(security): resolve zap critical findings in api routes`
 2. `fix(security): tighten headers and cors policy coverage`
 3. `docs(security): add zap report and mitigation notes`
@@ -76,6 +80,7 @@ Suggested commit sequence:
 5. Tune hotspots and re-run until target is met.
 
 Suggested commit sequence:
+
 1. `perf(web): improve code splitting and lazy loading`
 2. `perf(api): optimize hot paths impacting p95 latency`
 3. `test(perf): add k6 scenario and captured results`
@@ -88,6 +93,7 @@ Suggested commit sequence:
 4. Run accessibility checks and fix critical/serious findings.
 
 Suggested commit sequence:
+
 1. `fix(web): resolve responsive issues for key breakpoints`
 2. `fix(web): improve accessibility and touch target compliance`
 3. `docs(ux): add lighthouse and accessibility evidence`
@@ -100,6 +106,7 @@ Suggested commit sequence:
 4. Confirm runbook completeness for launch day.
 
 Suggested commit sequence:
+
 1. `docs(api): complete openapi coverage for sprint 4 endpoints`
 2. `docs(ops): finalize incident response runbook for release`
 
@@ -111,6 +118,7 @@ Suggested commit sequence:
 4. Prepare release notes and merge plan.
 
 Suggested commit sequence:
+
 1. `test(release): validate sprint 4 critical suites and smoke tests`
 2. `docs(release): add sprint 4 closeout report and release notes`
 
@@ -144,6 +152,7 @@ Suggested commit sequence:
 ## 6) Stop Conditions
 
 Do not mark Sprint 4 complete if any of these are true:
+
 1. OWASP critical/high findings remain.
 2. Lighthouse mobile target is not met.
 3. k6 peak target is not met.

@@ -47,4 +47,6 @@ async function seedLoad() {
   console.log('Load seed complete!')
 }
 
-seedLoad().then(() => sql.end()).catch(console.error)
+seedLoad()
+  .then(() => sql.end())
+  .catch(console.error)

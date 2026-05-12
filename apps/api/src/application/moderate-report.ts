@@ -1,5 +1,8 @@
 import { ForbiddenError, NotFoundError, ValidationError } from '../domain/errors.js'
-import type { ModerationAction, ModerationLogRepository } from '../domain/ports/moderation-log-repository.js'
+import type {
+  ModerationAction,
+  ModerationLogRepository,
+} from '../domain/ports/moderation-log-repository.js'
 import type { ReportRepository, ReportRow } from '../domain/ports/report-repository.js'
 import type { StatusHistoryRepository } from '../domain/ports/status-history-repository.js'
 import type { ReportStatus } from '../domain/types.js'
@@ -41,7 +44,7 @@ export async function moderateReport(
 
   return deps.reportRepo.update(input.reportId, {
     status: newStatus,
-    publishedAt: newStatus === 'published' ? new Date() : undefined,
+    publishedAt: newStatus === 'published' ? new Date() : null,
   })
 }
 
@@ -65,10 +68,7 @@ function validateAction(input: ModerateReportInput) {
   }
 }
 
-async function logModerationAction(
-  input: ModerateReportInput,
-  repo: ModerationLogRepository,
-) {
+async function logModerationAction(input: ModerateReportInput, repo: ModerationLogRepository) {
   await repo.insert({
     reportId: input.reportId,
     moderatorToken: input.moderatorToken,
@@ -89,6 +89,6 @@ async function logStatusChange(
     oldStatus: report.status,
     newStatus,
     changedByToken: input.moderatorToken,
-    reason: input.reason ?? undefined,
+    ...(input.reason ? { reason: input.reason } : {}),
   })
 }

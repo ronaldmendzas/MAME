@@ -38,7 +38,10 @@ export function createClerkService(secretKey: string): ClerkService {
       const email = data.email_addresses?.[0]?.email_address
       if (!email) throw new Error('No email found for Clerk user')
 
-      return { email, tokenId: data.public_metadata?.token_id }
+      return {
+        email,
+        ...(data.public_metadata?.token_id ? { tokenId: data.public_metadata.token_id } : {}),
+      }
     },
   }
 }

@@ -220,17 +220,17 @@ Step 6: Report enters Cloudflare Queue with random 1-6h delay
 
 ### 4.3 Input/Output Security
 
-| Control                  | Configuration                                                                                                                                                                                                                             |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **SQL Injection**        | Drizzle ORM prepared statements + Zod validation. ZERO raw SQL concatenation.                                                                                                                                                             |
-| **XSS**                  | CSP strict (`script-src 'self'`) + DOMPurify sanitization on all user-generated content + Next.js auto-escape. NEVER use `dangerouslySetInnerHTML`.                                                                                       |
-| **Path Traversal**       | UUID filenames for all stored files. No user-provided paths.                                                                                                                                                                              |
-| **Command Injection**    | Architecturally impossible — Workers run in sandboxed V8 isolates with no shell access.                                                                                                                                                   |
-| **Input Validation**     | Zod schemas on ALL write endpoints. Frontend + backend validation (never trust client only).                                                                                                                                              |
-| **Input Sanitization**   | ALL user inputs are sanitized before processing: `DOMPurify.sanitize()` on frontend for any rendered user content, Zod `.trim()` + `.max()` constraints on backend. No raw user input ever reaches DB or is rendered without sanitization. |
-| **Output Sanitization**  | DOMPurify installed in `apps/web` — every component rendering user-generated text (report body, comments, titles) passes content through `DOMPurify.sanitize()` before render. React's default escaping is a second layer, not the only one. |
-| **CORS**                 | Hono CORS middleware configured with strict origin whitelist — ONLY the MAME frontend domain(s). No wildcard (`*`). Credentials mode enabled. Preflight cached 1 hour.                                                                   |
-| **Security Headers**     | Applied via Hono middleware on ALL responses: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`. See §8 for full header values. |
+| Control                 | Configuration                                                                                                                                                                                                                                |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SQL Injection**       | Drizzle ORM prepared statements + Zod validation. ZERO raw SQL concatenation.                                                                                                                                                                |
+| **XSS**                 | CSP strict (`script-src 'self'`) + DOMPurify sanitization on all user-generated content + Next.js auto-escape. NEVER use `dangerouslySetInnerHTML`.                                                                                          |
+| **Path Traversal**      | UUID filenames for all stored files. No user-provided paths.                                                                                                                                                                                 |
+| **Command Injection**   | Architecturally impossible — Workers run in sandboxed V8 isolates with no shell access.                                                                                                                                                      |
+| **Input Validation**    | Zod schemas on ALL write endpoints. Frontend + backend validation (never trust client only).                                                                                                                                                 |
+| **Input Sanitization**  | ALL user inputs are sanitized before processing: `DOMPurify.sanitize()` on frontend for any rendered user content, Zod `.trim()` + `.max()` constraints on backend. No raw user input ever reaches DB or is rendered without sanitization.   |
+| **Output Sanitization** | DOMPurify installed in `apps/web` — every component rendering user-generated text (report body, comments, titles) passes content through `DOMPurify.sanitize()` before render. React's default escaping is a second layer, not the only one. |
+| **CORS**                | Hono CORS middleware configured with strict origin whitelist — ONLY the MAME frontend domain(s). No wildcard (`*`). Credentials mode enabled. Preflight cached 1 hour.                                                                       |
+| **Security Headers**    | Applied via Hono middleware on ALL responses: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`. See §8 for full header values.    |
 
 ### 4.4 Evidence File Security
 
@@ -344,21 +344,21 @@ The system CANNOT reveal:
 
 ### Sprint 1 — Foundation (13 items)
 
-| #   | Control                                                                                                 | Check |
-| --- | ------------------------------------------------------------------------------------------------------- | ----- |
-| 1   | TLS 1.3 active + HTTPS redirect for all traffic                                                         | ☐     |
-| 2   | HSTS header: `max-age=31536000; includeSubDomains`                                                      | ☐     |
-| 3   | CSP header strict: `script-src 'self'` — no `unsafe-inline`                                             | ☐     |
-| 4   | ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY stored in Cloudflare Secrets (not in code, .env, or DB) | ☐     |
-| 5   | All emails stored as HMAC-SHA256 hash (no plaintext email in any table)                                 | ☐     |
-| 6   | Password hashing handled entirely by Clerk.dev (managed infrastructure — passwords never in our DB)     | ☐     |
-| 7   | JWT signed with RS256 (asymmetric), NOT HS256                                                           | ☐     |
-| 8   | All entity IDs are UUID v4 (no sequential integers)                                                     | ☐     |
-| 9   | CORS configured to accept ONLY MAME domain(s) via Hono CORS middleware (no wildcard)                    | ☐     |
-| 10  | Dependabot active with zero critical/high alerts                                                        | ☐     |
+| #   | Control                                                                                                                        | Check |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| 1   | TLS 1.3 active + HTTPS redirect for all traffic                                                                                | ☐     |
+| 2   | HSTS header: `max-age=31536000; includeSubDomains`                                                                             | ☐     |
+| 3   | CSP header strict: `script-src 'self'` — no `unsafe-inline`                                                                    | ☐     |
+| 4   | ENCRYPTION_MASTER_KEY + ENCRYPTION_RELATION_KEY stored in Cloudflare Secrets (not in code, .env, or DB)                        | ☐     |
+| 5   | All emails stored as HMAC-SHA256 hash (no plaintext email in any table)                                                        | ☐     |
+| 6   | Password hashing handled entirely by Clerk.dev (managed infrastructure — passwords never in our DB)                            | ☐     |
+| 7   | JWT signed with RS256 (asymmetric), NOT HS256                                                                                  | ☐     |
+| 8   | All entity IDs are UUID v4 (no sequential integers)                                                                            | ☐     |
+| 9   | CORS configured to accept ONLY MAME domain(s) via Hono CORS middleware (no wildcard)                                           | ☐     |
+| 10  | Dependabot active with zero critical/high alerts                                                                               | ☐     |
 | 11  | Security headers middleware active on ALL responses (CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy) | ☐     |
-| 12  | DOMPurify installed and applied to ALL rendered user-generated content in frontend                       | ☐     |
-| 13  | ALL user inputs sanitized: Zod `.trim()` + `.max()` on backend, DOMPurify on frontend output            | ☐     |
+| 12  | DOMPurify installed and applied to ALL rendered user-generated content in frontend                                             | ☐     |
+| 13  | ALL user inputs sanitized: Zod `.trim()` + `.max()` on backend, DOMPurify on frontend output                                   | ☐     |
 
 ### Sprint 2 — Content Security (8 items)
 

@@ -25,8 +25,18 @@ describe('password hasher', () => {
   it('verifies legacy pbkdf2 hashes for backward compatibility', async () => {
     const password = 'S3cure!Passw0rd#2026'
     const salt = Uint8Array.from(Array.from({ length: 16 }, (_, index) => index + 1))
-    const imported = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 210000 }, imported, 256)
+    const imported = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(password),
+      'PBKDF2',
+      false,
+      ['deriveBits'],
+    )
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 210000 },
+      imported,
+      256,
+    )
     const hash = Buffer.from(bits).toString('base64url')
     const legacyHash = `pbkdf2$sha256$210000$${Buffer.from(salt).toString('base64url')}$${hash}`
 

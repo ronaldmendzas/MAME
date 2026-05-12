@@ -97,9 +97,7 @@ describe('Hono App', () => {
 
     it('includes Referrer-Policy', async () => {
       const res = await app.request('/health')
-      expect(res.headers.get('referrer-policy')).toBe(
-        'strict-origin-when-cross-origin'
-      )
+      expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin')
     })
   })
 })

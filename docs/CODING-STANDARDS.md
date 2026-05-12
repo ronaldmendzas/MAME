@@ -248,13 +248,13 @@ class ValidationError extends DomainError {
 
 ## 8. Git Conventions
 
-| Rule                 | Format                                           |
-| -------------------- | ------------------------------------------------ |
-| **Branch naming**    | `sprint-N/feature-name` — `sprint-1/scaffolding` |
-| **Commit messages**  | Conventional Commits: `feat(scope): description` |
-| **Commit frequency** | Every logical unit of work (not at end of day)   |
-| **Commit granularity** | Atomic — one concern per commit (see below)    |
-| **PR rule**          | At least 1 reviewer approval before merge        |
+| Rule                   | Format                                           |
+| ---------------------- | ------------------------------------------------ |
+| **Branch naming**      | `sprint-N/feature-name` — `sprint-1/scaffolding` |
+| **Commit messages**    | Conventional Commits: `feat(scope): description` |
+| **Commit frequency**   | Every logical unit of work (not at end of day)   |
+| **Commit granularity** | Atomic — one concern per commit (see below)      |
+| **PR rule**            | At least 1 reviewer approval before merge        |
 
 ### Atomic Commit Rule
 
@@ -328,17 +328,17 @@ export function getConfig(env: Env): Config {
 
 ## 10. Dependency Rules
 
-| Package           | Where             | Purpose                                       |
-| ----------------- | ----------------- | --------------------------------------------- |
-| **zod**           | `packages/shared` | Schema validation (shared frontend + backend) |
-| **drizzle-orm**   | `apps/api`        | Database ORM                                  |
-| **hono**          | `apps/api`        | HTTP framework for Workers                    |
-| **@clerk/nextjs** | `apps/web`        | Auth UI components                            |
-| **tailwindcss**   | `apps/web`        | Styling                                       |
-| **shadcn/ui**     | `apps/web`        | Accessible UI primitives (source code, not runtime dep) |
+| Package           | Where             | Purpose                                                     |
+| ----------------- | ----------------- | ----------------------------------------------------------- |
+| **zod**           | `packages/shared` | Schema validation (shared frontend + backend)               |
+| **drizzle-orm**   | `apps/api`        | Database ORM                                                |
+| **hono**          | `apps/api`        | HTTP framework for Workers                                  |
+| **@clerk/nextjs** | `apps/web`        | Auth UI components                                          |
+| **tailwindcss**   | `apps/web`        | Styling                                                     |
+| **shadcn/ui**     | `apps/web`        | Accessible UI primitives (source code, not runtime dep)     |
 | **react-bits**    | `apps/web`        | Animated backgrounds/effects (source code, not runtime dep) |
-| **vitest**        | root              | Testing                                       |
-| **playwright**    | `apps/web`        | E2E testing                                   |
+| **vitest**        | root              | Testing                                                     |
+| **playwright**    | `apps/web`        | E2E testing                                                 |
 
 > **Note on shadcn/ui & React Bits:** These are NOT traditional npm dependencies. Their CLI copies component source code into the project (`src/components/ui/` and `src/components/backgrounds/`). The code is fully owned and modifiable — no external runtime. Only their peer dependencies (Radix primitives, utility libs like `clsx`, `tailwind-merge`) are installed as real npm packages.
 

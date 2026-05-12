@@ -1,6 +1,11 @@
 import { and, desc, eq, gte, lt, lte } from 'drizzle-orm'
 
-import type { InsertReportData, ReportFilters, ReportRepository, ReportRow } from '../../domain/ports/report-repository'
+import type {
+  InsertReportData,
+  ReportFilters,
+  ReportRepository,
+  ReportRow,
+} from '../../domain/ports/report-repository'
 
 import type { Database } from './connection'
 import { reports } from './schema/reports'

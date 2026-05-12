@@ -8,11 +8,7 @@ import { users } from './schema/users'
 export function createUserRepository(db: Database): UserRepository {
   return {
     findByClerkId: async (clerkId) => {
-      const rows = await db
-        .select()
-        .from(users)
-        .where(eq(users.clerkId, clerkId))
-        .limit(1)
+      const rows = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1)
 
       const row = rows[0]
       if (!row) return null
@@ -20,11 +16,7 @@ export function createUserRepository(db: Database): UserRepository {
     },
 
     findByEmailHash: async (emailHash) => {
-      const rows = await db
-        .select()
-        .from(users)
-        .where(eq(users.emailHash, emailHash))
-        .limit(1)
+      const rows = await db.select().from(users).where(eq(users.emailHash, emailHash)).limit(1)
 
       const row = rows[0]
       if (!row) return null

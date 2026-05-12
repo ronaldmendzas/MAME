@@ -24,13 +24,16 @@ function mapRow(row: typeof evidence.$inferSelect): EvidenceRow {
 export function createEvidenceRepository(db: Database): EvidenceRepository {
   return {
     async insert(data: InsertEvidenceData): Promise<EvidenceRow> {
-      const [row] = await db.insert(evidence).values({
-        reportId: data.reportId,
-        type: data.type,
-        fileKey: data.fileKey,
-        mimeType: data.mimeType,
-        sizeBytes: data.sizeBytes,
-      }).returning()
+      const [row] = await db
+        .insert(evidence)
+        .values({
+          reportId: data.reportId,
+          type: data.type,
+          fileKey: data.fileKey,
+          mimeType: data.mimeType,
+          sizeBytes: data.sizeBytes,
+        })
+        .returning()
 
       return mapRow(row!)
     },

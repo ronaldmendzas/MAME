@@ -8,9 +8,7 @@ function makeAi(response: unknown) {
 
 describe('workers-ai-moderation', () => {
   it('returns safe when response.safe is true', async () => {
-    const mod = createWorkersAiModeration(
-      makeAi({ response: { safe: true, categories: [] } }),
-    )
+    const mod = createWorkersAiModeration(makeAi({ response: { safe: true, categories: [] } }))
     const result = await mod.classifyText('hello')
     expect(result.flagged).toBe(false)
     expect(result.score).toBe(0)
@@ -32,9 +30,7 @@ describe('workers-ai-moderation', () => {
   })
 
   it('parses plain text unsafe response', async () => {
-    const mod = createWorkersAiModeration(
-      makeAi({ response: 'unsafe\nS1' }),
-    )
+    const mod = createWorkersAiModeration(makeAi({ response: 'unsafe\nS1' }))
     const result = await mod.classifyText('test')
     expect(result.flagged).toBe(true)
   })

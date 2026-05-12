@@ -17,19 +17,20 @@ function createDeps(overrides?: {
   verifyPassword?: boolean
   now?: Date
 }) {
-  const credential = overrides && 'credential' in overrides
-    ? overrides.credential
-    : {
-    userId: 'user-1',
-    loginHash: 'hash-login',
-    passwordHash: 'stored-hash',
-    passwordAlgo: 'pbkdf2-sha256',
-    failedAttempts: 0,
-    lockedUntil: null,
-    mfaSecretCiphertext: null,
-    mfaEnabled: false,
-    createdAt: new Date('2026-03-23T00:00:00.000Z'),
-    }
+  const credential =
+    overrides && 'credential' in overrides
+      ? overrides.credential
+      : {
+          userId: 'user-1',
+          loginHash: 'hash-login',
+          passwordHash: 'stored-hash',
+          passwordAlgo: 'pbkdf2-sha256',
+          failedAttempts: 0,
+          lockedUntil: null,
+          mfaSecretCiphertext: null,
+          mfaEnabled: false,
+          createdAt: new Date('2026-03-23T00:00:00.000Z'),
+        }
 
   return {
     cryptoService: {
@@ -155,10 +156,7 @@ describe('authenticateLocalLogin', () => {
       now: new Date('2026-03-23T10:00:00.000Z'),
     })
 
-    const result = await authenticateLocalLogin(
-      { login: 'student@uni.edu', password: 'any' },
-      deps,
-    )
+    const result = await authenticateLocalLogin({ login: 'student@uni.edu', password: 'any' }, deps)
 
     expect(result).toEqual({ status: 'locked', lockedUntil: new Date('2026-03-23T10:20:00.000Z') })
     expect(deps.passwordHasher.verifyPassword).not.toHaveBeenCalled()

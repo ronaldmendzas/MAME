@@ -6,7 +6,10 @@ if (!DATABASE_URL) throw new Error('DATABASE_URL is required')
 const sql = neon(DATABASE_URL)
 
 async function verify() {
-  const tables = await sql('SELECT table_name FROM information_schema.tables WHERE table_schema = $1 ORDER BY table_name', ['public'])
+  const tables = await sql(
+    'SELECT table_name FROM information_schema.tables WHERE table_schema = $1 ORDER BY table_name',
+    ['public'],
+  )
   console.log(`\n=== TABLES (${tables.length}) ===`)
   tables.forEach((r) => console.log(' ', r.table_name))
 
@@ -14,7 +17,9 @@ async function verify() {
   console.log('\n=== SEARCH VECTOR ===')
   sv.forEach((r) => console.log(` ${r.title} → sv: ${r.has_sv}`))
 
-  const fts = await sql("SELECT title FROM reports WHERE search_vector @@ to_tsquery('spanish', 'report')")
+  const fts = await sql(
+    "SELECT title FROM reports WHERE search_vector @@ to_tsquery('spanish', 'report')",
+  )
   console.log(`\n=== FULL-TEXT SEARCH ===`)
   console.log(`  "report" → ${fts.length} results found`)
 
@@ -32,10 +37,10 @@ async function verify() {
   console.log('\n=== UNIQUE CONSTRAINT TEST ===')
   const firstVote = await sql('SELECT report_id, token_id FROM votes LIMIT 1')
   try {
-    await sql('INSERT INTO votes (id, report_id, token_id, created_at) VALUES (gen_random_uuid(), $1, $2, now())', [
-      firstVote[0].report_id,
-      firstVote[0].token_id,
-    ])
+    await sql(
+      'INSERT INTO votes (id, report_id, token_id, created_at) VALUES (gen_random_uuid(), $1, $2, now())',
+      [firstVote[0].report_id, firstVote[0].token_id],
+    )
     console.log('  ERROR: Duplicate vote was allowed!')
   } catch (e: unknown) {
     const err = e as { code?: string }

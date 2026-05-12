@@ -4,7 +4,10 @@ import { users } from './users'
 
 export const localAuthCredentials = pgTable('local_auth_credentials', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' })
+    .unique(),
   loginHash: text('login_hash').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   passwordAlgo: text('password_algo').notNull().default('pbkdf2-sha256'),

@@ -13,7 +13,12 @@ export function ModerationNavLink() {
   if (!isLoaded || !canModerateReports(role)) return null
 
   return (
-    <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+    <Button
+      asChild
+      variant="ghost"
+      size="sm"
+      className="text-muted-foreground hover:text-foreground"
+    >
       <Link href="/moderation">Moderation</Link>
     </Button>
   )

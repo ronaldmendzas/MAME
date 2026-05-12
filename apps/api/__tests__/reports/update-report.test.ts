@@ -52,9 +52,9 @@ describe('updateReport', () => {
       reportRepo: { ...mockDeps().reportRepo, findById: vi.fn().mockResolvedValue(null) },
     })
 
-    await expect(
-      updateReport({ reportId: 'missing', tokenId: 'token-123' }, deps),
-    ).rejects.toThrow(NotFoundError)
+    await expect(updateReport({ reportId: 'missing', tokenId: 'token-123' }, deps)).rejects.toThrow(
+      NotFoundError,
+    )
   })
 
   it('throws ForbiddenError when user is not the owner', async () => {

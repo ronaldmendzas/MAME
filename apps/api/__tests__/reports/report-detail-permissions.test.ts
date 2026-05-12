@@ -68,7 +68,7 @@ describe('handleReportDetail permissions', () => {
     mockFindById.mockResolvedValueOnce(makeReport({ status: 'published' }))
     const res = await app.request('/00000000-0000-0000-0000-000000000001', {}, TEST_ENV)
     expect(res.status).toBe(200)
-    const body = await res.json() as { success: boolean }
+    const body = (await res.json()) as { success: boolean }
     expect(body.success).toBe(true)
   })
 
@@ -100,11 +100,13 @@ describe('handleReportDetail permissions', () => {
     mockFindById.mockResolvedValueOnce(makeReport({ status: 'draft', tokenId: 'author-token-123' }))
 
     btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
-    btoa(JSON.stringify({
-      sub: 'user_1',
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      metadata: { token_id: 'author-token-123', role: 'user' },
-    }))
+    btoa(
+      JSON.stringify({
+        sub: 'user_1',
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        metadata: { token_id: 'author-token-123', role: 'user' },
+      }),
+    )
 
     // optionalAuth won't verify the JWT signature (it catches errors),
     // but we need the payload to be parseable. Since optionalAuth _does_ call verifyJwt
@@ -124,13 +126,15 @@ describe('handleReportDetail permissions', () => {
 
     const res = await directApp.request('/00000000-0000-0000-0000-000000000001', {}, TEST_ENV)
     expect(res.status).toBe(200)
-    const body = await res.json() as { success: boolean; data: { status: string } }
+    const body = (await res.json()) as { success: boolean; data: { status: string } }
     expect(body.success).toBe(true)
     expect(body.data.status).toBe('draft')
   })
 
   it('author can see their own rejected report', async () => {
-    mockFindById.mockResolvedValueOnce(makeReport({ status: 'rejected', tokenId: 'author-token-123' }))
+    mockFindById.mockResolvedValueOnce(
+      makeReport({ status: 'rejected', tokenId: 'author-token-123' }),
+    )
 
     const directApp = new Hono<AppEnv>()
     directApp.onError(errorHandler)
@@ -144,12 +148,14 @@ describe('handleReportDetail permissions', () => {
 
     const res = await directApp.request('/00000000-0000-0000-0000-000000000001', {}, TEST_ENV)
     expect(res.status).toBe(200)
-    const body = await res.json() as { success: boolean; data: { status: string } }
+    const body = (await res.json()) as { success: boolean; data: { status: string } }
     expect(body.data.status).toBe('rejected')
   })
 
   it('author can see their own under_review report', async () => {
-    mockFindById.mockResolvedValueOnce(makeReport({ status: 'under_review', tokenId: 'author-token-123' }))
+    mockFindById.mockResolvedValueOnce(
+      makeReport({ status: 'under_review', tokenId: 'author-token-123' }),
+    )
 
     const directApp = new Hono<AppEnv>()
     directApp.onError(errorHandler)
@@ -166,7 +172,9 @@ describe('handleReportDetail permissions', () => {
   })
 
   it('moderator can see under_review report', async () => {
-    mockFindById.mockResolvedValueOnce(makeReport({ status: 'under_review', tokenId: 'other-author' }))
+    mockFindById.mockResolvedValueOnce(
+      makeReport({ status: 'under_review', tokenId: 'other-author' }),
+    )
 
     const directApp = new Hono<AppEnv>()
     directApp.onError(errorHandler)
@@ -180,12 +188,14 @@ describe('handleReportDetail permissions', () => {
 
     const res = await directApp.request('/00000000-0000-0000-0000-000000000001', {}, TEST_ENV)
     expect(res.status).toBe(200)
-    const body = await res.json() as { success: boolean; data: { status: string } }
+    const body = (await res.json()) as { success: boolean; data: { status: string } }
     expect(body.data.status).toBe('under_review')
   })
 
   it('admin can see under_review report', async () => {
-    mockFindById.mockResolvedValueOnce(makeReport({ status: 'under_review', tokenId: 'other-author' }))
+    mockFindById.mockResolvedValueOnce(
+      makeReport({ status: 'under_review', tokenId: 'other-author' }),
+    )
 
     const directApp = new Hono<AppEnv>()
     directApp.onError(errorHandler)

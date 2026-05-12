@@ -60,14 +60,16 @@ describe('createComment', () => {
 
   it('rejects empty body', async () => {
     const deps = mockDeps()
-    await expect(createComment({ ...input, body: '  ' }, deps))
-      .rejects.toThrow('Comment body is required')
+    await expect(createComment({ ...input, body: '  ' }, deps)).rejects.toThrow(
+      'Comment body is required',
+    )
   })
 
   it('rejects body exceeding 1000 characters', async () => {
     const deps = mockDeps()
-    await expect(createComment({ ...input, body: 'A'.repeat(1001) }, deps))
-      .rejects.toThrow('must not exceed 1000 characters')
+    await expect(createComment({ ...input, body: 'A'.repeat(1001) }, deps)).rejects.toThrow(
+      'must not exceed 1000 characters',
+    )
   })
 
   it('rejects comment on non-existent report', async () => {
@@ -99,8 +101,7 @@ describe('createComment', () => {
         }),
       },
     })
-    await expect(createComment(input, deps))
-      .rejects.toThrow('Cannot comment on unpublished')
+    await expect(createComment(input, deps)).rejects.toThrow('Cannot comment on unpublished')
   })
 
   it('allows 1-level nested reply', async () => {
@@ -117,10 +118,7 @@ describe('createComment', () => {
         }),
       },
     })
-    const result = await createComment(
-      { ...input, parentId: 'parent-comment' },
-      deps,
-    )
+    const result = await createComment({ ...input, parentId: 'parent-comment' }, deps)
     expect(result.id).toBe('comment-uuid')
   })
 
@@ -138,8 +136,8 @@ describe('createComment', () => {
         }),
       },
     })
-    await expect(
-      createComment({ ...input, parentId: 'child-comment' }, deps),
-    ).rejects.toThrow('nested 2 levels deep')
+    await expect(createComment({ ...input, parentId: 'child-comment' }, deps)).rejects.toThrow(
+      'nested 2 levels deep',
+    )
   })
 })

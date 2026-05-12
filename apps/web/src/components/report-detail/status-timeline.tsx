@@ -45,13 +45,9 @@ function TimelineItem({ entry }: { entry: StatusHistoryEntry }) {
         <Badge className={getStatusColor(entry.newStatus)}>
           {entry.newStatus.replace('_', ' ')}
         </Badge>
-        <time className="text-xs text-muted-foreground">
-          {formatDate(entry.createdAt)}
-        </time>
+        <time className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</time>
       </div>
-      {entry.reason && (
-        <p className="mt-1 text-xs text-muted-foreground">{entry.reason}</p>
-      )}
+      {entry.reason && <p className="mt-1 text-xs text-muted-foreground">{entry.reason}</p>}
     </li>
   )
 }

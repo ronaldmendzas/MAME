@@ -20,7 +20,10 @@ const db = drizzle(sql, { schema })
 async function findExistingToken(clerkId: string) {
   const [user] = await db.select().from(schema.users).where(eq(schema.users.clerkId, clerkId))
   if (!user) return null
-  const [link] = await db.select().from(schema.identityLinks).where(eq(schema.identityLinks.emailHash, user.emailHash))
+  const [link] = await db
+    .select()
+    .from(schema.identityLinks)
+    .where(eq(schema.identityLinks.emailHash, user.emailHash))
   return link?.tokenId ?? null
 }
 
@@ -62,4 +65,7 @@ async function devRegister() {
   await sql.end()
 }
 
-devRegister().catch((e) => { console.error(e); process.exit(1) })
+devRegister().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

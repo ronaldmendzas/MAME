@@ -13,7 +13,12 @@ export function SecurityNavLink() {
   if (!isLoaded || !canAccessSecurityEvents(role)) return null
 
   return (
-    <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+    <Button
+      asChild
+      variant="ghost"
+      size="sm"
+      className="text-muted-foreground hover:text-foreground"
+    >
       <Link href="/security/events">Security Events</Link>
     </Button>
   )

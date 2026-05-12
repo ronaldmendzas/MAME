@@ -70,9 +70,7 @@ function extractPrimaryEmail(
 ): string | undefined {
   if (!addresses?.length) return undefined
   if (!primaryId) return addresses[0]?.email_address
-  const primary = addresses.find(
-    (a) => (a as Record<string, unknown>)['id'] === primaryId,
-  )
+  const primary = addresses.find((a) => (a as Record<string, unknown>)['id'] === primaryId)
   return primary?.email_address ?? addresses[0]?.email_address
 }
 

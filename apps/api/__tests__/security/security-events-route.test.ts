@@ -13,7 +13,13 @@ const { findRecentMock, createDbMock, createRepoMock } = vi.hoisted(() => {
 })
 
 vi.mock('../../src/http/middleware/auth.js', () => ({
-  authMiddleware: async (c: { req: { header: (name: string) => string | undefined }; set: (key: string, value: string) => void }, next: () => Promise<void>) => {
+  authMiddleware: async (
+    c: {
+      req: { header: (name: string) => string | undefined }
+      set: (key: string, value: string) => void
+    },
+    next: () => Promise<void>,
+  ) => {
     const role = c.req.header('x-role') ?? 'user'
     c.set('userRole', role)
     c.set('tokenId', 'tok_test')
@@ -61,9 +67,13 @@ describe('security events route', () => {
   })
 
   it('allows auditor to read security events', async () => {
-    const res = await app.request('/security/events?limit=25', {
-      headers: { 'x-role': 'auditor' },
-    }, makeEnv())
+    const res = await app.request(
+      '/security/events?limit=25',
+      {
+        headers: { 'x-role': 'auditor' },
+      },
+      makeEnv(),
+    )
 
     expect(res.status).toBe(200)
     expect(createDbMock).toHaveBeenCalledTimes(1)
@@ -82,18 +92,26 @@ describe('security events route', () => {
   })
 
   it('allows admin and clamps limit', async () => {
-    const res = await app.request('/security/events?limit=999', {
-      headers: { 'x-role': 'admin' },
-    }, makeEnv())
+    const res = await app.request(
+      '/security/events?limit=999',
+      {
+        headers: { 'x-role': 'admin' },
+      },
+      makeEnv(),
+    )
 
     expect(res.status).toBe(200)
     expect(findRecentMock).toHaveBeenCalledWith(200)
   })
 
   it('rejects user role with 403', async () => {
-    const res = await app.request('/security/events', {
-      headers: { 'x-role': 'user' },
-    }, makeEnv())
+    const res = await app.request(
+      '/security/events',
+      {
+        headers: { 'x-role': 'user' },
+      },
+      makeEnv(),
+    )
 
     expect(res.status).toBe(403)
     expect(findRecentMock).not.toHaveBeenCalled()

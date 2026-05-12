@@ -1,4 +1,4 @@
-import { describe, expect, it , vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createReportRepository } from '../../src/infrastructure/db/report-repository'
 import { createSearchRepository } from '../../src/infrastructure/db/search-repository'
@@ -22,9 +22,11 @@ function mockFeedDb(returnRows: unknown[] = [], artificialDelayMs = 0) {
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockImplementation(() =>
-      new Promise(resolve => setTimeout(() => resolve(returnRows), artificialDelayMs)),
-    ),
+    limit: vi
+      .fn()
+      .mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(returnRows), artificialDelayMs)),
+      ),
   }
   chain.select.mockReturnValue(chain)
   return chain as unknown
@@ -37,15 +39,15 @@ function mockSearchDb(returnRows: unknown[] = [], artificialDelayMs = 0) {
     where: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
-    offset: vi.fn().mockImplementation(() =>
-      new Promise(resolve => setTimeout(() => resolve(returnRows), artificialDelayMs)),
-    ),
+    offset: vi
+      .fn()
+      .mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(returnRows), artificialDelayMs)),
+      ),
   }
   chain.select.mockReturnValue(chain)
   return chain as unknown
 }
-
-
 
 describe('DoD #5 — Feed pagination performance', () => {
   it('uses cursor-based pagination, not offset', async () => {

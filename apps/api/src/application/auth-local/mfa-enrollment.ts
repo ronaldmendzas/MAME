@@ -8,7 +8,7 @@ const DEFAULT_ISSUER = 'MAME'
 export interface BeginMfaEnrollmentInput {
   userId: string
   accountName: string
-  issuer?: string
+  issuer?: string | undefined
 }
 
 export interface BeginMfaEnrollmentDeps {
@@ -89,9 +89,7 @@ export interface VerifyMfaChallengeDeps {
   now?: () => Date
 }
 
-export type VerifyMfaChallengeResult =
-  | { status: 'verified' }
-  | { status: 'invalid_code' }
+export type VerifyMfaChallengeResult = { status: 'verified' } | { status: 'invalid_code' }
 
 export async function verifyMfaChallenge(
   input: VerifyMfaChallengeInput,

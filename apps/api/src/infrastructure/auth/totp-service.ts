@@ -28,10 +28,10 @@ export async function generateTotpCode(secret: string, at: Date): Promise<string
   const digest = await signCounter(key, counter)
   const offset = digest[digest.length - 1]! & 0x0f
   const binary =
-    ((digest[offset]! & 0x7f) << 24)
-    | ((digest[offset + 1]! & 0xff) << 16)
-    | ((digest[offset + 2]! & 0xff) << 8)
-    | (digest[offset + 3]! & 0xff)
+    ((digest[offset]! & 0x7f) << 24) |
+    ((digest[offset + 1]! & 0xff) << 16) |
+    ((digest[offset + 2]! & 0xff) << 8) |
+    (digest[offset + 3]! & 0xff)
 
   return String(binary % 10 ** TOTP_DIGITS).padStart(TOTP_DIGITS, '0')
 }
@@ -52,13 +52,9 @@ async function verifyTotpCode(input: VerifyTotpCodeInput): Promise<boolean> {
 }
 
 async function signCounter(secret: Uint8Array, counter: number): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    secret,
-    { name: 'HMAC', hash: 'SHA-1' },
-    false,
-    ['sign'],
-  )
+  const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-1' }, false, [
+    'sign',
+  ])
   const buffer = new ArrayBuffer(8)
   const view = new DataView(buffer)
   const high = Math.floor(counter / 2 ** 32)

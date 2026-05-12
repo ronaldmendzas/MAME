@@ -38,7 +38,10 @@ export default function HomePage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="border border-border/50 bg-secondary/50 backdrop-blur-sm">
+          <Badge
+            variant="secondary"
+            className="border border-border/50 bg-secondary/50 backdrop-blur-sm"
+          >
             In Development
           </Badge>
           <Badge variant="outline" className="border-border/50 backdrop-blur-sm">
@@ -46,10 +49,19 @@ export default function HomePage() {
           </Badge>
         </div>
         <div className="pointer-events-auto mt-2 flex flex-col gap-3 sm:flex-row sm:gap-4">
-          <Button asChild size="lg" className="bg-primary px-8 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30">
+          <Button
+            asChild
+            size="lg"
+            className="bg-primary px-8 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+          >
             <Link href="/reports">View Reports</Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="border-border/50 px-8 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/10">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="border-border/50 px-8 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/10"
+          >
             <Link href="/reports/create">Submit Report</Link>
           </Button>
         </div>

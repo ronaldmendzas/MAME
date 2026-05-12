@@ -6,7 +6,6 @@ import { SkeletonFeed } from '@/components/feed'
 import { useIntersectionObserver } from '@/hooks/use-intersection-observer'
 import { useMyReports } from '@/hooks/use-my-reports'
 
-
 export function MyReportsList() {
   const { reports, loading, hasMore, loadMore, error } = useMyReports()
   const sentinelRef = useIntersectionObserver(loadMore, hasMore && !loading)
@@ -17,7 +16,9 @@ export function MyReportsList() {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        {reports.map((r) => <MyReportCard key={r.id} report={r} />)}
+        {reports.map((r) => (
+          <MyReportCard key={r.id} report={r} />
+        ))}
       </div>
       {loading && <SkeletonFeed />}
       <div ref={sentinelRef} className="h-1" />

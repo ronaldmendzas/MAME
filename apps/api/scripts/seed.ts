@@ -66,7 +66,10 @@ async function seed() {
       body: `This is the body of test report number ${i + 1}. It contains enough text to test the full-text search functionality with the tsvector trigger. Category: ${categories[i % categories.length]}.`,
       category: categories[i % categories.length],
       faculty: faculties[i % 5],
-      status: (i < 10 ? 'published' : i < 15 ? 'pending' : 'under_review') as 'published' | 'pending' | 'under_review',
+      status: (i < 10 ? 'published' : i < 15 ? 'pending' : 'under_review') as
+        | 'published'
+        | 'pending'
+        | 'under_review',
       publishedAt: i < 10 ? new Date() : null,
     })
   }
@@ -99,4 +102,6 @@ async function seed() {
   console.log('Seed complete!')
 }
 
-seed().then(() => sql.end()).catch(console.error)
+seed()
+  .then(() => sql.end())
+  .catch(console.error)

@@ -32,12 +32,6 @@ describe('verifyClerkWebhook', () => {
   })
 
   it('throws on missing headers', () => {
-    expect(() =>
-      verifyClerkWebhook(
-        '{}',
-        {} as Record<string, string>,
-        'whsec_test',
-      ),
-    ).toThrow()
+    expect(() => verifyClerkWebhook('{}', {} as Record<string, string>, 'whsec_test')).toThrow()
   })
 })

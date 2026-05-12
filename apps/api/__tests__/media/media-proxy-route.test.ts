@@ -34,9 +34,7 @@ describe('media proxy route', () => {
 
   it('rejects expired signature', async () => {
     const app = createApp()
-    const url = await signMediaUrl(
-      'http://localhost', 'some-key', MASTER_KEY, -1,
-    )
+    const url = await signMediaUrl('http://localhost', 'some-key', MASTER_KEY, -1)
     const path = url.replace('http://localhost', '')
     const res = await app.request(path, {}, makeEnv())
     expect(res.status).toBe(422)
@@ -44,9 +42,7 @@ describe('media proxy route', () => {
 
   it('rejects tampered signature', async () => {
     const app = createApp()
-    const url = await signMediaUrl(
-      'http://localhost', 'some-key', MASTER_KEY,
-    )
+    const url = await signMediaUrl('http://localhost', 'some-key', MASTER_KEY)
     const path = url.replace('http://localhost', '').replace(/sig=[^&]+/, 'sig=tampered')
     const res = await app.request(path, {}, makeEnv())
     expect(res.status).toBe(422)

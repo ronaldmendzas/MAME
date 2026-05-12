@@ -162,16 +162,12 @@
         "users_clerk_id_unique": {
           "name": "users_clerk_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "clerk_id"
-          ]
+          "columns": ["clerk_id"]
         },
         "users_email_hash_unique": {
           "name": "users_email_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email_hash"
-          ]
+          "columns": ["email_hash"]
         }
       },
       "policies": {},
@@ -341,12 +337,8 @@
           "name": "reports_token_id_anonymous_profiles_token_id_fk",
           "tableFrom": "reports",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "token_id"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["token_id"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -429,12 +421,8 @@
           "name": "evidence_report_id_reports_id_fk",
           "tableFrom": "evidence",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -517,12 +505,8 @@
           "name": "comments_report_id_reports_id_fk",
           "tableFrom": "comments",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -530,12 +514,8 @@
           "name": "comments_token_id_anonymous_profiles_token_id_fk",
           "tableFrom": "comments",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "token_id"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["token_id"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -583,12 +563,8 @@
           "name": "votes_report_id_reports_id_fk",
           "tableFrom": "votes",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -596,12 +572,8 @@
           "name": "votes_token_id_anonymous_profiles_token_id_fk",
           "tableFrom": "votes",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "token_id"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["token_id"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -611,10 +583,7 @@
         "uq_votes_report_token": {
           "name": "uq_votes_report_token",
           "nullsNotDistinct": false,
-          "columns": [
-            "report_id",
-            "token_id"
-          ]
+          "columns": ["report_id", "token_id"]
         }
       },
       "policies": {},
@@ -671,12 +640,8 @@
           "name": "moderation_log_report_id_reports_id_fk",
           "tableFrom": "moderation_log",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -684,12 +649,8 @@
           "name": "moderation_log_moderator_token_anonymous_profiles_token_id_fk",
           "tableFrom": "moderation_log",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "moderator_token"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["moderator_token"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -757,12 +718,8 @@
           "name": "report_status_history_report_id_reports_id_fk",
           "tableFrom": "report_status_history",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -770,12 +727,8 @@
           "name": "report_status_history_changed_by_token_anonymous_profiles_token_id_fk",
           "tableFrom": "report_status_history",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "changed_by_token"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["changed_by_token"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -850,12 +803,8 @@
           "name": "notifications_token_id_anonymous_profiles_token_id_fk",
           "tableFrom": "notifications",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "token_id"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["token_id"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -863,12 +812,8 @@
           "name": "notifications_report_id_reports_id_fk",
           "tableFrom": "notifications",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -929,12 +874,8 @@
           "name": "flags_report_id_reports_id_fk",
           "tableFrom": "flags",
           "tableTo": "reports",
-          "columnsFrom": [
-            "report_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["report_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -942,12 +883,8 @@
           "name": "flags_token_id_anonymous_profiles_token_id_fk",
           "tableFrom": "flags",
           "tableTo": "anonymous_profiles",
-          "columnsFrom": [
-            "token_id"
-          ],
-          "columnsTo": [
-            "token_id"
-          ],
+          "columnsFrom": ["token_id"],
+          "columnsTo": ["token_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -957,10 +894,7 @@
         "uq_flags_report_token": {
           "name": "uq_flags_report_token",
           "nullsNotDistinct": false,
-          "columns": [
-            "report_id",
-            "token_id"
-          ]
+          "columns": ["report_id", "token_id"]
         }
       },
       "policies": {},
@@ -972,32 +906,17 @@
     "public.evidence_type": {
       "name": "evidence_type",
       "schema": "public",
-      "values": [
-        "file",
-        "external_link"
-      ]
+      "values": ["file", "external_link"]
     },
     "public.flag_category": {
       "name": "flag_category",
       "schema": "public",
-      "values": [
-        "false_report",
-        "inappropriate",
-        "exposed_data",
-        "harassment",
-        "other"
-      ]
+      "values": ["false_report", "inappropriate", "exposed_data", "harassment", "other"]
     },
     "public.moderation_action": {
       "name": "moderation_action",
       "schema": "public",
-      "values": [
-        "approve",
-        "reject",
-        "request_info",
-        "escalate",
-        "edit"
-      ]
+      "values": ["approve", "reject", "request_info", "escalate", "edit"]
     },
     "public.notification_type": {
       "name": "notification_type",
@@ -1040,11 +959,7 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "user",
-        "moderator",
-        "admin"
-      ]
+      "values": ["user", "moderator", "admin"]
     }
   },
   "schemas": {},

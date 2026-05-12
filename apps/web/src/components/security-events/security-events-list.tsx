@@ -9,7 +9,12 @@ import { filterSecurityEvents } from '@/lib/security-events-filter'
 
 const LIMITS = [25, 50, 100, 200]
 const ALL = 'all'
-const EVENT_TYPES = ['auth_success', 'auth_failure', 'access_denied', 'sensitive_endpoint_attempt'] as const
+const EVENT_TYPES = [
+  'auth_success',
+  'auth_failure',
+  'access_denied',
+  'sensitive_endpoint_attempt',
+] as const
 const OUTCOMES = ['allowed', 'denied', 'error'] as const
 
 export function SecurityEventsList() {
@@ -26,7 +31,10 @@ export function SecurityEventsList() {
     })
   }, [events, eventTypeFilter, outcomeFilter, query])
 
-  const emptyBase = useMemo(() => !loading && !error && events.length === 0, [loading, error, events.length])
+  const emptyBase = useMemo(
+    () => !loading && !error && events.length === 0,
+    [loading, error, events.length],
+  )
   const emptyFiltered = useMemo(
     () => !loading && !error && events.length > 0 && filteredEvents.length === 0,
     [loading, error, events.length, filteredEvents.length],
@@ -43,10 +51,14 @@ export function SecurityEventsList() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-card/60 p-4">
         <div>
           <h2 className="text-base font-semibold">Recent Security Events</h2>
-          <p className="text-sm text-muted-foreground">Read-only stream from the backend audit log.</p>
+          <p className="text-sm text-muted-foreground">
+            Read-only stream from the backend audit log.
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="text-sm text-muted-foreground" htmlFor="security-events-limit">Limit</label>
+          <label className="text-sm text-muted-foreground" htmlFor="security-events-limit">
+            Limit
+          </label>
           <select
             id="security-events-limit"
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -96,12 +108,18 @@ export function SecurityEventsList() {
             </option>
           ))}
         </select>
-        <Button variant="outline" size="sm" onClick={resetFilters}>Clear filters</Button>
+        <Button variant="outline" size="sm" onClick={resetFilters}>
+          Clear filters
+        </Button>
       </div>
 
-      {loading && <p className="py-8 text-center text-sm text-muted-foreground">Loading security events...</p>}
+      {loading && (
+        <p className="py-8 text-center text-sm text-muted-foreground">Loading security events...</p>
+      )}
       {error && <p className="py-8 text-center text-sm text-destructive">{error}</p>}
-      {emptyBase && <p className="py-8 text-center text-sm text-muted-foreground">No security events found.</p>}
+      {emptyBase && (
+        <p className="py-8 text-center text-sm text-muted-foreground">No security events found.</p>
+      )}
       {emptyFiltered && (
         <p className="py-8 text-center text-sm text-muted-foreground">
           No events match current filters. Try different values or clear filters.
@@ -123,13 +141,21 @@ export function SecurityEventsList() {
             <tbody>
               {filteredEvents.map((event) => (
                 <tr key={event.id} className="border-t border-border/60">
-                  <td className="px-4 py-3 align-top text-muted-foreground">{formatDate(event.createdAt)}</td>
+                  <td className="px-4 py-3 align-top text-muted-foreground">
+                    {formatDate(event.createdAt)}
+                  </td>
                   <td className="px-4 py-3 align-top">{event.eventType}</td>
                   <td className="px-4 py-3 align-top">
-                    <Badge variant={event.outcome === 'allowed' ? 'default' : 'destructive'}>{event.outcome}</Badge>
+                    <Badge variant={event.outcome === 'allowed' ? 'default' : 'destructive'}>
+                      {event.outcome}
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3 align-top text-muted-foreground">{event.actorRole ?? 'anonymous'}</td>
-                  <td className="max-w-[340px] truncate px-4 py-3 align-top text-muted-foreground">{event.source}</td>
+                  <td className="px-4 py-3 align-top text-muted-foreground">
+                    {event.actorRole ?? 'anonymous'}
+                  </td>
+                  <td className="max-w-[340px] truncate px-4 py-3 align-top text-muted-foreground">
+                    {event.source}
+                  </td>
                 </tr>
               ))}
             </tbody>

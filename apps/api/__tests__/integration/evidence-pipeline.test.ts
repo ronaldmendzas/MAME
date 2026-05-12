@@ -61,8 +61,17 @@ describe('evidence pipeline integration', () => {
 
   it('rejects EXIF-tainted JPEG in full pipeline', async () => {
     const tainted = new Uint8Array([
-      0xff, 0xd8, 0xff, 0xe1, 0x00, 0x04, 0x00, 0x00,
-      0xff, 0xda, ...new Array(50).fill(0),
+      0xff,
+      0xd8,
+      0xff,
+      0xe1,
+      0x00,
+      0x04,
+      0x00,
+      0x00,
+      0xff,
+      0xda,
+      ...new Array(50).fill(0),
     ])
 
     expect(detectMimeType(tainted.buffer)).toBe('image/jpeg')
@@ -111,13 +120,19 @@ describe('evidence pipeline integration', () => {
     expect(detectMimeType(png.buffer)).toBe('image/png')
 
     const row: EvidenceRow = {
-      id: 'ev-2', reportId: 'r-1', type: 'file',
-      fileKey: 'evidence/png-id', mimeType: 'image/png',
-      sizeBytes: png.byteLength, createdAt: new Date(),
+      id: 'ev-2',
+      reportId: 'r-1',
+      type: 'file',
+      fileKey: 'evidence/png-id',
+      mimeType: 'image/png',
+      sizeBytes: png.byteLength,
+      createdAt: new Date(),
     }
     const storage: StoragePort = {
       upload: vi.fn().mockResolvedValue({
-        fileKey: 'evidence/png-id', url: 'https://cdn/png', bytes: png.byteLength,
+        fileKey: 'evidence/png-id',
+        url: 'https://cdn/png',
+        bytes: png.byteLength,
       }),
       getSignedUrl: vi.fn(),
       delete: vi.fn(),
@@ -134,11 +149,13 @@ describe('evidence pipeline integration', () => {
 
     const url = await signMediaUrl(BASE_URL, evidence.fileKey, SECRET)
     const parsed = new URL(url)
-    expect(await verifyMediaSignature(
-      evidence.fileKey,
-      parsed.searchParams.get('expires')!,
-      parsed.searchParams.get('sig')!,
-      SECRET,
-    )).toBe(true)
+    expect(
+      await verifyMediaSignature(
+        evidence.fileKey,
+        parsed.searchParams.get('expires')!,
+        parsed.searchParams.get('sig')!,
+        SECRET,
+      ),
+    ).toBe(true)
   })
 })

@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  createCommentSchema,
-  createReportSchema,
-  paginationSchema,
-} from '../src/schemas/index.js'
+import { createCommentSchema, createReportSchema, paginationSchema } from '../src/schemas/index.js'
 
 describe('createReportSchema', () => {
   const validInput = {

@@ -24,7 +24,7 @@ const cspDirectives = [
   "img-src 'self' blob: data: https://img.clerk.com",
   "font-src 'self' data:",
   `connect-src ${connectSrc}`,
-  "frame-src https://vocal-longhorn-17.clerk.accounts.dev",
+  'frame-src https://vocal-longhorn-17.clerk.accounts.dev',
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",

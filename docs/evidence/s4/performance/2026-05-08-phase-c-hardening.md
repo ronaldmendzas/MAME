@@ -22,19 +22,20 @@ Four atomic commits applied:
 
 ### Components Lazy Loaded
 
-| Component | Trigger | Imported Dependencies | Impact |
-|---|---|---|---|
-| `AdminNavLink` | Role loaded (client-side) | `auth-role.ts`, Clerk hooks | Removed from main bundle |
-| `ModerationNavLink` | Role loaded (client-side) | `auth-role.ts`, Clerk hooks | Removed from main bundle |
-| `SecurityNavLink` | Role loaded (client-side) | `auth-role.ts`, Clerk hooks | Removed from main bundle |
-| `EvidenceUpload` | User signed in | `compress-image.ts` (canvas API), `strip-metadata.ts` (EXIF/PDF) | Heaviest: canvas + EXIF + PDF processing deferred |
-| `ReportForm` | Create report page visit | Multi-step form + all steps | Split into separate chunk with skeleton fallback |
+| Component           | Trigger                   | Imported Dependencies                                            | Impact                                            |
+| ------------------- | ------------------------- | ---------------------------------------------------------------- | ------------------------------------------------- |
+| `AdminNavLink`      | Role loaded (client-side) | `auth-role.ts`, Clerk hooks                                      | Removed from main bundle                          |
+| `ModerationNavLink` | Role loaded (client-side) | `auth-role.ts`, Clerk hooks                                      | Removed from main bundle                          |
+| `SecurityNavLink`   | Role loaded (client-side) | `auth-role.ts`, Clerk hooks                                      | Removed from main bundle                          |
+| `EvidenceUpload`    | User signed in            | `compress-image.ts` (canvas API), `strip-metadata.ts` (EXIF/PDF) | Heaviest: canvas + EXIF + PDF processing deferred |
+| `ReportForm`        | Create report page visit  | Multi-step form + all steps                                      | Split into separate chunk with skeleton fallback  |
 
 ### How
 
 `next/dynamic()` with `{ ssr: false }` for client-only components and a meaningful `loading` skeleton for the form.
 
 ### Before / After (conceptual bundle impact)
+
 - Main bundle: Removes canvas API, EXIF processing (piexifjs), PDF metadata (pdf-lib), and all role-nav link modules from the initial parse
 - Role nav links: Only downloaded if the user is logged in and auth has resolved
 - Upload component: Only downloaded on report detail page after auth state confirms `isSignedIn`
@@ -88,11 +89,11 @@ Cache-Control: public, s-maxage=30, stale-while-revalidate=60
 
 ### Capacity Math (ISR + CDN Caching Model)
 
-| Metric | Without Cache | With Cache (60s TTL) |
-|---|---|---|
+| Metric                        | Without Cache     | With Cache (60s TTL)         |
+| ----------------------------- | ----------------- | ---------------------------- |
 | DB queries / minute (275 VUs) | ~275 × 10 = 2,750 | ~1-5 (cold start per minute) |
-| Worker invocations / day | ~100K+ | Well under 100K/day |
-| Target: 100K req/day budget | At risk | ✅ Safely within budget |
+| Worker invocations / day      | ~100K+            | Well under 100K/day          |
+| Target: 100K req/day budget   | At risk           | ✅ Safely within budget      |
 
 This matches the ARCHITECTURE.md capacity model: "ISR caching strategy" that keeps Cloudflare Workers invocations under the 100K/day free tier.
 
@@ -101,6 +102,7 @@ This matches the ARCHITECTURE.md capacity model: "ISR caching strategy" that kee
 ## Test Evidence
 
 ### Cache-Control header tests (new)
+
 - File: `apps/api/__tests__/performance/cache-headers.test.ts`
 - Command: `npx vitest run apps/api/__tests__/performance/cache-headers.test.ts`
 - Result: **9 tests passed**
@@ -110,10 +112,12 @@ This matches the ARCHITECTURE.md capacity model: "ISR caching strategy" that kee
   - Search returns 200 with meta ✅
 
 ### Performance repository tests (existing, re-validated)
+
 - Command: `npx vitest run apps/api/__tests__/performance/`
 - Result: **26 tests passed** (3 files)
 
 ### Full workspace suite
+
 - Command: `npx vitest run`
 - Result: **69 test files, 430 tests passed — 0 failures**
 
@@ -140,24 +144,24 @@ This matches the ARCHITECTURE.md capacity model: "ISR caching strategy" that kee
 
 ## Tooling Availability
 
-| Tool | Local | CI/Staging |
-|---|---|---|
-| k6 | Not installed | Required |
-| Lighthouse CLI | Not installed | Required |
-| Vitest | ✅ Installed | ✅ |
+| Tool           | Local         | CI/Staging |
+| -------------- | ------------- | ---------- |
+| k6             | Not installed | Required   |
+| Lighthouse CLI | Not installed | Required   |
+| Vitest         | ✅ Installed  | ✅         |
 
 ---
 
 ## DoD Checklist Status
 
-| Criterion | Status |
-|---|---|
-| P95 < 200ms with 275 VUs | ⏳ Pending k6 run in CI |
-| Error rate < 1% at peak | ⏳ Pending k6 run in CI |
-| Code splitting applied | ✅ Done |
-| Image lazy loading consistent | ✅ Done |
-| CDN caching on public routes | ✅ Done |
-| k6 script ready for CI | ✅ Done |
+| Criterion                     | Status                  |
+| ----------------------------- | ----------------------- |
+| P95 < 200ms with 275 VUs      | ⏳ Pending k6 run in CI |
+| Error rate < 1% at peak       | ⏳ Pending k6 run in CI |
+| Code splitting applied        | ✅ Done                 |
+| Image lazy loading consistent | ✅ Done                 |
+| CDN caching on public routes  | ✅ Done                 |
+| k6 script ready for CI        | ✅ Done                 |
 
 ---
 

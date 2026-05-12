@@ -46,10 +46,7 @@ function createMockDeps(overrides?: Partial<RegisterUserDeps>): RegisterUserDeps
 describe('registerUser', () => {
   it('creates user, profile, identity link for new user', async () => {
     const deps = createMockDeps()
-    const result = await registerUser(
-      { clerkId: 'clerk_123', email: 'test@uni.edu' },
-      deps,
-    )
+    const result = await registerUser({ clerkId: 'clerk_123', email: 'test@uni.edu' }, deps)
 
     expect(result.isNew).toBe(true)
     expect(result.userId).toBe('user-uuid')
@@ -62,10 +59,7 @@ describe('registerUser', () => {
 
   it('hashes email, never stores plaintext', async () => {
     const deps = createMockDeps()
-    await registerUser(
-      { clerkId: 'clerk_123', email: 'student@university.edu' },
-      deps,
-    )
+    await registerUser({ clerkId: 'clerk_123', email: 'student@university.edu' }, deps)
 
     expect(deps.cryptoService.hashEmail).toHaveBeenCalledWith('student@university.edu')
     const insertCall = vi.mocked(deps.userRepo.insertUser).mock.calls[0]?.[0]
@@ -75,10 +69,7 @@ describe('registerUser', () => {
 
   it('generates relation proof from emailHash + tokenId', async () => {
     const deps = createMockDeps()
-    await registerUser(
-      { clerkId: 'clerk_123', email: 'test@uni.edu' },
-      deps,
-    )
+    await registerUser({ clerkId: 'clerk_123', email: 'test@uni.edu' }, deps)
 
     expect(deps.cryptoService.generateRelationProof).toHaveBeenCalledWith(
       'abcdef1234567890',
@@ -88,15 +79,9 @@ describe('registerUser', () => {
 
   it('stores token_id in Clerk publicMetadata', async () => {
     const deps = createMockDeps()
-    await registerUser(
-      { clerkId: 'clerk_123', email: 'test@uni.edu' },
-      deps,
-    )
+    await registerUser({ clerkId: 'clerk_123', email: 'test@uni.edu' }, deps)
 
-    expect(deps.clerkService.updateUserMetadata).toHaveBeenCalledWith(
-      'clerk_123',
-      'token-uuid',
-    )
+    expect(deps.clerkService.updateUserMetadata).toHaveBeenCalledWith('clerk_123', 'token-uuid')
   })
 
   it('returns existing user without creating duplicates (idempotent)', async () => {
@@ -113,10 +98,7 @@ describe('registerUser', () => {
       },
     })
 
-    const result = await registerUser(
-      { clerkId: 'clerk_123', email: 'test@uni.edu' },
-      deps,
-    )
+    const result = await registerUser({ clerkId: 'clerk_123', email: 'test@uni.edu' }, deps)
 
     expect(result.isNew).toBe(false)
     expect(result.userId).toBe('existing-user')

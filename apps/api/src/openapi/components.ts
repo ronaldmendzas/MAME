@@ -19,7 +19,16 @@ export const components = {
         body: { type: 'string' },
         category: {
           type: 'string',
-          enum: ['sexual-harassment', 'academic-corruption', 'faculty-plagiarism', 'discrimination', 'nepotism', 'administrative-irregularities', 'fraud', 'other'],
+          enum: [
+            'sexual-harassment',
+            'academic-corruption',
+            'faculty-plagiarism',
+            'discrimination',
+            'nepotism',
+            'administrative-irregularities',
+            'fraud',
+            'other',
+          ],
         },
         faculty: { type: 'string' },
         status: { type: 'string' },

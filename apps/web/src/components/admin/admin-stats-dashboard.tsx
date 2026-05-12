@@ -29,7 +29,15 @@ function SimpleBarChart({ data }: { data: { label: string; value: number }[] }) 
   )
 }
 
-function StatCard({ title, value, description }: { title: string; value: string | number; description?: string }) {
+function StatCard({
+  title,
+  value,
+  description,
+}: {
+  title: string
+  value: string | number
+  description?: string
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -74,7 +82,11 @@ export function AdminStatsDashboard({ token }: { token: string }) {
         <StatCard title="Total Comments" value={stats.totalComments} />
         <StatCard
           title="Avg Moderation"
-          value={stats.averageModerationTimeMinutes ? `${Math.round(stats.averageModerationTimeMinutes)}m` : 'N/A'}
+          value={
+            stats.averageModerationTimeMinutes
+              ? `${Math.round(stats.averageModerationTimeMinutes)}m`
+              : 'N/A'
+          }
         />
       </div>
 
@@ -137,8 +149,16 @@ export function AdminStatsDashboard({ token }: { token: string }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard title="Active Tokens" value={stats.activeTokens} description="Anonymous profiles active" />
-        <StatCard title="Suspended Tokens" value={stats.suspendedTokens} description="Anonymous profiles suspended" />
+        <StatCard
+          title="Active Tokens"
+          value={stats.activeTokens}
+          description="Anonymous profiles active"
+        />
+        <StatCard
+          title="Suspended Tokens"
+          value={stats.suspendedTokens}
+          description="Anonymous profiles suspended"
+        />
       </div>
     </div>
   )

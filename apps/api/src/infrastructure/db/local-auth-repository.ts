@@ -11,14 +11,22 @@ import { localAuthCredentials } from './schema/local-auth'
 export function createLocalAuthRepository(db: Database): LocalAuthRepository {
   return {
     findByLoginHash: async (loginHash) => {
-      const rows = await db.select().from(localAuthCredentials).where(eq(localAuthCredentials.loginHash, loginHash)).limit(1)
+      const rows = await db
+        .select()
+        .from(localAuthCredentials)
+        .where(eq(localAuthCredentials.loginHash, loginHash))
+        .limit(1)
       const row = rows[0]
       if (!row) return null
       return mapCredential(row)
     },
 
     findByUserId: async (userId) => {
-      const rows = await db.select().from(localAuthCredentials).where(eq(localAuthCredentials.userId, userId)).limit(1)
+      const rows = await db
+        .select()
+        .from(localAuthCredentials)
+        .where(eq(localAuthCredentials.userId, userId))
+        .limit(1)
       const row = rows[0]
       if (!row) return null
       return mapCredential(row)
@@ -32,7 +40,10 @@ export function createLocalAuthRepository(db: Database): LocalAuthRepository {
     },
 
     setFailedAttempts: async (userId, attempts, lockedUntil) => {
-      await db.update(localAuthCredentials).set({ failedAttempts: attempts, lockedUntil, updatedAt: new Date() }).where(eq(localAuthCredentials.userId, userId))
+      await db
+        .update(localAuthCredentials)
+        .set({ failedAttempts: attempts, lockedUntil, updatedAt: new Date() })
+        .where(eq(localAuthCredentials.userId, userId))
     },
 
     setMfaState: async (userId, enabled, secretCiphertext) => {

@@ -4,7 +4,6 @@ import { EvidenceLightbox } from './evidence-lightbox'
 
 import type { EvidenceItem } from '@/lib/api'
 
-
 const YT_HOSTS = ['youtube.com', 'www.youtube.com', 'youtu.be']
 
 function extractYouTubeId(url: string): string | null {
@@ -13,12 +12,20 @@ function extractYouTubeId(url: string): string | null {
     if (!YT_HOSTS.includes(u.hostname)) return null
     if (u.hostname === 'youtu.be') return u.pathname.slice(1)
     return u.searchParams.get('v')
-  } catch { return null }
+  } catch {
+    return null
+  }
 }
 
-function isImage(m: string) { return m.startsWith('image/') }
-function isVideo(m: string) { return m.startsWith('video/') }
-function isAudio(m: string) { return m.startsWith('audio/') }
+function isImage(m: string) {
+  return m.startsWith('image/')
+}
+function isVideo(m: string) {
+  return m.startsWith('video/')
+}
+function isAudio(m: string) {
+  return m.startsWith('audio/')
+}
 
 function ImageItem({ item }: { item: EvidenceItem }) {
   return <EvidenceLightbox src={item.url} alt={item.fileKey} />

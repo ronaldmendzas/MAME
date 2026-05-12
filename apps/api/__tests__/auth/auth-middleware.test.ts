@@ -20,7 +20,7 @@ describe('authMiddleware', () => {
   it('returns 401 when no Authorization header', async () => {
     const res = await app.request('/protected/test')
     expect(res.status).toBe(401)
-    const body = await res.json() as { error: string }
+    const body = (await res.json()) as { error: string }
     expect(body.error).toContain('Authorization')
   })
 
@@ -46,7 +46,7 @@ describe('authMiddleware', () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     expect(res.status).toBe(401)
-    const body = await res.json() as { error: string }
+    const body = (await res.json()) as { error: string }
     expect(body.error).toContain('algorithm')
   })
 

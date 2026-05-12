@@ -36,7 +36,8 @@ export function getPasswordPolicyProblems(password: string, loginHint?: string):
   if (!/\d/.test(normalized)) problems.push('must include a number')
   if (!/[^A-Za-z0-9]/.test(normalized)) problems.push('must include a symbol')
   const canonical = lowered.replace(/[^a-z0-9]/g, '')
-  if (COMMON_PASSWORDS.has(lowered) || COMMON_PASSWORDS.has(canonical)) problems.push('is too common')
+  if (COMMON_PASSWORDS.has(lowered) || COMMON_PASSWORDS.has(canonical))
+    problems.push('is too common')
   if (/(.)\1\1\1/.test(normalized)) problems.push('cannot contain four repeated characters')
 
   const hint = normalizeLoginHint(loginHint)

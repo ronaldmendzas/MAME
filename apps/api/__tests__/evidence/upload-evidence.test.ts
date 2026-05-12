@@ -8,7 +8,9 @@ const JPEG_HEADER = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new Array(100).fi
 
 function makeStorage(): StoragePort {
   return {
-    upload: vi.fn().mockResolvedValue({ fileKey: 'evidence/abc', url: 'https://cdn/abc', bytes: 100 }),
+    upload: vi
+      .fn()
+      .mockResolvedValue({ fileKey: 'evidence/abc', url: 'https://cdn/abc', bytes: 100 }),
     getSignedUrl: vi.fn().mockReturnValue('https://cdn/signed'),
     delete: vi.fn().mockResolvedValue(undefined),
   }
@@ -74,8 +76,17 @@ describe('uploadEvidence', () => {
 
   it('rejects JPEG with residual EXIF data', async () => {
     const exif = new Uint8Array([
-      0xff, 0xd8, 0xff, 0xe1, 0x00, 0x04, 0x00, 0x00,
-      0xff, 0xda, ...new Array(50).fill(0),
+      0xff,
+      0xd8,
+      0xff,
+      0xe1,
+      0x00,
+      0x04,
+      0x00,
+      0x00,
+      0xff,
+      0xda,
+      ...new Array(50).fill(0),
     ])
     await expect(
       uploadEvidence(

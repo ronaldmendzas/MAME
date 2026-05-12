@@ -1,7 +1,4 @@
-import type {
-  ModerationPort,
-  ModerationResult,
-} from '../../domain/ports/moderation-port.js'
+import type { ModerationPort, ModerationResult } from '../../domain/ports/moderation-port.js'
 
 import type { AiBinding } from './ai-binding.js'
 import { classifyImage } from './workers-ai-image.js'
@@ -17,10 +14,7 @@ export function createWorkersAiModeration(ai: AiBinding): ModerationPort {
   }
 }
 
-async function classifyText(
-  ai: AiBinding,
-  text: string,
-): Promise<ModerationResult> {
+async function classifyText(ai: AiBinding, text: string): Promise<ModerationResult> {
   const result = (await ai.run('@cf/meta/llama-guard-3-8b', {
     messages: [{ role: 'user', content: text }],
   })) as GuardResponse

@@ -19,22 +19,25 @@ Branch: sprint-4/release-hardening
 ## Executed Security Test Packs
 
 1. HTTP security middleware and app-level headers
+
 - Command:
-  - npm run test -- apps/api/__tests__/http/security.test.ts apps/api/__tests__/http/app.test.ts
+  - npm run test -- apps/api/**tests**/http/security.test.ts apps/api/**tests**/http/app.test.ts
 - Result:
   - 2 files passed
   - 21 tests passed
 
 2. Security event logging and role-gated endpoint
+
 - Command:
-  - npm run test -- apps/api/__tests__/security/security-events.test.ts apps/api/__tests__/security/security-events-route.test.ts
+  - npm run test -- apps/api/**tests**/security/security-events.test.ts apps/api/**tests**/security/security-events-route.test.ts
 - Result:
   - 2 files passed
   - 6 tests passed
 
 3. Auth middleware and JWT verification flow
+
 - Command:
-  - npm run test -- apps/api/__tests__/auth/auth-middleware.test.ts apps/api/__tests__/auth/auth-middleware-jwt.test.ts apps/api/__tests__/auth/auth-verify-flow.test.ts
+  - npm run test -- apps/api/**tests**/auth/auth-middleware.test.ts apps/api/**tests**/auth/auth-middleware-jwt.test.ts apps/api/**tests**/auth/auth-verify-flow.test.ts
 - Result:
   - 3 files passed
   - 17 tests passed

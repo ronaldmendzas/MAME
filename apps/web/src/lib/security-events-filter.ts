@@ -8,7 +8,10 @@ export interface SecurityEventsFilter {
 
 const ALL = 'all'
 
-export function filterSecurityEvents(events: SecurityEvent[], filters: SecurityEventsFilter): SecurityEvent[] {
+export function filterSecurityEvents(
+  events: SecurityEvent[],
+  filters: SecurityEventsFilter,
+): SecurityEvent[] {
   const normalizedQuery = filters.query.trim().toLowerCase()
 
   return events.filter((event) => {
@@ -22,7 +25,9 @@ export function filterSecurityEvents(events: SecurityEvent[], filters: SecurityE
       event.actorRole ?? 'anonymous',
       event.source,
       event.target ?? '',
-    ].join(' ').toLowerCase()
+    ]
+      .join(' ')
+      .toLowerCase()
 
     return searchable.includes(normalizedQuery)
   })

@@ -62,9 +62,7 @@ describe('authMiddleware JWT edge cases', () => {
   })
 
   it('rejects RS256 token with invalid JWKS fetch', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('', { status: 500 }),
-    )
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('', { status: 500 }))
     const token = makeRs256Token(requiredClaims())
     const res = await app.request('/p/me', {
       headers: { Authorization: `Bearer ${token}` },
@@ -78,10 +76,7 @@ describe('authMiddleware JWT edge cases', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ keys: [] }), { status: 200 }),
     )
-    const token = makeRs256Token(
-      requiredClaims(),
-      { alg: 'RS256', kid: 'nonexistent' },
-    )
+    const token = makeRs256Token(requiredClaims(), { alg: 'RS256', kid: 'nonexistent' })
     const res = await app.request('/p/me', {
       headers: { Authorization: `Bearer ${token}` },
     })

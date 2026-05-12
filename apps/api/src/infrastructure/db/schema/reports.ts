@@ -1,12 +1,4 @@
-import {
-  customType,
-  index,
-  integer,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from 'drizzle-orm/pg-core'
+import { customType, index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 import { reportCategoryEnum, reportStatusEnum } from './enums'
 import { anonymousProfiles } from './users'

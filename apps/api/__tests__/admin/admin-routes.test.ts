@@ -14,7 +14,13 @@ const { listUsersMock, updateRoleMock, createDbMock, createUserRepoMock } = vi.h
 })
 
 vi.mock('../../src/http/middleware/auth.js', () => ({
-  authMiddleware: async (c: { req: { header: (name: string) => string | undefined }; set: (key: string, value: string) => void }, next: () => Promise<void>) => {
+  authMiddleware: async (
+    c: {
+      req: { header: (name: string) => string | undefined }
+      set: (key: string, value: string) => void
+    },
+    next: () => Promise<void>,
+  ) => {
     const role = c.req.header('x-role') ?? 'user'
     c.set('userRole', role)
     c.set('tokenId', 'tok_admin')
@@ -65,7 +71,11 @@ describe('admin routes', () => {
   })
 
   it('allows admin to list users', async () => {
-    const res = await app.request('/admin/users?limit=25', { headers: { 'x-role': 'admin' } }, makeEnv())
+    const res = await app.request(
+      '/admin/users?limit=25',
+      { headers: { 'x-role': 'admin' } },
+      makeEnv(),
+    )
 
     expect(res.status).toBe(200)
     expect(listUsersMock).toHaveBeenCalledWith(25)

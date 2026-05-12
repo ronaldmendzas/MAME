@@ -24,10 +24,10 @@ export interface InsertReportData {
 }
 
 export interface ReportFilters {
-  category?: ReportCategory
-  faculty?: string
-  dateFrom?: Date
-  dateTo?: Date
+  category?: ReportCategory | undefined
+  faculty?: string | undefined
+  dateFrom?: Date | undefined
+  dateTo?: Date | undefined
 }
 
 export interface ReportRepository {
@@ -35,5 +35,8 @@ export interface ReportRepository {
   findById(id: string): Promise<ReportRow | null>
   findPublished(cursor: string | null, limit: number, filters: ReportFilters): Promise<ReportRow[]>
   findByTokenId(tokenId: string, cursor: string | null, limit: number): Promise<ReportRow[]>
-  update(id: string, data: Partial<Pick<ReportRow, 'title' | 'body' | 'status' | 'publishedAt'>>): Promise<ReportRow>
+  update(
+    id: string,
+    data: Partial<Pick<ReportRow, 'title' | 'body' | 'status' | 'publishedAt'>>,
+  ): Promise<ReportRow>
 }

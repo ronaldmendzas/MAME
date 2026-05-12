@@ -1,4 +1,9 @@
-export type FlagCategory = 'false_report' | 'inappropriate' | 'exposed_data' | 'harassment' | 'other'
+export type FlagCategory =
+  | 'false_report'
+  | 'inappropriate'
+  | 'exposed_data'
+  | 'harassment'
+  | 'other'
 
 export interface FlagRow {
   id: string

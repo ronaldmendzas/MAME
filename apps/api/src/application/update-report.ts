@@ -4,8 +4,8 @@ import type { ReportRepository, ReportRow } from '../domain/ports/report-reposit
 export interface UpdateReportInput {
   reportId: string
   tokenId: string
-  title?: string
-  body?: string
+  title?: string | undefined
+  body?: string | undefined
 }
 
 export interface UpdateReportDeps {

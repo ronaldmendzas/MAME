@@ -1,6 +1,11 @@
 'use client'
 
-import { MIN_TITLE_LENGTH, MAX_TITLE_LENGTH, MIN_BODY_LENGTH, MAX_BODY_LENGTH } from '@mame/shared/constants'
+import {
+  MIN_TITLE_LENGTH,
+  MAX_TITLE_LENGTH,
+  MIN_BODY_LENGTH,
+  MAX_BODY_LENGTH,
+} from '@mame/shared/constants'
 
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'

@@ -12,10 +12,7 @@ import { reportStatusHistory } from './schema/moderation'
 export function createStatusHistoryRepository(db: Database): StatusHistoryRepository {
   return {
     async insert(data: InsertStatusHistoryData): Promise<StatusHistoryRow> {
-      const [row] = await db
-        .insert(reportStatusHistory)
-        .values(data)
-        .returning()
+      const [row] = await db.insert(reportStatusHistory).values(data).returning()
       return mapRow(row!)
     },
 

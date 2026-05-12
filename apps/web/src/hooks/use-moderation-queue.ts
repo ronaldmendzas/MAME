@@ -4,7 +4,12 @@ import { useAuth } from '@clerk/nextjs'
 import type { Report } from '@mame/shared/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ApiError, fetchModerationQueue, moderateReport, type ModerateReportPayload } from '@/lib/api'
+import {
+  ApiError,
+  fetchModerationQueue,
+  moderateReport,
+  type ModerateReportPayload,
+} from '@/lib/api'
 
 interface UseModerationQueueResult {
   reports: Report[]
@@ -48,21 +53,24 @@ export function useModerationQueue(): UseModerationQueueResult {
     }
   }, [getToken])
 
-  const applyAction = useCallback(async (reportId: string, payload: ModerateReportPayload) => {
-    setActing(true)
-    setError(null)
-    try {
-      const token = await getToken({ template: 'mame-api' })
-      if (!token) throw new Error('Not authenticated')
-      await moderateReport(reportId, payload, token)
-      await refresh()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to apply moderation action')
-      throw e
-    } finally {
-      setActing(false)
-    }
-  }, [getToken, refresh])
+  const applyAction = useCallback(
+    async (reportId: string, payload: ModerateReportPayload) => {
+      setActing(true)
+      setError(null)
+      try {
+        const token = await getToken({ template: 'mame-api' })
+        if (!token) throw new Error('Not authenticated')
+        await moderateReport(reportId, payload, token)
+        await refresh()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to apply moderation action')
+        throw e
+      } finally {
+        setActing(false)
+      }
+    },
+    [getToken, refresh],
+  )
 
   useEffect(() => {
     void refresh()

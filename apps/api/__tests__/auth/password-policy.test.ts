@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { assertStrongPassword, getPasswordPolicyProblems } from '../../src/application/auth-local/password-policy'
+import {
+  assertStrongPassword,
+  getPasswordPolicyProblems,
+} from '../../src/application/auth-local/password-policy'
 
 describe('password policy', () => {
   it('accepts strong password', () => {
@@ -18,7 +21,9 @@ describe('password policy', () => {
 
   it('rejects repeated characters and common passwords', () => {
     expect(getPasswordPolicyProblems('Password123!')).toContain('is too common')
-    expect(getPasswordPolicyProblems('AAAAaaaa1111!')).toContain('cannot contain four repeated characters')
+    expect(getPasswordPolicyProblems('AAAAaaaa1111!')).toContain(
+      'cannot contain four repeated characters',
+    )
   })
 
   it('throws validation error for weak input', () => {

@@ -20,19 +20,20 @@ function createDeps(overrides?: {
   } | null
   verifyCode?: boolean
 }) {
-  const credential = overrides && 'credential' in overrides
-    ? overrides.credential
-    : {
-      userId: 'user-1',
-      loginHash: 'hash-login',
-      passwordHash: 'stored',
-      passwordAlgo: 'pbkdf2-sha256',
-      failedAttempts: 0,
-      lockedUntil: null,
-      mfaSecretCiphertext: null,
-      mfaEnabled: false,
-      createdAt: new Date('2026-03-23T00:00:00.000Z'),
-    }
+  const credential =
+    overrides && 'credential' in overrides
+      ? overrides.credential
+      : {
+          userId: 'user-1',
+          loginHash: 'hash-login',
+          passwordHash: 'stored',
+          passwordAlgo: 'pbkdf2-sha256',
+          failedAttempts: 0,
+          lockedUntil: null,
+          mfaSecretCiphertext: null,
+          mfaEnabled: false,
+          createdAt: new Date('2026-03-23T00:00:00.000Z'),
+        }
 
   return {
     localAuthRepo: {
@@ -62,7 +63,11 @@ describe('mfa enrollment use cases', () => {
     )
 
     expect(result).toEqual({ secret: 'JBSWY3DPEHPK3PXP', otpAuthUri: 'otpauth://totp/test' })
-    expect(deps.localAuthRepo.setMfaState).toHaveBeenCalledWith('user-1', false, 'ciphertext-secret')
+    expect(deps.localAuthRepo.setMfaState).toHaveBeenCalledWith(
+      'user-1',
+      false,
+      'ciphertext-secret',
+    )
   })
 
   it('confirms enrollment with valid TOTP code', async () => {

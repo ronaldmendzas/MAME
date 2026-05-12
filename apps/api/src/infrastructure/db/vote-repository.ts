@@ -23,9 +23,7 @@ export function createVoteRepository(db: Database): VoteRepository {
     },
 
     async deleteByReportAndToken(reportId: string, tokenId: string): Promise<void> {
-      await db
-        .delete(votes)
-        .where(and(eq(votes.reportId, reportId), eq(votes.tokenId, tokenId)))
+      await db.delete(votes).where(and(eq(votes.reportId, reportId), eq(votes.tokenId, tokenId)))
       await decrementVoteCount(db, reportId)
     },
   }
@@ -34,13 +32,19 @@ export function createVoteRepository(db: Database): VoteRepository {
 async function incrementVoteCount(db: Database, reportId: string) {
   const [row] = await db.select().from(reports).where(eq(reports.id, reportId))
   if (!row) return
-  await db.update(reports).set({ votes: row.votes + 1 }).where(eq(reports.id, reportId))
+  await db
+    .update(reports)
+    .set({ votes: row.votes + 1 })
+    .where(eq(reports.id, reportId))
 }
 
 async function decrementVoteCount(db: Database, reportId: string) {
   const [row] = await db.select().from(reports).where(eq(reports.id, reportId))
   if (!row || row.votes <= 0) return
-  await db.update(reports).set({ votes: row.votes - 1 }).where(eq(reports.id, reportId))
+  await db
+    .update(reports)
+    .set({ votes: row.votes - 1 })
+    .where(eq(reports.id, reportId))
 }
 
 function mapRow(row: typeof votes.$inferSelect): VoteRow {

@@ -9,10 +9,7 @@ interface VisionResponse {
   response?: string
 }
 
-export async function classifyImage(
-  ai: AiBinding,
-  buffer: ArrayBuffer,
-): Promise<ModerationResult> {
+export async function classifyImage(ai: AiBinding, buffer: ArrayBuffer): Promise<ModerationResult> {
   const image = [...new Uint8Array(buffer)]
   const result = (await ai.run(VISION_MODEL, {
     messages: [{ role: 'user', content: NSFW_PROMPT }],

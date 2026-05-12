@@ -1,4 +1,9 @@
-export type NotificationType = 'status_change' | 'new_comment' | 'new_evidence' | 'moderator_response' | 'flag_threshold'
+export type NotificationType =
+  | 'status_change'
+  | 'new_comment'
+  | 'new_evidence'
+  | 'moderator_response'
+  | 'flag_threshold'
 
 export interface NotificationRow {
   id: string

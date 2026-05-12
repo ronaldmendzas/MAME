@@ -32,8 +32,18 @@ function isBcryptHash(encodedHash: string): boolean {
   return /^\$2[aby]\$\d{2}\$/.test(encodedHash)
 }
 
-async function derivePbkdf2(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
-  const imported = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
+async function derivePbkdf2(
+  password: string,
+  salt: Uint8Array,
+  iterations: number,
+): Promise<Uint8Array> {
+  const imported = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  )
 
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', hash: 'SHA-256', salt, iterations },
@@ -44,7 +54,9 @@ async function derivePbkdf2(password: string, salt: Uint8Array, iterations: numb
   return new Uint8Array(bits)
 }
 
-function parseEncodedHash(encodedHash: string): { iterations: number; salt: Uint8Array; hash: Uint8Array } | null {
+function parseEncodedHash(
+  encodedHash: string,
+): { iterations: number; salt: Uint8Array; hash: Uint8Array } | null {
   const [prefix, algo, rounds, salt, hash] = encodedHash.split('$')
   if (`${prefix}$${algo}` !== HASH_PREFIX || !rounds || !salt || !hash) return null
 

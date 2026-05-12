@@ -10,10 +10,7 @@ import { createIdentityLinkRepository } from '../../infrastructure/db/identity-l
 import { createProfileRepository } from '../../infrastructure/db/profile-repository.js'
 import { createUserRepository } from '../../infrastructure/db/user-repository.js'
 
-export async function ensureRegisteredMiddleware(
-  c: Context<AppEnv>,
-  next: Next,
-) {
+export async function ensureRegisteredMiddleware(c: Context<AppEnv>, next: Next) {
   const userId = c.get('userId')
   if (!userId) return next()
 
@@ -45,10 +42,7 @@ export async function ensureRegisteredMiddleware(
     userRepo: createUserRepository(db),
     profileRepo,
     linkRepo,
-    cryptoService: createCryptoService(
-      c.env.ENCRYPTION_MASTER_KEY,
-      c.env.ENCRYPTION_RELATION_KEY,
-    ),
+    cryptoService: createCryptoService(c.env.ENCRYPTION_MASTER_KEY, c.env.ENCRYPTION_RELATION_KEY),
     clerkService,
   })
 

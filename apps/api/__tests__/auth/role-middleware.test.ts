@@ -39,7 +39,7 @@ describe('requireRole middleware', () => {
   it('returns 403 when user role does not match', async () => {
     const res = await app.request('/admin/dashboard')
     expect(res.status).toBe(403)
-    const body = await res.json() as { error: string }
+    const body = (await res.json()) as { error: string }
     expect(body.error).toContain('admin')
   })
 

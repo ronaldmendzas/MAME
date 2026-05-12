@@ -24,20 +24,20 @@ Two atomic commits applied:
 
 ### Affected Handlers
 
-| Handler | Param validated |
-|---|---|
-| `comment-create.ts` | `id` (report ID) |
-| `comment-delete.ts` | `commentId` |
-| `comment-list.ts` | `id` (report ID) |
-| `evidence-link.ts` | `id` (report ID) |
-| `evidence-list.ts` | `id` (report ID) |
-| `evidence.ts` | `id` (report ID) |
+| Handler                | Param validated  |
+| ---------------------- | ---------------- |
+| `comment-create.ts`    | `id` (report ID) |
+| `comment-delete.ts`    | `commentId`      |
+| `comment-list.ts`      | `id` (report ID) |
+| `evidence-link.ts`     | `id` (report ID) |
+| `evidence-list.ts`     | `id` (report ID) |
+| `evidence.ts`          | `id` (report ID) |
 | `moderation-action.ts` | `id` (report ID) |
-| `report-detail.ts` | `id` (report ID) |
-| `report-submit.ts` | `id` (report ID) |
-| `reports.ts` (PATCH) | `id` (report ID) |
-| `vote-add.ts` | `id` (report ID) |
-| `vote-remove.ts` | `id` (report ID) |
+| `report-detail.ts`     | `id` (report ID) |
+| `report-submit.ts`     | `id` (report ID) |
+| `reports.ts` (PATCH)   | `id` (report ID) |
+| `vote-add.ts`          | `id` (report ID) |
+| `vote-remove.ts`       | `id` (report ID) |
 
 ### Fix Applied
 
@@ -64,6 +64,7 @@ The CORS middleware used `origin: '*'` (wildcard) when `ENVIRONMENT === 'develop
 ### Fix Applied
 
 Removed the `isDevelopment` branch entirely. The middleware now always uses a list-based origin function:
+
 - If `ALLOWED_ORIGINS` env var is set: use that list (production)
 - Otherwise: fall back to `DEV_ORIGINS` (localhost variants for local dev)
 
@@ -109,9 +110,11 @@ Added `xXssProtection: '0'` to the Hono `secureHeaders()` call.
 ### Description
 
 SECURITY.md §8 defines:
+
 ```
 connect-src 'self' https://api.clerk.dev
 ```
+
 The `connectSrc` directive only contained `'self'`. Browsers enforcing CSP would block Clerk authentication API calls from the API worker in environments where the browser enforces this header, potentially breaking auth flows.
 
 ### Fix Applied
@@ -125,30 +128,37 @@ Updated `contentSecurityPolicy.connectSrc` to `["'self'", 'https://api.clerk.dev
 All security-related test packs run and passed after hardening:
 
 ### Security middleware (updated)
+
 - Command: `npx vitest run apps/api/__tests__/http/security.test.ts`
 - Result: **14 tests passed** (including 5 new tests for new headers and credentials)
 
 ### Route param guard tests (new)
+
 - Command: `npx vitest run apps/api/__tests__/http/route-param-guards.test.ts`
 - Result: **10 tests passed** (9 report-ID guards + 1 comment-ID guard)
 
 ### Evidence route (updated)
+
 - Command: `npx vitest run apps/api/__tests__/evidence/evidence-route.test.ts`
 - Result: **4 tests passed** (including new missing-ID test)
 
 ### App-level security headers
+
 - Command: `npx vitest run apps/api/__tests__/http/app.test.ts`
 - Result: **12 tests passed**
 
 ### Auth middleware and JWT flow
+
 - Command: `npx vitest run apps/api/__tests__/auth/`
 - Result: **17 files, 82 tests passed**
 
 ### Security events and role-gated endpoints
+
 - Command: `npx vitest run apps/api/__tests__/security/`
 - Result: **2 files, 6 tests passed**
 
 ### Full workspace suite
+
 - Command: `npx vitest run`
 - Result: **68 test files, 421 tests passed — 0 failures**
 
@@ -165,12 +175,12 @@ All security-related test packs run and passed after hardening:
 
 ## DSS Pre-Launch Checklist — Items Verified This Session
 
-| # | Control | Status |
-|---|---|---|
-| 9 | CORS configured — only MAME domain(s), no wildcard | ✅ Fixed |
-| 11 | Security headers active on ALL responses | ✅ Verified + X-XSS-Protection added |
-| 13 | ALL user inputs sanitized — Zod + guard clauses on backend | ✅ Fixed (12 routes) |
-| 16 | Zod validation on ALL write endpoints | ✅ Verified |
+| #   | Control                                                    | Status                               |
+| --- | ---------------------------------------------------------- | ------------------------------------ |
+| 9   | CORS configured — only MAME domain(s), no wildcard         | ✅ Fixed                             |
+| 11  | Security headers active on ALL responses                   | ✅ Verified + X-XSS-Protection added |
+| 13  | ALL user inputs sanitized — Zod + guard clauses on backend | ✅ Fixed (12 routes)                 |
+| 16  | Zod validation on ALL write endpoints                      | ✅ Verified                          |
 
 ---
 

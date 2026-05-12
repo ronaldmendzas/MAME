@@ -1,23 +1,35 @@
 import type { CryptoService } from '../../domain/ports/crypto-service'
 
 const ADJECTIVES = [
-  'Brave', 'Silent', 'Wise', 'Bold', 'Free',
-  'Noble', 'Swift', 'Calm', 'Just', 'True',
+  'Brave',
+  'Silent',
+  'Wise',
+  'Bold',
+  'Free',
+  'Noble',
+  'Swift',
+  'Calm',
+  'Just',
+  'True',
 ]
 
 const NOUNS = [
-  'Citizen', 'Guardian', 'Voice', 'Shield', 'Beacon',
-  'Sentinel', 'Herald', 'Watcher', 'Seeker', 'Witness',
+  'Citizen',
+  'Guardian',
+  'Voice',
+  'Shield',
+  'Beacon',
+  'Sentinel',
+  'Herald',
+  'Watcher',
+  'Seeker',
+  'Witness',
 ]
 
-export function createCryptoService(
-  masterKey: string,
-  relationKey: string,
-): CryptoService {
+export function createCryptoService(masterKey: string, relationKey: string): CryptoService {
   return {
     hashEmail: (email) => hmacSha256(normalize(email), masterKey),
-    generateRelationProof: (emailHash, tokenId) =>
-      hmacSha256(emailHash + tokenId, relationKey),
+    generateRelationProof: (emailHash, tokenId) => hmacSha256(emailHash + tokenId, relationKey),
     generateTokenId: () => crypto.randomUUID(),
     generateDisplayName: () => buildDisplayName(),
   }

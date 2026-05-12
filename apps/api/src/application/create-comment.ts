@@ -43,10 +43,7 @@ async function validateReportExists(reportId: string, repo: ReportRepository) {
   }
 }
 
-async function validateParentNesting(
-  parentId: string | null,
-  repo: CommentRepository,
-) {
+async function validateParentNesting(parentId: string | null, repo: CommentRepository) {
   if (!parentId) return
 
   const parent = await repo.findById(parentId)

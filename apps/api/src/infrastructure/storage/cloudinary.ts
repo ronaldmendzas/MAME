@@ -7,13 +7,22 @@ interface CloudinaryConfig {
 }
 
 async function signPayload(params: Record<string, string>, secret: string): Promise<string> {
-  const sorted = Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join('&')
+  const sorted = Object.keys(params)
+    .sort()
+    .map((k) => `${k}=${params[k]}`)
+    .join('&')
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey(
-    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
   )
   const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(sorted))
-  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 export function createCloudinaryStorage(config: CloudinaryConfig): StoragePort {
@@ -36,7 +45,7 @@ export function createCloudinaryStorage(config: CloudinaryConfig): StoragePort {
       const res = await fetch(`${baseUrl}/auto/upload`, { method: 'POST', body: form })
       if (!res.ok) throw new Error(`Cloudinary upload failed: ${res.status}`)
 
-      const data = await res.json() as { public_id: string; secure_url: string; bytes: number }
+      const data = (await res.json()) as { public_id: string; secure_url: string; bytes: number }
       return { fileKey: data.public_id, url: data.secure_url, bytes: data.bytes }
     },
 

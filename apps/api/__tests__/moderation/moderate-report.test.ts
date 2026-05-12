@@ -65,16 +65,16 @@ describe('moderateReport', () => {
     const deps = mockDeps()
     const input = { ...baseInput, moderatorFaculty: 'Engineering' }
 
-    await expect(moderateReport(input, deps))
-      .rejects.toThrow('cannot moderate reports from their own faculty')
+    await expect(moderateReport(input, deps)).rejects.toThrow(
+      'cannot moderate reports from their own faculty',
+    )
   })
 
   it('rejects rejection without reason', async () => {
     const deps = mockDeps()
     const input = { ...baseInput, action: 'reject' as const, reason: null }
 
-    await expect(moderateReport(input, deps))
-      .rejects.toThrow('Reason is mandatory for rejection')
+    await expect(moderateReport(input, deps)).rejects.toThrow('Reason is mandatory for rejection')
   })
 
   it('rejects non-existent report', async () => {
@@ -93,7 +93,7 @@ describe('moderateReport', () => {
 
     expect(deps.reportRepo.update).toHaveBeenCalledWith('report-1', {
       status: 'rejected',
-      publishedAt: undefined,
+      publishedAt: null,
     })
   })
 })

@@ -11,8 +11,5 @@ export const errorHandler: HonoErrorHandler = (error: Error, c: Context) => {
     )
   }
 
-  return c.json(
-    { success: false, error: 'Internal server error', code: 'INTERNAL' },
-    500,
-  )
+  return c.json({ success: false, error: 'Internal server error', code: 'INTERNAL' }, 500)
 }

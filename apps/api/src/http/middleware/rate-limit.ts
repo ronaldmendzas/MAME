@@ -13,13 +13,11 @@ const WRITE_LIMIT: RateLimitConfig = { maxRequests: 20, windowSeconds: 60 }
 const fallback = new Map<string, { c: number; r: number }>()
 
 export function rateLimitRead() {
-  return (c: Context<AppEnv>, next: Next) =>
-    applyRateLimit(c, next, READ_LIMIT)
+  return (c: Context<AppEnv>, next: Next) => applyRateLimit(c, next, READ_LIMIT)
 }
 
 export function rateLimitWrite() {
-  return (c: Context<AppEnv>, next: Next) =>
-    applyRateLimit(c, next, WRITE_LIMIT)
+  return (c: Context<AppEnv>, next: Next) => applyRateLimit(c, next, WRITE_LIMIT)
 }
 
 async function applyRateLimit(
@@ -27,25 +25,18 @@ async function applyRateLimit(
   next: Next,
   config: RateLimitConfig,
 ): Promise<Response | void> {
-  const ip = c.req.header('CF-Connecting-IP')
-    ?? c.req.header('x-forwarded-for')
-    ?? 'unknown'
+  const ip = c.req.header('CF-Connecting-IP') ?? c.req.header('x-forwarded-for') ?? 'unknown'
   const key = `rl:${ip}:${config.maxRequests}`
   const kv = isUsableKv(c.env?.RATE_LIMIT_KV)
 
-  const { count, resetAt } = kv
-    ? await incrementKV(kv, key, config)
-    : incrementMemory(key, config)
+  const { count, resetAt } = kv ? await incrementKV(kv, key, config) : incrementMemory(key, config)
 
   c.header('X-RateLimit-Limit', String(config.maxRequests))
   c.header('X-RateLimit-Remaining', String(Math.max(0, config.maxRequests - count)))
   c.header('X-RateLimit-Reset', String(resetAt))
 
   if (count > config.maxRequests) {
-    return c.json(
-      { success: false, error: 'Too many requests', code: 'RATE_LIMITED' },
-      429,
-    )
+    return c.json({ success: false, error: 'Too many requests', code: 'RATE_LIMITED' }, 429)
   }
 
   await next()
@@ -85,10 +76,7 @@ async function incrementKV(
   return { count, resetAt }
 }
 
-function incrementMemory(
-  key: string,
-  config: RateLimitConfig,
-): { count: number; resetAt: number } {
+function incrementMemory(key: string, config: RateLimitConfig): { count: number; resetAt: number } {
   const now = Math.floor(Date.now() / 1000)
   let entry = fallback.get(key)
 

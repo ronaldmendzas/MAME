@@ -27,8 +27,12 @@ async function findBestQuality(canvas: HTMLCanvasElement) {
   for (let i = 0; i < STEPS; i++) {
     const mid = (lo + hi) / 2
     const blob = await toWebPBlob(canvas, mid)
-    if (blob.size <= TARGET) { best = blob; lo = mid }
-    else { hi = mid }
+    if (blob.size <= TARGET) {
+      best = blob
+      lo = mid
+    } else {
+      hi = mid
+    }
   }
   return best.size <= TARGET ? best : await toWebPBlob(canvas, lo)
 }

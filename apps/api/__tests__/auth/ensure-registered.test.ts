@@ -3,9 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ensureRegistered } from '../../src/application/ensure-registered'
 import type { EnsureRegisteredDeps } from '../../src/application/ensure-registered'
 
-function createMockDeps(
-  overrides?: Partial<EnsureRegisteredDeps>,
-): EnsureRegisteredDeps {
+function createMockDeps(overrides?: Partial<EnsureRegisteredDeps>): EnsureRegisteredDeps {
   return {
     userRepo: {
       findByClerkId: vi.fn().mockResolvedValue(null),
@@ -110,9 +108,9 @@ describe('ensureRegistered', () => {
     const deps = createMockDeps({
       userRepo: {
         findByClerkId: vi.fn().mockResolvedValue(null),
-        insertUser: vi.fn().mockRejectedValue(
-          new Error('duplicate key value violates unique constraint'),
-        ),
+        insertUser: vi
+          .fn()
+          .mockRejectedValue(new Error('duplicate key value violates unique constraint')),
       },
       clerkService: {
         updateUserMetadata: vi.fn(),
@@ -147,8 +145,6 @@ describe('ensureRegistered', () => {
       },
     })
 
-    await expect(
-      ensureRegistered('clerk_broken', deps),
-    ).rejects.toThrow('Identity link missing')
+    await expect(ensureRegistered('clerk_broken', deps)).rejects.toThrow('Identity link missing')
   })
 })

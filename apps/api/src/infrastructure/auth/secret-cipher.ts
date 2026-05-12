@@ -43,13 +43,10 @@ async function importAesKey(hexKey: string): Promise<CryptoKey> {
     throw new ValidationError('Secret cipher key must be 64 hex chars')
   }
 
-  return crypto.subtle.importKey(
-    'raw',
-    hexToBytes(normalized),
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt', 'decrypt'],
-  )
+  return crypto.subtle.importKey('raw', hexToBytes(normalized), { name: 'AES-GCM' }, false, [
+    'encrypt',
+    'decrypt',
+  ])
 }
 
 function hexToBytes(hex: string): Uint8Array {
@@ -61,7 +58,10 @@ function hexToBytes(hex: string): Uint8Array {
 }
 
 function toBase64Url(value: Uint8Array): string {
-  return btoa(String.fromCharCode(...value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+  return btoa(String.fromCharCode(...value))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
 }
 
 function fromBase64Url(value: string): Uint8Array {

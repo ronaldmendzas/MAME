@@ -24,19 +24,19 @@ export const options = {
     peak_load: {
       executor: 'ramping-vus',
       stages: [
-        { duration: '2m', target: 50 },   // ramp up — pre-peak traffic
-        { duration: '3m', target: 275 },  // ramp to university 11am peak
-        { duration: '5m', target: 275 },  // sustained peak
-        { duration: '2m', target: 50 },   // taper to mid-day baseline
-        { duration: '1m', target: 0 },    // ramp down
+        { duration: '2m', target: 50 }, // ramp up — pre-peak traffic
+        { duration: '3m', target: 275 }, // ramp to university 11am peak
+        { duration: '5m', target: 275 }, // sustained peak
+        { duration: '2m', target: 50 }, // taper to mid-day baseline
+        { duration: '1m', target: 0 }, // ramp down
       ],
     },
   },
   thresholds: {
-    http_req_duration: ['p(95)<200'],     // P95 < 200ms (DoD requirement)
-    error_rate: ['rate<0.01'],            // < 1% error rate
+    http_req_duration: ['p(95)<200'], // P95 < 200ms (DoD requirement)
+    error_rate: ['rate<0.01'], // < 1% error rate
     feed_duration: ['p(95)<200'],
-    search_duration: ['p(95)<500'],       // search allowed 500ms due to full-text
+    search_duration: ['p(95)<500'], // search allowed 500ms due to full-text
   },
 }
 
@@ -53,9 +53,9 @@ const SEARCH_TERMS = [
 export default function () {
   const scenario = Math.random()
 
-  if (scenario < 0.70) {
+  if (scenario < 0.7) {
     browseFeed()
-  } else if (scenario < 0.90) {
+  } else if (scenario < 0.9) {
     searchReports()
   } else {
     browseReport()
@@ -78,8 +78,7 @@ function browseFeed() {
       const body = JSON.parse(r.body)
       return body.success === true && Array.isArray(body.data)
     },
-    'feed: has cache-control': (r) =>
-      r.headers['Cache-Control']?.includes('public') === true,
+    'feed: has cache-control': (r) => r.headers['Cache-Control']?.includes('public') === true,
   })
 }
 

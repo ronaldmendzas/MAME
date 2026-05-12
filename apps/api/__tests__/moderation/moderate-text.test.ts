@@ -21,10 +21,7 @@ describe('moderate-text', () => {
         return { flagged: false, categories: [], score: 0 }
       },
     }
-    await moderateText(
-      { title: 'Title', body: 'Body text' },
-      { moderation },
-    )
+    await moderateText({ title: 'Title', body: 'Body text' }, { moderation })
     expect(captured).toBe('Title\n\nBody text')
   })
 
