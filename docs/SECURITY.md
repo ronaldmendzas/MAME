@@ -124,27 +124,29 @@ Step 3: email_hash = HMAC-SHA256(email, ENCRYPTION_MASTER_KEY)
         email_hash is deterministic: same email → same hash (for login lookup)
         BUT irreversible: cannot get email from hash without ENCRYPTION_MASTER_KEY
 
-Step 4: Store in `users` table: { clerk_id, email_hash }
-        ⚠️ NO PLAINTEXT EMAIL EXISTS IN OUR DATABASE
-        Passwords handled entirely by Clerk (never touch our system)
+Step 4: Store in `users` table: { clerk_id, email_hash, anonymous_token_id }
+         ⚠️ NO PLAINTEXT EMAIL EXISTS IN OUR DATABASE
+         Passwords handled entirely by Clerk (never touch our system)
+         anonymous_token_id is stored for operational token recovery only
 
 Step 5: Generate anonymous_token = UUID v4
-        Cryptographic random, no sequential pattern
-        No relationship to email in its generation
+         Cryptographic random, no sequential pattern
+         No relationship to email in its generation
 
 Step 6: Store in `anonymous_profiles` table: { token_id }
-        This is the user's public identity on the platform
+         This is the user's public identity on the platform
 
 Step 7: relation_proof = HMAC-SHA256(email_hash + token_id, ENCRYPTION_RELATION_KEY)
-        ENCRYPTION_RELATION_KEY stored ONLY in Cloudflare Secrets
-        Store in `identity_links` table: { relation_proof }
-        NO foreign keys to users or anonymous_profiles — just a one-way hash
+         ENCRYPTION_RELATION_KEY stored ONLY in Cloudflare Secrets
+         Store in `identity_links` table: { relation_proof }
+         identity_links contains ONLY the one-way proof — no email_hash, no token_id
 
 Step 8: Store token_id in Clerk user's publicMetadata
-        → On subsequent logins, JWT includes token_id in claims
-        → System reads token_id directly from JWT — no DB lookup needed
-        → identity_links table is NEVER queried in normal operations
-        → It exists solely for emergency de-anonymization (court order, §6)
+         → On subsequent logins, JWT includes token_id in claims
+         → System reads token_id directly from JWT — no DB lookup needed
+         → Operational recovery reads from users.anonymous_token_id (not identity_links)
+         → identity_links table is NEVER queried in normal operations
+         → It exists solely for emergency de-anonymization with both keys (court order, §6)
 ```
 
 **Result:** Three tables, zero direct relationships. Clerk has the email but not the token. Our DB has the token but not the email. Without BOTH `ENCRYPTION_MASTER_KEY` AND `ENCRYPTION_RELATION_KEY` (both in Cloudflare Secrets, not in the database), it is mathematically impossible to determine which email corresponds to which anonymous token.
@@ -153,10 +155,18 @@ Step 8: Store token_id in Clerk user's publicMetadata
 > | System | Has Email? | Has Token? | Has Link? |
 > |---|---|---|---|
 > | **Clerk.dev** | ✅ Yes (plaintext) | ❌ No | ❌ No |
-> | **Our Database** | ❌ No (only HMAC hash) | ✅ Yes | ❌ No (only HMAC proof) |
+> | **Our Database** | ❌ No (only HMAC hash) | ⚠️ Yes (anonymous_token_id for recovery) | ❌ No (only HMAC proof) |
 > | **Cloudflare Secrets** | ❌ No | ❌ No | ⚠️ Contains the keys that COULD derive the link |
 >
-> **To de-anonymize a user, an attacker must compromise ALL THREE systems simultaneously.**
+> **Critical design:** `users.anonymous_token_id` enables operational recovery (Clerk metadata lost), but it does NOT reveal the email-to-token link. That link is mathematically protected by the HMAC in `identity_links.relation_proof`, which requires BOTH keys to reverse.
+>
+> **To de-anonymize a user, an attacker must:**
+> 1. Compromise the database to get `email_hash` + `relation_proof`
+> 2. Compromise Cloudflare Secrets to get BOTH `ENCRYPTION_MASTER_KEY` AND `ENCRYPTION_RELATION_KEY`
+> 3. Use `ENCRYPTION_MASTER_KEY` to derive email from `email_hash`
+> 4. Use `ENCRYPTION_RELATION_KEY` to verify which `email_hash + token_id` produces the `relation_proof`
+>
+> Having only the database (even with `anonymous_token_id`) is insufficient to link emails to tokens.
 
 ### 3.2 Publication Flow (6 Steps)
 
