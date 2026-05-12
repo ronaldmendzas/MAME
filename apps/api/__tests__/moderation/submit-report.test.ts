@@ -34,19 +34,17 @@ function makeDeps(report: ReportRow | null = makeReport()) {
     },
     evidenceRepo: {
       insert: vi.fn(),
-      findByReportId: vi
-        .fn()
-        .mockResolvedValue([
-          {
-            id: 'e1',
-            reportId: 'r-1',
-            type: 'document',
-            fileKey: 'k1',
-            mimeType: 'application/pdf',
-            sizeBytes: 100,
-            createdAt: new Date(),
-          },
-        ]),
+      findByReportId: vi.fn().mockResolvedValue([
+        {
+          id: 'e1',
+          reportId: 'r-1',
+          type: 'document',
+          fileKey: 'k1',
+          mimeType: 'application/pdf',
+          sizeBytes: 100,
+          createdAt: new Date(),
+        },
+      ]),
     },
     moderation: {
       classifyText: vi.fn().mockResolvedValue(safeMod),
